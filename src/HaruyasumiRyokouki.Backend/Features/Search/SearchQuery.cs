@@ -2,11 +2,13 @@ using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
+using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Search;
@@ -14,7 +16,7 @@ namespace HaruyasumiRyokouki.Backend.Features.Search;
 public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest
 {
 	[FromQuery]
-	public required string Query { get; init; }
+	public required string Text { get; init; }
 
 	[SwaggerIgnore]
 	[JsonIgnore]
@@ -45,24 +47,23 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 	public async Task<SearchResponse> Handle(SearchQuery request, CancellationToken cancellationToken)
 	{
-		string likePattern = $"%{request.Query}%";
+		string likePattern = $"%{request.Text}%";
+
+		Expression<Func<MediaFile, bool>> mediaFilter = m =>
+			//m.IsApproved &&
+			m.Translations.Any(mt =>
+				EF.Functions.ILike(mt.Title, likePattern) ||
+				EF.Functions.ILike(mt.Description, likePattern) ||
+				mt.Tags.Any(tag => EF.Functions.ILike(tag, likePattern))
+			);
 
 		var searchResults = await _context.Days
 			.Where(d =>
-				// 1. Looking in the notes of the day
-				d.Translations.Any(dt => EF.Functions.ILike(dt.Note, likePattern))
-				||
-				// 2. OR in this day's media
-				d.Media.Any(m => m.IsApproved && m.Translations.Any(mt =>
-					EF.Functions.ILike(mt.Title, likePattern) ||
-					EF.Functions.ILike(mt.Description, likePattern) ||
-					// Since this is an array of strings, Postgres can ILike the array elements using Any
-					mt.Tags.Any(tag => EF.Functions.ILike(tag, likePattern))
-				))
+				d.Translations.Any(dt => EF.Functions.ILike(dt.Note, likePattern)) ||
+				d.Media.AsQueryable().Any(mediaFilter)
 			)
-			// Load data only for the selected language
 			.Include(d => d.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
-			.Include(d => d.Media/*.Where(m => m.IsApproved)*/)
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
 				.ThenInclude(m => m.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
 			.OrderByDescending(d => d.Date)
 			.ToListAsync(cancellationToken);
@@ -75,4 +76,3 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 		};
 	}
 }
-

@@ -35,17 +35,14 @@ internal class AppDbContext : DbContext, IAppDbContext
 	{
 		modelBuilder.HasPostgresExtension("pg_trgm");
 
-		// === Конфигурация Day ===
 		modelBuilder.Entity<Day>()
 			.HasKey(d => d.Date);
 
-		// === Конфигурация DayTranslation ===
 		modelBuilder.Entity<DayTranslation>()
 			.HasIndex(t => t.Note)
 			.HasMethod("gin")
 			.HasOperators("gin_trgm_ops");
 
-		// Требование: Уникальность пары Дата + Язык
 		modelBuilder.Entity<DayTranslation>()
 			.HasIndex(t => new { t.DayDate, t.LanguageCode })
 			.IsUnique();
@@ -56,8 +53,6 @@ internal class AppDbContext : DbContext, IAppDbContext
 			.HasForeignKey(dt => dt.DayDate)
 			.OnDelete(DeleteBehavior.Cascade);
 
-
-		// === Конфигурация MediaFile ===
 		modelBuilder.Entity<MediaFile>()
 			.HasOne(m => m.Day)
 			.WithMany(d => d.Media)
