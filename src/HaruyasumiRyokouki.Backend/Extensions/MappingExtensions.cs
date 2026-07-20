@@ -19,6 +19,7 @@ internal static class MappingExtensions
 	{
 		return source.Select(ToShortDto);
 	}
+
 	public static DayDto ToDto(this Day source)
 	{
 		return new DayDto
@@ -36,10 +37,41 @@ internal static class MappingExtensions
 		return source.Select(ToDto);
 	}
 
+	public static DayEditDto ToEditDto(this Day source)
+	{
+		return new DayEditDto
+		{
+			Date = source.Date,
+			IsReady = source.IsReady,
+			Translations = source.Translations.ToEditDtos().ToList()
+		};
+	}
+
+	public static IEnumerable<DayEditDto> ToEditDtos(this IEnumerable<Day> source)
+	{
+		return source.Select(ToEditDto);
+	}
+
+	public static DayTranslationEditDto ToEditDto(this DayTranslation source)
+	{
+		return new DayTranslationEditDto
+		{
+			Id = source.Id,
+			LanguageCode = source.LanguageCode, 
+			Note = source.Note
+		};
+	}
+
+	public static IEnumerable<DayTranslationEditDto> ToEditDtos(this IEnumerable<DayTranslation> source)
+	{
+		return source.Select(ToEditDto);
+	}
+
 	public static MediaFileDto ToDto(this MediaFile source)
 	{
 		return new MediaFileDto
 		{
+			DayDate = source.DayDate,
 			FileName = source.FileName,
 			Type = source.Type.ToString(),
 			Latitude = source.Latitude,
@@ -55,5 +87,40 @@ internal static class MappingExtensions
 	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source)
 	{
 		return source.Select(ToDto);
+	}
+
+	public static MediaFileEditDto ToEditDto(this MediaFile source)
+	{
+		return new MediaFileEditDto
+		{
+			DayDate = source.DayDate,
+			FileName = source.FileName,
+			Type = source.Type.ToString(),
+			Latitude = source.Latitude,
+			Longitude = source.Longitude,
+			IsApproved = source.IsApproved,
+			Tranlsations = source.Translations.ToEditDtos().ToList()
+		};
+	}
+	public static IEnumerable<MediaFileEditDto> ToEditDtos(this IEnumerable<MediaFile> source)
+	{
+		return source.Select(ToEditDto);
+	}
+
+	public static MediaTranslationEditDto ToEditDto(this MediaTranslation source)
+	{
+		return new MediaTranslationEditDto
+		{
+			Id = source.Id,
+			Description = source.Description,
+			LanguageCode = source.LanguageCode,
+			Title = source.Title,
+			Tags = source.Tags
+		};
+	}
+
+	public static IEnumerable<MediaTranslationEditDto> ToEditDtos(this IEnumerable<MediaTranslation> source)
+	{
+		return source.Select(ToEditDto);
 	}
 }

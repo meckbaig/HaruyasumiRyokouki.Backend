@@ -5,46 +5,29 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
 using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Features.Days;
+using HaruyasumiRyokouki.Backend.Features.Admin;
 
 namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 
-/// <summary>
-/// Manages data entities.
-/// </summary>
 [ApiController]
 [Route("v{version:ApiVersion}/[controller]")]
 [ApiVersion(1)]
 [SwaggerTag("Manages media parameters.")]
 [Produces(MediaTypeNames.Application.Json)]
-public class DaysController : ControllerBase
+public class AdminController : ControllerBase
 {
 	private readonly IMediator _mediator;
 
 	/// <summary>
 	/// Constructor with parameters for DI.
 	/// </summary>
-	public DaysController(IMediator mediator)
+	public AdminController(IMediator mediator)
 	{
 		_mediator = mediator;
 	}
 
-	//[HttpPut("{date}")]
-	//public async Task<IActionResult> EditDays(EditDaysCommand command)
-	//{
-	//	var result = await _mediator.Send(command);
-	//	return Ok();
-	//}
-
-	[HttpGet("{date}")]
-	public async Task<ActionResult<GetDayResponse>> GetDay(GetDayQuery query)
-	{
-		var result = await _mediator.Send(query);
-		return result.ToJsonResponse();
-	}
-
-	[HttpGet]
-	public async Task<ActionResult<GetDaysResponse>> GetList([FromQuery] GetDaysQuery query)
+	[HttpGet("pending")]
+	public async Task<ActionResult<GetPendingResponse>> GetList([FromQuery] GetPendingQuery query)
 	{
 		var result = await _mediator.Send(query);
 		return result.ToJsonResponse();

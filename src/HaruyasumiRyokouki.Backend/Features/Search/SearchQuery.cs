@@ -58,6 +58,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			);
 
 		var searchResults = await _context.Days
+			.AsNoTracking()
 			.Where(d =>
 				d.Translations.Any(dt => EF.Functions.ILike(dt.Note, likePattern)) ||
 				d.Media.AsQueryable().Any(mediaFilter)

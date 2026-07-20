@@ -22,14 +22,6 @@ public class GetDaysResponse
 	public List<DayShortDto> Items { get; set; }
 }
 
-internal class GetDaysQueryValidator : AbstractValidator<GetDaysQuery>
-{
-	public GetDaysQueryValidator()
-	{
-
-	}
-}
-
 internal class GetDaysQueryHandler : IRequestHandler<GetDaysQuery, GetDaysResponse>
 {
 	private readonly IAppDbContext _context;
@@ -41,13 +33,14 @@ internal class GetDaysQueryHandler : IRequestHandler<GetDaysQuery, GetDaysRespon
 
 	public async Task<GetDaysResponse> Handle(GetDaysQuery request, CancellationToken cancellationToken)
 	{
-		var days = await _context.Days.ToListAsync(cancellationToken);
-
-		var result = days.ToShortDtos();
+		var days = await _context.Days
+			.AsNoTracking()
+			.Select(d => new DayShortDto { Date = d.Date, IsReady = d.IsReady, MediaCount = d.Media.Count})
+			.ToListAsync(cancellationToken);
 
 		return new GetDaysResponse
 		{
-			Items = result.ToList(),
+			Items = days,
 		};
 	}
 }
