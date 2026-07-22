@@ -4,7 +4,7 @@ namespace HaruyasumiRyokouki.Backend.Models.Dtos;
 
 public record MediaFileDto
 {
-	public DateOnly DayDate { get; set; }
+	public DateTime Created { get; set; }
 	public required string FileName { get; set; } = null!;
 	public string Type { get; set; }
 	public double? Latitude { get; set; }

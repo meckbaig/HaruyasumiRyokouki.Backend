@@ -1,9 +1,10 @@
 using Asp.Versioning.ApiExplorer;
+using HaruyasumiRyokouki.Backend.Common.Filters;
+using HaruyasumiRyokouki.Backend.Common.OptionalType.Supporting.Swagger;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
-using HaruyasumiRyokouki.Backend.Common.Filters;
 
 namespace HaruyasumiRyokouki.Backend.Common.Options.Configurators.Swagger;
 
@@ -35,27 +36,34 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
 					Name = "meckbaig"
 				}
 			});
+			options.SchemaFilter<OptionalSchemaFilter>();
+			options.ParameterFilter<OptionalParameterFilter>();
+			options.IncludeXmlComments(Assembly.GetExecutingAssembly());
+			options.EnableAnnotations();
+			options.DocInclusionPredicate((docName, apiDesc) =>
+			{
+				var groupName = apiDesc.GroupName;
+				return groupName == docName;
+			});
 			options.ParameterFilter<CamelCaseQueryParameterFilter>(); 
 			options.DocumentFilter<RemoveSwaggerIgnoredParamsDocumentFilter>();
 
-			options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+			options.AddSecurityDefinition("Basic", new OpenApiSecurityScheme
 			{
-				In = ParameterLocation.Header,
-				Description = "Provide a valid token",
-				Name = "Authorization",
 				Type = SecuritySchemeType.Http,
-				BearerFormat = "JWT",
-				Scheme = "Bearer"
+				Scheme = "basic",
+				Description = "Enter username and password."
 			});
-			options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+
+			options.AddSecurityRequirement(new OpenApiSecurityRequirement
 			{
 				{
-					new OpenApiSecurityScheme()
+					new OpenApiSecurityScheme
 					{
-						Reference = new OpenApiReference()
+						Reference = new OpenApiReference
 						{
 							Type = ReferenceType.SecurityScheme,
-							Id = "Bearer"
+							Id = "Basic"
 						}
 					},
 					Array.Empty<string>()

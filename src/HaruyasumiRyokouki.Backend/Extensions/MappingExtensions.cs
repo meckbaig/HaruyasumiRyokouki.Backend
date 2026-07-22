@@ -71,7 +71,7 @@ internal static class MappingExtensions
 	{
 		return new MediaFileDto
 		{
-			DayDate = source.DayDate,
+			Created = source.Created,
 			FileName = source.FileName,
 			Type = source.Type.ToString(),
 			Latitude = source.Latitude,
@@ -93,7 +93,8 @@ internal static class MappingExtensions
 	{
 		return new MediaFileEditDto
 		{
-			DayDate = source.DayDate,
+			Id = source.Id,
+			Created = source.Created,
 			FileName = source.FileName,
 			Type = source.Type.ToString(),
 			Latitude = source.Latitude,
@@ -102,6 +103,7 @@ internal static class MappingExtensions
 			Tranlsations = source.Translations.ToEditDtos().ToList()
 		};
 	}
+
 	public static IEnumerable<MediaFileEditDto> ToEditDtos(this IEnumerable<MediaFile> source)
 	{
 		return source.Select(ToEditDto);
@@ -122,5 +124,42 @@ internal static class MappingExtensions
 	public static IEnumerable<MediaTranslationEditDto> ToEditDtos(this IEnumerable<MediaTranslation> source)
 	{
 		return source.Select(ToEditDto);
+	}
+
+	public static Day FromEditDto(this Day source, DayEditDto dto)
+	{
+		source.IsReady = dto.IsReady;
+		source.Translations = dto.Translations.FromEditDtos().ToList();
+		return source;
+	}
+
+	public static DayTranslation FromEditDto(this DayTranslationEditDto source)
+	{
+		return new DayTranslation
+		{
+			Id = source.Id, 
+			LanguageCode = source.LanguageCode, 
+			Note = source.Note
+		};
+	}
+	public static IEnumerable<DayTranslation> FromEditDtos(this IEnumerable<DayTranslationEditDto> source)
+	{
+		return source.Select(FromEditDto);
+	}
+
+	public static MediaTranslation FromEditDto(this MediaTranslationEditDto source)
+	{
+		return new MediaTranslation
+		{
+			Id = source.Id, 
+			LanguageCode = source.LanguageCode,
+			Title = source.Title,
+			Description = source.Description,
+			Tags = source.Tags
+		};
+	}
+	public static IEnumerable<MediaTranslation> FromEditDtos(this IEnumerable<MediaTranslationEditDto> source)
+	{
+		return source.Select(FromEditDto);
 	}
 }

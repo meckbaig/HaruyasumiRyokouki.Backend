@@ -2,6 +2,7 @@ namespace HaruyasumiRyokouki.Backend.Models.Db;
 
 public class Day
 {
+	public int Id { get; set; }
 	public DateOnly Date { get; set; }
 	public bool IsReady { get; set; }
 

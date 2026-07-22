@@ -1,26 +1,26 @@
 using Asp.Versioning;
 using FluentValidation;
-using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using System.Globalization;
-using System.Reflection;
-using System.Text;
 using HaruyasumiRyokouki.Backend.Common.Behaviours;
 using HaruyasumiRyokouki.Backend.Common.Conventions;
+using HaruyasumiRyokouki.Backend.Common.Handlers;
+using HaruyasumiRyokouki.Backend.Common.OptionalType.Supporting.Asp;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Common.Options.Configurators.Swagger;
 using HaruyasumiRyokouki.Backend.Common.Options.Loggers;
 using HaruyasumiRyokouki.Backend.Common.Options.Validators;
 using HaruyasumiRyokouki.Backend.Common.Options.Validators.Loggers;
 using HaruyasumiRyokouki.Backend.DbContexts;
+using MediatR;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using System.Globalization;
+using System.Reflection;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 
@@ -108,6 +108,7 @@ internal static class ServiceCollectionExtensions
 			{
 				options.Conventions.Add(new CamelCaseControllerNameConvention());
 				options.Conventions.Add(new CamelCaseQueryParameterConvention());
+				options.ModelBinderProviders.Insert(0, new OptionalModelBinderProvider());
 			})
 			.AddJsonOptions(options =>
 			{
@@ -201,6 +202,14 @@ internal static class ServiceCollectionExtensions
 					.AddPrometheusExporter(); // <-- creates /metrics
 			});
 
+		return services;
+	}
+
+	internal static IServiceCollection AddBasicAuthentication(this IServiceCollection services)
+	{
+		services
+			.AddAuthentication("Basic")
+			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
 		return services;
 	}
 

@@ -35,57 +35,71 @@ internal class AppDbContext : DbContext, IAppDbContext
 	{
 		modelBuilder.HasPostgresExtension("pg_trgm");
 
-		modelBuilder.Entity<Day>()
-			.HasKey(d => d.Date);
+		modelBuilder.Entity<Day>(entity =>
+		{
+			entity.HasKey(d => d.Id);
 
-		modelBuilder.Entity<DayTranslation>()
-			.HasIndex(t => t.Note)
-			.HasMethod("gin")
-			.HasOperators("gin_trgm_ops");
+			entity.HasIndex(d => d.Date)
+				  .IsUnique();
+		});
 
-		modelBuilder.Entity<DayTranslation>()
-			.HasIndex(t => new { t.DayDate, t.LanguageCode })
-			.IsUnique();
 
-		modelBuilder.Entity<DayTranslation>()
-			.HasOne(dt => dt.Day)
-			.WithMany(d => d.Translations)
-			.HasForeignKey(dt => dt.DayDate)
-			.OnDelete(DeleteBehavior.Cascade);
+		modelBuilder.Entity<DayTranslation>(entity =>
+		{
+			entity.HasIndex(t => t.Note)
+				  .HasMethod("gin")
+				  .HasOperators("gin_trgm_ops");
 
-		modelBuilder.Entity<MediaFile>()
-			.HasOne(m => m.Day)
-			.WithMany(d => d.Media)
-			.HasForeignKey(m => m.DayDate)
-			.OnDelete(DeleteBehavior.Cascade);
+			entity.HasIndex(t => new { t.DayId, t.LanguageCode })
+				  .IsUnique();
 
-		modelBuilder.Entity<MediaTranslation>()
-			.HasIndex(t => t.Title)
-			.HasMethod("gin")
-			.HasOperators("gin_trgm_ops");
+			entity.HasOne(dt => dt.Day)
+				  .WithMany(d => d.Translations)
+				  .HasForeignKey(dt => dt.DayId)
+				  .OnDelete(DeleteBehavior.Cascade);
+		});
 
-		modelBuilder.Entity<MediaTranslation>()
-			.HasIndex(t => t.Description)
-			.HasMethod("gin")
-			.HasOperators("gin_trgm_ops");
 
-		modelBuilder.Entity<MediaTranslation>()
-			.Property(t => t.Tags)
-			.HasColumnType("text[]");
+		modelBuilder.Entity<MediaFile>(entity =>
+		{
+			entity.HasOne(m => m.Day)
+				  .WithMany(d => d.Media)
+				  .HasForeignKey(m => m.DayId)
+				  .OnDelete(DeleteBehavior.Cascade);
 
-		modelBuilder.Entity<MediaTranslation>()
-			.HasIndex(t => t.Tags)
-			.HasMethod("gin");
+			entity.Property(m => m.Type)
+				  .HasConversion<string>();
 
-		modelBuilder.Entity<MediaTranslation>()
-			.HasIndex(t => new { t.MediaFileId, t.LanguageCode })
-			.IsUnique();
+			entity.Property(m => m.IsApproved)
+				  .HasDefaultValue(false);
+		});
+			
 
-		modelBuilder.Entity<MediaTranslation>()
-			.HasOne(mt => mt.MediaFile)
-			.WithMany(m => m.Translations)
-			.HasForeignKey(mt => mt.MediaFileId)
-			.OnDelete(DeleteBehavior.Cascade);
+		modelBuilder.Entity<MediaTranslation>(entity =>
+		{
+			entity.HasIndex(t => t.Title)
+				  .HasMethod("gin")
+				  .HasOperators("gin_trgm_ops");
+
+			entity.HasIndex(t => t.Description)
+				  .HasMethod("gin")
+				  .HasOperators("gin_trgm_ops");
+
+			entity.Property(t => t.Tags)
+				  .HasColumnType("text[]");
+
+			entity.HasIndex(t => t.Tags)
+				  .HasMethod("gin");
+
+			entity.HasIndex(t => new { t.MediaFileId, t.LanguageCode })
+				  .IsUnique();
+
+			entity.HasOne(mt => mt.MediaFile)
+				  .WithMany(m => m.Translations)
+				  .HasForeignKey(mt => mt.MediaFileId)
+				  .OnDelete(DeleteBehavior.Cascade);
+		});
+			
 
 		base.OnModelCreating(modelBuilder);
 	}

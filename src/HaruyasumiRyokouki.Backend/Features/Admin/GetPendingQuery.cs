@@ -23,7 +23,6 @@ public class GetPendingResponse
 	public List<DayEditDto> Days { get; set; }
 }
 
-
 internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingResponse>
 {
 	private readonly IAppDbContext _context;

@@ -1,5 +1,4 @@
 using HaruyasumiRyokouki.Backend.Common.Options;
-using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
@@ -54,7 +53,7 @@ internal class BasicAuthenticationHandler : AuthenticationHandler<Authentication
 			var claims = new[] {
 				new Claim(ClaimTypes.NameIdentifier, username),
 				new Claim(ClaimTypes.Name, username),
-            };
+			};
 
 			var identity = new ClaimsIdentity(claims, Scheme.Name);
 			var principal = new ClaimsPrincipal(identity);

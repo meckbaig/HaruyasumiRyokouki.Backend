@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -18,12 +19,14 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 name: "days",
                 columns: table => new
                 {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     date = table.Column<DateOnly>(type: "date", nullable: false),
                     is_ready = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_days", x => x.date);
+                    table.PrimaryKey("pk_days", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -31,7 +34,7 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    day_date = table.Column<DateOnly>(type: "date", nullable: false),
+                    day_id = table.Column<int>(type: "integer", nullable: false),
                     language_code = table.Column<string>(type: "text", nullable: false),
                     note = table.Column<string>(type: "text", nullable: false)
                 },
@@ -39,10 +42,10 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 {
                     table.PrimaryKey("pk_day_translations", x => x.id);
                     table.ForeignKey(
-                        name: "fk_day_translations_days_day_date",
-                        column: x => x.day_date,
+                        name: "fk_day_translations_days_day_id",
+                        column: x => x.day_id,
                         principalTable: "days",
-                        principalColumn: "date",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -51,21 +54,22 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    day_date = table.Column<DateOnly>(type: "date", nullable: false),
+                    day_id = table.Column<int>(type: "integer", nullable: false),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     file_name = table.Column<string>(type: "text", nullable: false),
-                    type = table.Column<int>(type: "integer", nullable: false),
+                    type = table.Column<string>(type: "text", nullable: false),
                     latitude = table.Column<double>(type: "double precision", nullable: true),
                     longitude = table.Column<double>(type: "double precision", nullable: true),
-                    is_approved = table.Column<bool>(type: "boolean", nullable: false)
+                    is_approved = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_media_files", x => x.id);
                     table.ForeignKey(
-                        name: "fk_media_files_days_day_date",
-                        column: x => x.day_date,
+                        name: "fk_media_files_days_day_id",
+                        column: x => x.day_id,
                         principalTable: "days",
-                        principalColumn: "date",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -92,9 +96,9 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_day_translations_day_date_language_code",
+                name: "ix_day_translations_day_id_language_code",
                 table: "day_translations",
-                columns: new[] { "day_date", "language_code" },
+                columns: new[] { "day_id", "language_code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -105,9 +109,15 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops" });
 
             migrationBuilder.CreateIndex(
-                name: "ix_media_files_day_date",
+                name: "ix_days_date",
+                table: "days",
+                column: "date",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_media_files_day_id",
                 table: "media_files",
-                column: "day_date");
+                column: "day_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_media_translations_description",

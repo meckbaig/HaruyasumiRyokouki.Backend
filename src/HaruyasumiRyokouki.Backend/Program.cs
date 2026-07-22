@@ -24,6 +24,7 @@ try
 	builder.Services.AddSwaggerSupport();
 	builder.Services.AddAppHealthChecks();
 	builder.Services.AddOpenTelemetryMetrics();
+	builder.Services.AddBasicAuthentication();
 	builder.Services.AddAuthorization();
 	builder.Services.AddCorsConfiguration();
 

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HaruyasumiRyokouki.Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260719102941_AddInitialArchiveSchema")]
+    [Migration("20260722104147_AddInitialArchiveSchema")]
     partial class AddInitialArchiveSchema
     {
         /// <inheritdoc />
@@ -28,6 +28,13 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.Day", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date")
                         .HasColumnName("date");
@@ -36,8 +43,12 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_ready");
 
-                    b.HasKey("Date")
+                    b.HasKey("Id")
                         .HasName("pk_days");
+
+                    b.HasIndex("Date")
+                        .IsUnique()
+                        .HasDatabaseName("ix_days_date");
 
                     b.ToTable("days", (string)null);
                 });
@@ -49,9 +60,9 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateOnly>("DayDate")
-                        .HasColumnType("date")
-                        .HasColumnName("day_date");
+                    b.Property<int>("DayId")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_id");
 
                     b.Property<string>("LanguageCode")
                         .IsRequired()
@@ -72,9 +83,9 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Note"), "gin");
                     NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Note"), new[] { "gin_trgm_ops" });
 
-                    b.HasIndex("DayDate", "LanguageCode")
+                    b.HasIndex("DayId", "LanguageCode")
                         .IsUnique()
-                        .HasDatabaseName("ix_day_translations_day_date_language_code");
+                        .HasDatabaseName("ix_day_translations_day_id_language_code");
 
                     b.ToTable("day_translations", (string)null);
                 });
@@ -86,9 +97,13 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateOnly>("DayDate")
-                        .HasColumnType("date")
-                        .HasColumnName("day_date");
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created");
+
+                    b.Property<int>("DayId")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_id");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -96,7 +111,9 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnName("file_name");
 
                     b.Property<bool>("IsApproved")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
+                        .HasDefaultValue(false)
                         .HasColumnName("is_approved");
 
                     b.Property<double?>("Latitude")
@@ -107,15 +124,16 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("longitude");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer")
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("type");
 
                     b.HasKey("Id")
                         .HasName("pk_media_files");
 
-                    b.HasIndex("DayDate")
-                        .HasDatabaseName("ix_media_files_day_date");
+                    b.HasIndex("DayId")
+                        .HasDatabaseName("ix_media_files_day_id");
 
                     b.ToTable("media_files", (string)null);
                 });
@@ -180,10 +198,10 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 {
                     b.HasOne("HaruyasumiRyokouki.Backend.Models.Db.Day", "Day")
                         .WithMany("Translations")
-                        .HasForeignKey("DayDate")
+                        .HasForeignKey("DayId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_day_translations_days_day_date");
+                        .HasConstraintName("fk_day_translations_days_day_id");
 
                     b.Navigation("Day");
                 });
@@ -192,10 +210,10 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 {
                     b.HasOne("HaruyasumiRyokouki.Backend.Models.Db.Day", "Day")
                         .WithMany("Media")
-                        .HasForeignKey("DayDate")
+                        .HasForeignKey("DayId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_media_files_days_day_date");
+                        .HasConstraintName("fk_media_files_days_day_id");
 
                     b.Navigation("Day");
                 });

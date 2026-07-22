@@ -5,7 +5,8 @@ namespace HaruyasumiRyokouki.Backend.Models.Db;
 public class MediaFile
 {
 	public Guid Id { get; set; }
-	public DateOnly DayDate { get; set; }
+	public int DayId { get; set; }
+	public DateTime Created { get; set; }
 	public required string FileName { get; set; } = null!;
 	public MediaType Type { get; set; } = MediaType.Unknown; 
 	public double? Latitude { get; set; }

@@ -32,7 +32,7 @@ public class CamelCaseControllerNameConvention : IControllerModelConvention
 	/// </summary>
 	/// <param name="input">The string to convert.</param>
 	/// <returns>The camelCase version of the input.</returns>
-	private static string ToCamelCase(string input)
+	internal static string ToCamelCase(string input)
 	{
 		if (string.IsNullOrEmpty(input) || char.IsLower(input[0]))
 			return input;

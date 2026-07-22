@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Features.Days;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -13,36 +12,22 @@ namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 [ApiVersion(1)]
 [SwaggerTag("Manages media parameters.")]
 [Produces(MediaTypeNames.Application.Json)]
-public class DaysController : ControllerBase
+public class MediaController : ControllerBase
 {
 	private readonly IMediator _mediator;
 
 	/// <summary>
 	/// Constructor with parameters for DI.
 	/// </summary>
-	public DaysController(IMediator mediator)
+	public MediaController(IMediator mediator)
 	{
 		_mediator = mediator;
 	}
 
-	[HttpPut("{date}")]
-	public async Task<IActionResult> EditDay(EditDayCommand command)
+	[HttpPatch]
+	public async Task<IActionResult> EditMedia(EditMediaCommand command)
 	{
 		var result = await _mediator.Send(command);
 		return Ok();
-	}
-
-	[HttpGet("{date}")]
-	public async Task<ActionResult<GetDayResponse>> GetDay(GetDayQuery query)
-	{
-		var result = await _mediator.Send(query);
-		return result.ToJsonResponse();
-	}
-
-	[HttpGet]
-	public async Task<ActionResult<GetDaysResponse>> GetList([FromQuery] GetDaysQuery query)
-	{
-		var result = await _mediator.Send(query);
-		return result.ToJsonResponse();
 	}
 }
