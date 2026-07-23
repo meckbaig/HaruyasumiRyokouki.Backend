@@ -72,6 +72,9 @@ internal class AppDbContext : DbContext, IAppDbContext
 
 			entity.Property(m => m.IsApproved)
 				  .HasDefaultValue(false);
+
+			entity.Property(m => m.Created)
+				  .HasColumnType("timestamp without time zone");
 		});
 			
 
