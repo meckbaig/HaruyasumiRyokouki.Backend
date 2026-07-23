@@ -30,4 +30,12 @@ public class MediaController : ControllerBase
 		var result = await _mediator.Send(command);
 		return Ok();
 	}
+
+	[HttpPut("sync")]
+	public async Task<IActionResult> SyncMedia()
+	{
+		SyncMediaCommand command = new();
+		var result = await _mediator.Send(command);
+		return Ok();
+	}
 }
