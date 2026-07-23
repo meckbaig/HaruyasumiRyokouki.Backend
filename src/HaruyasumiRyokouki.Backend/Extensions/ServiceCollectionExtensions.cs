@@ -10,6 +10,8 @@ using HaruyasumiRyokouki.Backend.Common.Options.Loggers;
 using HaruyasumiRyokouki.Backend.Common.Options.Validators;
 using HaruyasumiRyokouki.Backend.Common.Options.Validators.Loggers;
 using HaruyasumiRyokouki.Backend.DbContexts;
+using HaruyasumiRyokouki.Backend.Services;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +22,10 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Globalization;
+using System.Net;
 using System.Reflection;
+using WebDav;
+using static HaruyasumiRyokouki.Backend.Common.Options.MediaStorageOptions;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 
@@ -33,6 +38,12 @@ internal static class ServiceCollectionExtensions
 		services
 			.AddOptionsWithValidateOnStart<SwaggerAuthOptions>()
 			.BindConfiguration(SwaggerAuthOptions.ConfigurationSectionName);
+		services
+			.AddOptionsWithValidateOnStart<MediaStorageOptions>()
+			.BindConfiguration(WebDavOptions.ConfigurationSectionName);
+		services
+			.AddOptionsWithValidateOnStart<LocalStorageOptions>()
+			.BindConfiguration(WebDavOptions.ConfigurationSectionName);
 		services
 			.AddOptionsWithValidateOnStart<WebDavOptions>()
 			.BindConfiguration(WebDavOptions.ConfigurationSectionName);
@@ -61,6 +72,8 @@ internal static class ServiceCollectionExtensions
 	internal static IServiceCollection AddAppOptionsValidators(this IServiceCollection services)
 	{
 		services.AddSingleton<IValidateOptions<SwaggerAuthOptions>, SwaggerAuthOptionsValidator>();
+		services.AddSingleton<IValidateOptions<MediaStorageOptions>, MediaStorageOptionsValidator>();
+		services.AddSingleton<IValidateOptions<LocalStorageOptions>, LocalStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<WebDavOptions>, WebDavOptionsValidator>();
 		services.AddSingleton<IValidateOptions<ApplicationOptions>, ApplicationOptionsValidator>();
 		services.AddSingleton<IValidateOptions<ConnectionStringsOptions>, ConnectionStringsOptionsValidator>();
@@ -173,6 +186,47 @@ internal static class ServiceCollectionExtensions
 				return groupName == docName;
 			});
 		});
+
+		return services;
+	}
+
+	internal static IServiceCollection AddFileStorageClient(this IServiceCollection services)
+	{
+		var storageOptions = services
+			.BuildServiceProvider()
+			.GetRequiredService<IOptions<MediaStorageOptions>>()
+			.Value;
+
+
+		switch (storageOptions!.Provider)
+		{
+			case FileStorageProvider.Local:
+				services.AddSingleton<IFileStorage, LocalFileStorageService>();
+				break;
+
+			case FileStorageProvider.WebDav:
+				services.AddSingleton(sp =>
+				{
+					var options = sp.GetRequiredService<IOptions<WebDavOptions>>().Value;
+
+					var clientParams = new WebDavClientParams
+					{
+						BaseAddress = new Uri(options.Endpoint),
+						Credentials = new NetworkCredential(
+							options.Username,
+							options.Password)
+					};
+
+					return new WebDavClient(clientParams);
+				});
+
+				services.AddSingleton<IFileStorage, WebDavFileStorageService>();
+				break;
+
+			default:
+				throw new NotSupportedException(
+					$"Unsupported file storage provider: {storageOptions.Provider}");
+		}
 
 		return services;
 	}

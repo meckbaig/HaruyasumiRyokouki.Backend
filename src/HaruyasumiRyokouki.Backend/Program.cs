@@ -16,6 +16,7 @@ try
 	Log.Logger = builder.CreateCompleteLogger();
 	builder.Logging.ClearProviders().AddSerilog(Log.Logger);
 	builder.Services.AddDatabaseConnection();
+	builder.Services.AddFileStorageClient();
 	builder.Services.AddControllersWithJsonNamingPolicy();
 	builder.Services.AddHttpContextAccessor();	
 	builder.Services.AddMediatRFromAssembly();
