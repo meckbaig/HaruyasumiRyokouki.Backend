@@ -23,9 +23,10 @@ internal class DeleteMediaHandler : IRequestHandler<DeleteMediaCommand, DeleteMe
 	private readonly IAppDbContext _context;
 	private readonly IFileStorage _fileStorage;
 
-	public DeleteMediaHandler(IAppDbContext context)
+	public DeleteMediaHandler(IAppDbContext context, IFileStorage fileStorage)
 	{
 		_context = context;
+		_fileStorage = fileStorage;
 	}
 
 	public async Task<DeleteMediaResponse> Handle(DeleteMediaCommand request, CancellationToken cancellationToken)

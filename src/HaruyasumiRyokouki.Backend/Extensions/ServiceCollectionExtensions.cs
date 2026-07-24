@@ -25,7 +25,6 @@ using System.Globalization;
 using System.Net;
 using System.Reflection;
 using WebDav;
-using static HaruyasumiRyokouki.Backend.Common.Options.MediaStorageOptions;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 
@@ -40,10 +39,10 @@ internal static class ServiceCollectionExtensions
 			.BindConfiguration(SwaggerAuthOptions.ConfigurationSectionName);
 		services
 			.AddOptionsWithValidateOnStart<MediaStorageOptions>()
-			.BindConfiguration(WebDavOptions.ConfigurationSectionName);
+			.BindConfiguration(MediaStorageOptions.ConfigurationSectionName);
 		services
 			.AddOptionsWithValidateOnStart<LocalStorageOptions>()
-			.BindConfiguration(WebDavOptions.ConfigurationSectionName);
+			.BindConfiguration(LocalStorageOptions.ConfigurationSectionName);
 		services
 			.AddOptionsWithValidateOnStart<WebDavOptions>()
 			.BindConfiguration(WebDavOptions.ConfigurationSectionName);
@@ -200,11 +199,11 @@ internal static class ServiceCollectionExtensions
 
 		switch (storageOptions!.Provider)
 		{
-			case FileStorageProvider.Local:
+			case MediaStorageOptions.FileStorageProvider.Local:
 				services.AddSingleton<IFileStorage, LocalFileStorageService>();
 				break;
 
-			case FileStorageProvider.WebDav:
+			case MediaStorageOptions.FileStorageProvider.WebDav:
 				services.AddSingleton(sp =>
 				{
 					var options = sp.GetRequiredService<IOptions<WebDavOptions>>().Value;

@@ -1,10 +1,10 @@
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
@@ -17,13 +17,14 @@ public class SyncMediaResponse : BaseResponse
 }
 internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaResponse>
 {
-	private const string PathToMedia = "E:\\WorkCashe\\японя1";
 	private readonly IAppDbContext _context;
+	private readonly IFileStorage _fileStorage;
 	private readonly ILogger<SyncMediaCommand> _logger;
 
-	public SyncMediaHandler(IAppDbContext context, ILogger<SyncMediaCommand> logger)
+	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, ILogger<SyncMediaCommand> logger)
 	{
 		_context = context;
+		_fileStorage = fileStorage;
 		_logger = logger;
 	}
 
@@ -31,12 +32,11 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	{
 		var datesFromDb = await _context.Days.ToListAsync(cancellationToken);
 		var filesFromDb = await _context.MediaFiles.Select(m => m.FileName).ToListAsync(cancellationToken);
-		foreach (string filePath in Directory.EnumerateFiles(PathToMedia))
+		foreach (var storageFile in await _fileStorage.GetFilesAsync(cancellationToken))
 		{
-			var info = new FileInfo(filePath);
-			if (!filesFromDb.Any(fileName => fileName == info.Name))
+			if (!filesFromDb.Any(fileName => fileName == storageFile.FileName))
 			{
-				await CreateMediaFile(info.Name, DateTime.SpecifyKind(info.LastWriteTime, DateTimeKind.Unspecified), datesFromDb);
+				await CreateMediaFile(storageFile.FileName, storageFile.Created, datesFromDb);
 			}
 		}
 		await _context.SaveChangesAsync(cancellationToken);
@@ -55,7 +55,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 			_logger.LogDebug("Day {Date} created", creationDate);
 		}
 
-		var mediaFile = new MediaFile 
+		var mediaFile = new MediaFile
 		{
 			FileName = fileName,
 			Created = creationTime,
@@ -74,7 +74,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 
 	private static readonly HashSet<string> VideoExtensions =
 	[
-		".mp4", ".mov", ".avi", ".mkv", ".wmv",	".flv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg"
+		".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg"
 	];
 
 	public static MediaType GetMediaType(string fileName)

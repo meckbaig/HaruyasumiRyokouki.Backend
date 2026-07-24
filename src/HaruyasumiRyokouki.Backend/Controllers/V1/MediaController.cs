@@ -24,6 +24,13 @@ public class MediaController : ControllerBase
 		_mediator = mediator;
 	}
 
+	[HttpDelete("{mediaId}")]
+	public async Task<IActionResult> DeleteMedia(DeleteMediaCommand command)
+	{
+		var result = await _mediator.Send(command);
+		return Ok();
+	}
+
 	[HttpPatch]
 	public async Task<IActionResult> EditMedia(EditMediaCommand command)
 	{

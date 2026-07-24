@@ -24,7 +24,7 @@ internal class WebDavFileStorageService : IFileStorage
 			.Select(r => new StorageFile
 			{
 				FileName = Path.GetFileName(r.Uri),
-				Created = DateTime.SpecifyKind((DateTime)r.LastModifiedDate!, DateTimeKind.Unspecified)
+				Created = DateTime.SpecifyKind(r.LastModifiedDate!.Value, DateTimeKind.Unspecified)
 			})
 			.ToList();
 	}
