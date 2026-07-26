@@ -65,6 +65,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 	public async Task<EditMediaResponse> Handle(EditMediaCommand request, CancellationToken cancellationToken)
 	{
 		var mediaToEdit = await _context.MediaFiles
+			.Include(m => m.Translations)
 			.Where(m => request.Body.Ids.Contains(m.Id))
 			.ToListAsync(cancellationToken);
 
@@ -75,14 +76,18 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 		if (request.Body.Changes.IsApproved.HasValue)
 			mediaToEdit.ForEach(m => m.IsApproved = request.Body.Changes.IsApproved);
 		if (request.Body.Changes.Translations.HasValue)
-			mediaToEdit.ForEach(m => m.Translations = request.Body.Changes.Translations.Value!.FromEditDtos().ToList());
+		{
+			var newTranslations = request.Body.Changes.Translations.Value!.FromEditDtos().ToList();
+			mediaToEdit.ForEach(m => UpdateTranslations(m.Translations, newTranslations));
+		}
 
 		await _context.SaveChangesAsync(cancellationToken);
 
 		if (request.Body.AutoTranslate)
 		{
-			var newTranslations = await TranslateMedia(request.Body.Changes.Translations.Value ?? []);
-			mediaToEdit.ForEach(m => m.Translations = newTranslations.FromEditDtos().ToList());
+			var newTranslationsDtos = await TranslateMedia(request.Body.Changes.Translations.Value ?? []);
+			var newTranslations = newTranslationsDtos.FromEditDtos().ToList();
+			mediaToEdit.ForEach(m => UpdateTranslations(m.Translations, newTranslations));
 		}
 
 		return new EditMediaResponse { Items = mediaToEdit.ToEditDtos() };
@@ -136,9 +141,26 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			};
 		});
 
-		var translatedNotes = await Task.WhenAll(translationTasks);
-		return existingTranslations.Concat(translatedNotes).ToList();
+		var translatedMedia = await Task.WhenAll(translationTasks);
+		return translatedMedia.ToList();
 	}
 
 	private record LanguagePriority(string LanguageCode, string LanguageName, int Priority);
+
+	private void UpdateTranslations(ICollection<MediaTranslation> source, ICollection<MediaTranslation> newTranslations)
+	{
+		foreach (var newTranslation in newTranslations)
+		{
+			if (source.FirstOrDefault(s => s.LanguageCode == newTranslation.LanguageCode) is MediaTranslation sourceTranslation)
+			{
+				sourceTranslation.Title = newTranslation.Title;
+				sourceTranslation.Description = newTranslation.Description;
+				sourceTranslation.Tags = newTranslation.Tags;
+			}
+			else
+			{
+				source.Add(newTranslation.Clone());
+			}
+		}
+	}
 }
