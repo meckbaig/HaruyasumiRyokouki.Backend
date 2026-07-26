@@ -33,6 +33,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.12.1" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+		<PackageReference Include="OpenAI" Version="2.12.0" />
 		<PackageReference Include="OpenTelemetry.Api" Version="1.17.0" />
 		<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.12.0-beta.1" />
 		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
@@ -49,16 +50,13 @@
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.1" />
+		<PackageReference Include="WebDav.Client" Version="2.9.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="HaruyasumiRyokouki.Backend.UnitTests" />
 		<InternalsVisibleTo Include="HaruyasumiRyokouki.Backend.IntegrationTests" />
 		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Services\Interfaces\" />
 	</ItemGroup>
 	
 </Project>

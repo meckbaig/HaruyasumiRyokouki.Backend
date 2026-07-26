@@ -2,6 +2,7 @@ using Asp.Versioning;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Features.Days;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
@@ -25,11 +26,12 @@ public class DaysController : ControllerBase
 		_mediator = mediator;
 	}
 
+	[Authorize]
 	[HttpPut("{date}")]
 	public async Task<IActionResult> EditDay(EditDayCommand command)
 	{
 		var result = await _mediator.Send(command);
-		return Ok();
+		return result.ToJsonResponse();
 	}
 
 	[HttpGet("{date}")]

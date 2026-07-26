@@ -2,7 +2,7 @@ namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 sealed class WebDavOptions
 {
-	public const string ConfigurationSectionName = "WebDav";
+	public const string ConfigurationSectionName = "WebDavStorageProvider";
 
 	/// <summary>
 	/// Endpoint URL for the WebDAV server.
@@ -18,9 +18,4 @@ sealed class WebDavOptions
 	/// Password for authenticating with the WebDAV server.
 	/// </summary>
 	public required string Password { get; set; }
-
-	/// <summary>
-	/// Base URL for the public preview of the WebDAV server.
-	/// </summary>
-	public required string PublicPreviewBase { get; set; }
 }

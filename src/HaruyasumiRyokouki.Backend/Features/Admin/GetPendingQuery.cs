@@ -37,11 +37,15 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 		var pendingDays = _context.Days
 			.AsNoTracking()
 			.Include(d => d.Translations/*.Where(t => t.LanguageCode == request.AcceptLanguage)*/)
-			.Where(d => !d.IsReady).ToList();
+			.Where(d => !d.IsReady)
+			.OrderBy(d => d.Date)
+			.ToList();
 		var pendingMedia = _context.MediaFiles
 			.AsNoTracking()
 			.Include(m => m.Translations/*.Where(t => t.LanguageCode == request.AcceptLanguage)*/)
-			.Where(m => !m.IsApproved).ToList();
+			.Where(m => !m.IsApproved)
+			.OrderBy(m => m.Created)
+			.ToList();
 
 		return new GetPendingResponse
 		{

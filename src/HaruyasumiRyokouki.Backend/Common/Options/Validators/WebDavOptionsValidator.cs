@@ -29,11 +29,6 @@ sealed class WebDavOptionsValidator : IValidateOptions<WebDavOptions>
 			failures.AppendLine($"'{WebDavOptions.ConfigurationSectionName}:" +
 				$"{nameof(WebDavOptions.Password)}' cannot be null or empty.");
 		}
-		if (string.IsNullOrWhiteSpace(options.PublicPreviewBase))
-		{
-			failures.AppendLine($"'{WebDavOptions.ConfigurationSectionName}:" +
-				$"{nameof(WebDavOptions.PublicPreviewBase)}' cannot be null or empty.");
-		}
 
 		return failures.Length > 0
 			? ValidateOptionsResult.Fail(failures.ToString())
