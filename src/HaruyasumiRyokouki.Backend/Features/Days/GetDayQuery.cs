@@ -23,7 +23,7 @@ public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest
 
 public class GetDayResponse
 {
-	public DayDto? Value { get; set; }
+	public DayDto? Day { get; set; }
 }
 
 internal class GetDayQueryValidator : AbstractValidator<GetDayQuery>
@@ -52,11 +52,9 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 			.Include(d => d.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
 			.FirstOrDefaultAsync(d => d.Date == request.Date, cancellationToken);
 
-		var dto = result?.ToDto();
-
 		return new GetDayResponse
 		{
-			Value = dto,
+			Day = result?.ToDto()
 		};
 	}
 }

@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Features.Days;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -38,7 +39,7 @@ public class MediaController : ControllerBase
 	public async Task<IActionResult> EditMedia(EditMediaCommand command)
 	{
 		var result = await _mediator.Send(command);
-		return Ok();
+		return result.ToJsonResponse();
 	}
 
 	[Authorize]

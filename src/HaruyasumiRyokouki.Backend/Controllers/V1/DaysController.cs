@@ -31,7 +31,7 @@ public class DaysController : ControllerBase
 	public async Task<IActionResult> EditDay(EditDayCommand command)
 	{
 		var result = await _mediator.Send(command);
-		return Ok();
+		return result.ToJsonResponse();
 	}
 
 	[HttpGet("{date}")]

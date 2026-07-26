@@ -47,6 +47,9 @@ internal static class ServiceCollectionExtensions
 			.AddOptionsWithValidateOnStart<WebDavOptions>()
 			.BindConfiguration(WebDavOptions.ConfigurationSectionName);
 		services
+			.AddOptionsWithValidateOnStart<AiApiOptions>()
+			.BindConfiguration(AiApiOptions.ConfigurationSectionName);
+		services
 			.AddOptionsWithValidateOnStart<ApplicationOptions>()
 			.BindConfiguration(ApplicationOptions.ConfigurationSectionName);
 		services
@@ -74,6 +77,7 @@ internal static class ServiceCollectionExtensions
 		services.AddSingleton<IValidateOptions<MediaStorageOptions>, MediaStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<LocalStorageOptions>, LocalStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<WebDavOptions>, WebDavOptionsValidator>();
+		services.AddSingleton<IValidateOptions<AiApiOptions>, AiApiOptionsValidator>();
 		services.AddSingleton<IValidateOptions<ApplicationOptions>, ApplicationOptionsValidator>();
 		services.AddSingleton<IValidateOptions<ConnectionStringsOptions>, ConnectionStringsOptionsValidator>();
 		services.AddSingleton<IValidateOptions<SeqOptions>, SeqOptionsValidator>();
