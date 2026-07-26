@@ -71,6 +71,7 @@ internal static class MappingExtensions
 	{
 		return new MediaFileDto
 		{
+			Id = source.Id,
 			Created = source.Created,
 			FileName = source.FileName,
 			Type = source.Type.ToString(),
@@ -100,7 +101,7 @@ internal static class MappingExtensions
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
 			IsApproved = source.IsApproved,
-			Tranlsations = source.Translations.ToEditDtos().ToList()
+			Translations = source.Translations.ToEditDtos().ToList()
 		};
 	}
 
