@@ -12,5 +12,5 @@ public record MediaFileEditDto
 	public double? Longitude { get; set; }
 	public bool IsApproved { get; set; }
 
-	public List<MediaTranslationEditDto> Tranlsations { get; set; } = [];
+	public List<MediaTranslationEditDto> Translations { get; set; } = [];
 }
