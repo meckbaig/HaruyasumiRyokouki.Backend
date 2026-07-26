@@ -52,10 +52,12 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.DayTranslation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DayId")
                         .HasColumnType("integer")
@@ -89,10 +91,12 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaFile", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone")
@@ -137,10 +141,12 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaTranslation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -151,8 +157,8 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("language_code");
 
-                    b.Property<Guid>("MediaFileId")
-                        .HasColumnType("uuid")
+                    b.Property<int>("MediaFileId")
+                        .HasColumnType("integer")
                         .HasColumnName("media_file_id");
 
                     b.PrimitiveCollection<string[]>("Tags")

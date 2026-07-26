@@ -11,7 +11,7 @@ namespace HaruyasumiRyokouki.Backend.Features.Days;
 public record DeleteMediaCommand : IRequest<DeleteMediaResponse>
 {
 	[FromRoute]
-	public required Guid MediaId { get; init; }
+	public required int MediaId { get; init; }
 }
 
 public class DeleteMediaResponse : BaseResponse

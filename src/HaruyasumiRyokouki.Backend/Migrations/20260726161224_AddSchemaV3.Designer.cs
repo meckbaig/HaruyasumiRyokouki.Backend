@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HaruyasumiRyokouki.Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260722104147_AddInitialArchiveSchema")]
-    partial class AddInitialArchiveSchema
+    [Migration("20260726161224_AddSchemaV3")]
+    partial class AddSchemaV3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,10 +55,12 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.DayTranslation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DayId")
                         .HasColumnType("integer")
@@ -92,13 +94,15 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaFile", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
                     b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("created");
 
                     b.Property<int>("DayId")
@@ -140,10 +144,12 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaTranslation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -154,8 +160,8 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("language_code");
 
-                    b.Property<Guid>("MediaFileId")
-                        .HasColumnType("uuid")
+                    b.Property<int>("MediaFileId")
+                        .HasColumnType("integer")
                         .HasColumnName("media_file_id");
 
                     b.PrimitiveCollection<string[]>("Tags")

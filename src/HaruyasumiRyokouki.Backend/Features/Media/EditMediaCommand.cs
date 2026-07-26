@@ -19,7 +19,7 @@ public record EditMediaCommand : IRequest<EditMediaResponse>
 
 	public record BodyParameters
 	{
-		public ICollection<Guid> Ids { get; set; } = [];
+		public ICollection<int> Ids { get; set; } = [];
 		public EditMediaChanges Changes { get; set; }
 		public bool AutoTranslate { get; init; }
 	}

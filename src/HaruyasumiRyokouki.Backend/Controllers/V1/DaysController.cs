@@ -28,7 +28,7 @@ public class DaysController : ControllerBase
 
 	[Authorize]
 	[HttpPut("{date}")]
-	public async Task<IActionResult> EditDay(EditDayCommand command)
+	public async Task<ActionResult<EditDayResponse>> EditDay(EditDayCommand command)
 	{
 		var result = await _mediator.Send(command);
 		return result.ToJsonResponse();

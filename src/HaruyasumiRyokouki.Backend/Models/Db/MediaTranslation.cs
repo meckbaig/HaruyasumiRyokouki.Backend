@@ -2,8 +2,8 @@ namespace HaruyasumiRyokouki.Backend.Models.Db;
 
 public class MediaTranslation
 {
-	public Guid Id { get; set; }
-	public Guid MediaFileId { get; set; }
+	public int Id { get; set; }
+	public int MediaFileId { get; set; }
 	public string LanguageCode { get; set; } = null!;
 	public string? Title { get; set; }
 	public string? Description { get; set; }

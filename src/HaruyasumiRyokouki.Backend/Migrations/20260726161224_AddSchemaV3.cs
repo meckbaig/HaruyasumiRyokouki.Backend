@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HaruyasumiRyokouki.Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class AddInitialArchiveSchema : Migration
+    public partial class AddSchemaV3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,8 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 name: "day_translations",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     day_id = table.Column<int>(type: "integer", nullable: false),
                     language_code = table.Column<string>(type: "text", nullable: false),
                     note = table.Column<string>(type: "text", nullable: false)
@@ -53,9 +54,10 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 name: "media_files",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     day_id = table.Column<int>(type: "integer", nullable: false),
-                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     file_name = table.Column<string>(type: "text", nullable: false),
                     type = table.Column<string>(type: "text", nullable: false),
                     latitude = table.Column<double>(type: "double precision", nullable: true),
@@ -77,8 +79,9 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                 name: "media_translations",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    media_file_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    media_file_id = table.Column<int>(type: "integer", nullable: false),
                     language_code = table.Column<string>(type: "text", nullable: false),
                     title = table.Column<string>(type: "text", nullable: true),
                     description = table.Column<string>(type: "text", nullable: true),

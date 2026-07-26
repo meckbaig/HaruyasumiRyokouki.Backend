@@ -4,7 +4,7 @@ namespace HaruyasumiRyokouki.Backend.Models.Dtos;
 
 public record MediaFileDto
 {
-	public Guid Id { get; set; }
+	public int Id { get; set; }
 	public DateTime Created { get; set; }
 	public required string FileName { get; set; } = null!;
 	public string Type { get; set; }

@@ -36,7 +36,7 @@ public class MediaController : ControllerBase
 
 	[Authorize]
 	[HttpPatch]
-	public async Task<IActionResult> EditMedia(EditMediaCommand command)
+	public async Task<ActionResult<EditMediaResponse>> EditMedia(EditMediaCommand command)
 	{
 		var result = await _mediator.Send(command);
 		return result.ToJsonResponse();
