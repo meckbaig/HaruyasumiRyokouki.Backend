@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Features.Days;
+using HaruyasumiRyokouki.Backend.Features.Media;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +44,14 @@ public class DaysController : ControllerBase
 
 	[HttpGet]
 	public async Task<ActionResult<GetDaysResponse>> GetList([FromQuery] GetDaysQuery query)
+	{
+		var result = await _mediator.Send(query);
+		return result.ToJsonResponse();
+	}
+
+	[Authorize]
+	[HttpGet("{date}/edit")]
+	public async Task<ActionResult<GetEditDayResponse>> GetEditDay(GetEditDayQuery query)
 	{
 		var result = await _mediator.Send(query);
 		return result.ToJsonResponse();

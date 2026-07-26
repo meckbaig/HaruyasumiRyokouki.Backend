@@ -10,4 +10,15 @@ public class MediaTranslation
 
 	public ICollection<string> Tags { get; set; } = [];
 	public MediaFile MediaFile { get; set; }
+
+	public MediaTranslation Clone()
+	{
+		return new MediaTranslation
+		{
+			LanguageCode = LanguageCode,
+			Title = Title,
+			Description = Description,
+			Tags = Tags
+		};
+	}
 }
