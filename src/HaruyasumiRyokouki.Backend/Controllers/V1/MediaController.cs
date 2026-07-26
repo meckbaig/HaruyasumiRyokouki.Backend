@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using HaruyasumiRyokouki.Backend.Features.Days;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
@@ -24,6 +25,7 @@ public class MediaController : ControllerBase
 		_mediator = mediator;
 	}
 
+	[Authorize]
 	[HttpDelete("{mediaId}")]
 	public async Task<IActionResult> DeleteMedia(DeleteMediaCommand command)
 	{
@@ -31,6 +33,7 @@ public class MediaController : ControllerBase
 		return Ok();
 	}
 
+	[Authorize]
 	[HttpPatch]
 	public async Task<IActionResult> EditMedia(EditMediaCommand command)
 	{
@@ -38,6 +41,7 @@ public class MediaController : ControllerBase
 		return Ok();
 	}
 
+	[Authorize]
 	[HttpPut("sync")]
 	public async Task<IActionResult> SyncMedia()
 	{
