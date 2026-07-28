@@ -143,6 +143,7 @@ internal static class MappingExtensions
 			Note = source.Note
 		};
 	}
+
 	public static IEnumerable<DayTranslation> FromEditDtos(this IEnumerable<DayTranslationEditDto> source)
 	{
 		return source.Select(FromEditDto);
@@ -159,6 +160,7 @@ internal static class MappingExtensions
 			Tags = source.Tags
 		};
 	}
+
 	public static IEnumerable<MediaTranslation> FromEditDtos(this IEnumerable<MediaTranslationEditDto> source)
 	{
 		return source.Select(FromEditDto);
