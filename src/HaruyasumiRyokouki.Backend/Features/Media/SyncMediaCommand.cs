@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.ResultType;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
@@ -6,7 +7,7 @@ using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace HaruyasumiRyokouki.Backend.Features.Days;
+namespace HaruyasumiRyokouki.Backend.Features.Media;
 
 public record SyncMediaCommand : IRequest<SyncMediaResponse>
 {
@@ -15,16 +16,19 @@ public record SyncMediaCommand : IRequest<SyncMediaResponse>
 public class SyncMediaResponse : BaseResponse
 {
 }
+
 internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaResponse>
 {
 	private readonly IAppDbContext _context;
 	private readonly IFileStorage _fileStorage;
+	private readonly IMediaProcessorService _mediaProcessorService;
 	private readonly ILogger<SyncMediaCommand> _logger;
 
-	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, ILogger<SyncMediaCommand> logger)
+	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, IMediaProcessorService mediaProcessorService, ILogger<SyncMediaCommand> logger)
 	{
 		_context = context;
 		_fileStorage = fileStorage;
+		_mediaProcessorService = mediaProcessorService;
 		_logger = logger;
 	}
 
@@ -34,16 +38,25 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		var filesFromDb = await _context.MediaFiles.Select(m => m.FileName).ToListAsync(cancellationToken);
 		foreach (var storageFile in await _fileStorage.GetFilesAsync(cancellationToken))
 		{
-			if (!filesFromDb.Any(fileName => fileName == storageFile.FileName))
+			string webFileName = _mediaProcessorService.GetWebName(storageFile.FileName);
+			if (storageFile.FileName == webFileName)
+				continue;
+			if (!filesFromDb.Any(fileName => fileName == storageFile.FileName || fileName == webFileName))
 			{
-				await CreateMediaFile(storageFile.FileName, storageFile.Created, datesFromDb);
+				try
+				{
+					await CreateMediaFile(storageFile.FileName, storageFile.Created, datesFromDb, cancellationToken);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex.Message);
+				}
 			}
 		}
-		await _context.SaveChangesAsync(cancellationToken);
 		return new SyncMediaResponse();
 	}
 
-	private async Task CreateMediaFile(string fileName, DateTime creationTime, List<Day> datesFromDb)
+	private async Task CreateMediaFile(string fileName, DateTime creationTime, List<Day> datesFromDb, CancellationToken cancellationToken)
 	{
 		DateOnly creationDate = DateOnly.FromDateTime(creationTime);
 		if (datesFromDb.FirstOrDefault(d => d.Date == creationDate) is not Day creationDay)
@@ -52,42 +65,55 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 			datesFromDb.Add(creationDay);
 			_context.Days.Add(creationDay);
 
-			_logger.LogDebug("Day {Date} created", creationDate);
+			_logger.LogDebug("Day {Date} created.", creationDate);
 		}
+
+		var fileMediaType = GetMediaType(fileName);
+		Result<string> conversionResult;
+		switch (fileMediaType)
+		{
+			case MediaType.Image:
+				conversionResult = await _mediaProcessorService.ConvertImageAsync(fileName, cancellationToken);
+				break;
+			case MediaType.Video:
+				conversionResult = await _mediaProcessorService.ConvertVideoAsync(fileName, cancellationToken);
+				break;
+			default:
+				_logger.LogWarning("File {FileName} has unknown media type", fileName);
+				if (creationDay.Id == 0)
+					_logger.LogInformation("Day {Date} removed", creationDate);
+				return;
+		}
+		conversionResult.Switch
+		(
+			(newFileName) => fileName = newFileName,
+			(error) => _logger.LogError("Error occured during {FileName} conversion: {ErrorMessage}", fileName, error)
+		);
 
 		var mediaFile = new MediaFile
 		{
 			FileName = fileName,
 			Created = creationTime,
 			Day = creationDay,
-			Type = GetMediaType(fileName)
+			Type = fileMediaType
 		};
 		_context.MediaFiles.Add(mediaFile);
+		await _context.SaveChangesAsync(cancellationToken);
 
-		_logger.LogDebug("File {FileName} created", fileName);
+		_logger.LogDebug("File {FileName} created in database", fileName);
 	}
 
-	private static readonly HashSet<string> ImageExtensions =
-	[
-		".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tif", ".tiff", ".heic", ".heif", ".avif"
-	];
-
-	private static readonly HashSet<string> VideoExtensions =
-	[
-		".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg"
-	];
-
-	public static MediaType GetMediaType(string fileName)
+	public MediaType GetMediaType(string fileName)
 	{
 		var extension = Path.GetExtension(fileName);
 
 		if (string.IsNullOrEmpty(extension))
 			return MediaType.Unknown;
 
-		if (ImageExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+		if (_mediaProcessorService.IsAnImage(fileName))
 			return MediaType.Image;
 
-		if (VideoExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+		if (_mediaProcessorService.IsAVideo(fileName))
 			return MediaType.Video;
 
 		return MediaType.Unknown;

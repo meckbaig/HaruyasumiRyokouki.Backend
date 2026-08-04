@@ -1,9 +1,7 @@
 using HaruyasumiRyokouki.Backend.Common;
-using HaruyasumiRyokouki.Backend.Common.Behaviours;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Services;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using MediatR;
 using Microsoft.Extensions.Options;
 using Serilog;
 
@@ -19,9 +17,11 @@ try
 	builder.Logging.ClearProviders().AddSerilog(Log.Logger);
 	builder.Services.AddDatabaseConnection();
 	builder.Services.AddTransient<IAiChatService, AiChatApiService>();
+	builder.Services.AddTransient<IMediaProcessorService, MediaProcessorService>();
+	builder.Services.AddSingleton<IFfmpegService, FfmpegService>();
 	builder.Services.AddFileStorageClient();
 	builder.Services.AddControllersWithJsonNamingPolicy();
-	builder.Services.AddHttpContextAccessor();	
+	builder.Services.AddHttpContextAccessor();
 	builder.Services.AddMediatRFromAssembly();
 	builder.Services.AddAutoMapperFromAssembly();
 	builder.Services.AddValidatorsFromAssembly();
