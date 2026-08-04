@@ -41,6 +41,9 @@ internal static class ServiceCollectionExtensions
 			.AddOptionsWithValidateOnStart<MediaStorageOptions>()
 			.BindConfiguration(MediaStorageOptions.ConfigurationSectionName);
 		services
+			.AddOptionsWithValidateOnStart<MediaFormatOptions>()
+			.BindConfiguration(MediaFormatOptions.ConfigurationSectionName);
+		services
 			.AddOptionsWithValidateOnStart<LocalStorageOptions>()
 			.BindConfiguration(LocalStorageOptions.ConfigurationSectionName);
 		services
@@ -75,6 +78,7 @@ internal static class ServiceCollectionExtensions
 	{
 		services.AddSingleton<IValidateOptions<SwaggerAuthOptions>, SwaggerAuthOptionsValidator>();
 		services.AddSingleton<IValidateOptions<MediaStorageOptions>, MediaStorageOptionsValidator>();
+		services.AddSingleton<IValidateOptions<MediaFormatOptions>, MediaFormatOptionsValidator>();
 		services.AddSingleton<IValidateOptions<LocalStorageOptions>, LocalStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<WebDavOptions>, WebDavOptionsValidator>();
 		services.AddSingleton<IValidateOptions<AiApiOptions>, AiApiOptionsValidator>();
@@ -199,7 +203,6 @@ internal static class ServiceCollectionExtensions
 			.BuildServiceProvider()
 			.GetRequiredService<IOptions<MediaStorageOptions>>()
 			.Value;
-
 
 		switch (storageOptions!.Provider)
 		{
