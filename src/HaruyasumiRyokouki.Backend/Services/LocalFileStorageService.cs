@@ -16,6 +16,47 @@ internal class LocalFileStorageService : IFileStorage
 		_logger = logger;
 	}
 
+	public Task<MediaInput> GetMediaInputAsync(string fileName, CancellationToken cancellationToken = default)
+	{
+		return Task.FromResult(new MediaInput
+		{
+			Input = Path.Combine(_path, fileName)
+		});
+	}
+
+	public Task<Stream> OpenReadAsync(string fileName, CancellationToken cancellationToken)
+	{
+		var fullPath = Path.Combine(_path, fileName);
+
+		Stream stream = new FileStream(
+			fullPath,
+			FileMode.Open,
+			FileAccess.Read,
+			FileShare.Read,
+			81920,
+			FileOptions.Asynchronous);
+
+		return Task.FromResult(stream);
+	}
+
+	public async Task SaveFileAsync(string fileName, Stream content, CancellationToken cancellationToken)
+	{
+		var fullPath = Path.Combine(_path, fileName);
+
+		Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+
+		await using var file = new FileStream(
+			fullPath,
+			FileMode.Create,
+			FileAccess.Write,
+			FileShare.None,
+			81920,
+			FileOptions.Asynchronous);
+
+		content.Position = 0;
+		await content.CopyToAsync(file, cancellationToken);
+	}
+
 	public Task<IReadOnlyCollection<StorageFile>> GetFilesAsync(CancellationToken cancellationToken)
 	{
 		var files = Directory

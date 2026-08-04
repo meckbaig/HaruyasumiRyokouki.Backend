@@ -2,8 +2,13 @@ using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 
 namespace HaruyasumiRyokouki.Backend.Services.Interfaces;
 
-public interface IFileStorage
+internal interface IFileStorage
 {
+	Task<MediaInput> GetMediaInputAsync(string filePath, CancellationToken cancellationToken = default);
+	Task<Stream> OpenReadAsync(string fileName, CancellationToken cancellationToken = default);
+
+	Task SaveFileAsync(string fileName, Stream stream, CancellationToken cancellationToken = default);
+
 	/// <summary>
 	/// Deletes the specified file asynchronously.
 	/// </summary>
@@ -17,5 +22,5 @@ public interface IFileStorage
 	/// </summary>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Collection of files and their local creation dates.</returns>
-	Task<IReadOnlyCollection<StorageFile>> GetFilesAsync(CancellationToken cancellationToken);
+	Task<IReadOnlyCollection<StorageFile>> GetFilesAsync(CancellationToken cancellationToken = default);
 }
