@@ -70,9 +70,9 @@ internal class FfmpegService : IFfmpegService
 		switch (preset)
 		{
 			case FfmpegImagePreset.Webp:
-				return "-c:v libwebp -quality 90 -compression_level 6";
+				return "-map_metadata 0 -c:v libwebp -quality 90 -compression_level 6";
 			case FfmpegImagePreset.Avif:
-				return "-c:v libaom-av1 -still-picture 1 -crf 20";
+				return "-map_metadata 0 -c:v libaom-av1 -still-picture 1 -crf 20";
 			default:
 				throw new NotImplementedException("Image preset does not exist.");
 		}
@@ -85,12 +85,12 @@ internal class FfmpegService : IFfmpegService
 		{
 			1 => preset switch
 			{
-				FfmpegVideoPreset.h254_1440p_2pass_20M => "-vf scale=-2:1440 -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 1 -an -f null -",
+				FfmpegVideoPreset.h254_1440p_2pass_20M => "-map_metadata 0 -vf scale=-2:1440 -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 1 -an -f null -",
 				_ => throw new NotImplementedException(errorMessage),
 			},
 			2 => preset switch
 			{
-				FfmpegVideoPreset.h254_1440p_2pass_20M => "-vf scale=-2:1440 -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 2 -c:a copy -movflags +faststart",
+				FfmpegVideoPreset.h254_1440p_2pass_20M => "-map_metadata 0 -vf scale=-2:1440 -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 2 -c:a copy -movflags +faststart",
 				_ => throw new NotImplementedException(errorMessage),
 			},
 			_ => throw new NotImplementedException(errorMessage),

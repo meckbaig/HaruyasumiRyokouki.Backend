@@ -100,6 +100,8 @@ internal class MediaProcessorService : IMediaProcessorService
 		await _ffmpegService.ConvertImageAsync(inputFile, outputFile, _mediaFormatOptions.TargetImagePreset, cancellationToken);
 		_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
 
+		SetOriginalTimeInfo(inputFile, outputFile);
+
 		await using var result = File.OpenRead(outputFile);
 		await _fileStorage.SaveFileAsync(resultImageFileName, result, cancellationToken);
 		await _fileStorage.DeleteAsync(fileName, cancellationToken);
@@ -134,6 +136,8 @@ internal class MediaProcessorService : IMediaProcessorService
 		await _ffmpegService.ConvertVideoAsync(inputFile, outputFile, _mediaFormatOptions.TargetVideoPreset, cancellationToken);
 		_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
 
+		SetOriginalTimeInfo(inputFile, outputFile);
+
 		await using var result = File.OpenRead(outputFile);
 		await _fileStorage.SaveFileAsync(resultVideoFileName, result, cancellationToken);
 		_logger.LogInformation("File {NewFileName} was created", resultVideoFileName);
@@ -156,8 +160,20 @@ internal class MediaProcessorService : IMediaProcessorService
 		_logger.LogDebug("Video preview creation started ({OriginalFileName} -> {NewFileName})", fileName, resultVideoPreviewFileName);
 		await _ffmpegService.CreateVideoPreviewAsync(inputFile, outputFile, _mediaFormatOptions.TargetImagePreset, cancellationToken);
 
+		SetOriginalTimeInfo(inputFile, outputFile);
+
 		await using var result = File.OpenRead(outputFile);
 		await _fileStorage.SaveFileAsync(resultVideoPreviewFileName, result, cancellationToken);
 		_logger.LogInformation("Video preview {NewFileName} was created", resultVideoPreviewFileName);
-	}	
+	}
+
+	private void SetOriginalTimeInfo(string sourceFile, string targetFile)
+	{
+		var source = new FileInfo(sourceFile);
+		var target = new FileInfo(targetFile);
+
+		File.SetCreationTime(target.FullName, source.CreationTime);
+		File.SetLastWriteTime(target.FullName, source.LastWriteTime);
+		File.SetLastAccessTime(target.FullName, source.LastAccessTime);
+	}
 }
