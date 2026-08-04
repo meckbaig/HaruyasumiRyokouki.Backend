@@ -38,10 +38,12 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		var filesFromDb = await _context.MediaFiles.Select(m => m.FileName).ToListAsync(cancellationToken);
 		foreach (var storageFile in await _fileStorage.GetFilesAsync(cancellationToken))
 		{
-			string webFileName = _mediaProcessorService.GetWebName(storageFile.FileName);
-			if (storageFile.FileName == webFileName)
+			string webFileName = _mediaProcessorService.GetVideoWebName(storageFile.FileName);
+			string previewFileName = _mediaProcessorService.GetVideoPreviewName(storageFile.FileName);
+			if (storageFile.FileName == webFileName || storageFile.FileName == previewFileName)
 				continue;
-			if (!filesFromDb.Any(fileName => fileName == storageFile.FileName || fileName == webFileName))
+
+			if (!filesFromDb.Any(fileName => fileName == storageFile.FileName))
 			{
 				try
 				{

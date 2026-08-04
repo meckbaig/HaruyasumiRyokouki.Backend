@@ -6,7 +6,8 @@ namespace HaruyasumiRyokouki.Backend.Services.Interfaces
 	{
 		Task<Result<string>> ConvertImageAsync(string fileName, CancellationToken cancellationToken);
 		Task<Result<string>> ConvertVideoAsync(string fileName, CancellationToken cancellationToken);
-		string GetWebName(string fileName);
+		string GetVideoPreviewName(string fileName);
+		string GetVideoWebName(string fileName);
 		bool IsAnImage(string fileName);
 		bool IsAVideo(string fileName);
 	}

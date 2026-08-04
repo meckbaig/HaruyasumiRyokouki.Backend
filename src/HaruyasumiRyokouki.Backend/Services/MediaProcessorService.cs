@@ -23,7 +23,8 @@ internal class MediaProcessorService : IMediaProcessorService
 		".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg"
 	];
 
-	private const string _videoSuffix = "_web";
+	private const string _videoWebSuffix = "_web";
+	private const string _videoPreviewSuffix = "_preview";
 
 	public MediaProcessorService(ILogger<MediaProcessorService> logger, IFileStorage fileStorage, IFfmpegService ffmpegService, IOptions<MediaFormatOptions> mediaFormatOptions)
 	{
@@ -33,11 +34,18 @@ internal class MediaProcessorService : IMediaProcessorService
 		_mediaFormatOptions = mediaFormatOptions.Value;
 	}
 
-	public string GetWebName(string fileName)
+	public string GetVideoWebName(string fileName)
 	{
-		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(_videoSuffix))
+		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(_videoWebSuffix))
 			return fileName;
-		return Path.GetFileNameWithoutExtension(fileName) + _videoSuffix + Path.GetExtension(fileName);
+		return Path.GetFileNameWithoutExtension(fileName) + _videoWebSuffix + Path.GetExtension(fileName);
+	}
+
+	public string GetVideoPreviewName(string fileName)
+	{
+		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(_videoPreviewSuffix))
+			return fileName;
+		return Path.GetFileNameWithoutExtension(fileName) + _videoWebSuffix + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
 	}
 
 	public bool IsAnImage(string fileName)
@@ -108,7 +116,7 @@ internal class MediaProcessorService : IMediaProcessorService
 		if (!await ShouldBeConverted(fileName, MediaType.Video))
 			return Result<string>.Success(fileName);
 
-		string resultVideoFileName = Path.GetFileNameWithoutExtension(fileName) + _videoSuffix + Path.GetExtension(fileName);
+		string resultVideoFileName = Path.GetFileNameWithoutExtension(fileName) + _videoWebSuffix + Path.GetExtension(fileName);
 
 		await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
 		await using var workspace = new TempStorageService(MediaType.Video);
@@ -128,9 +136,28 @@ internal class MediaProcessorService : IMediaProcessorService
 
 		await using var result = File.OpenRead(outputFile);
 		await _fileStorage.SaveFileAsync(resultVideoFileName, result, cancellationToken);
-
 		_logger.LogInformation("File {NewFileName} was created", resultVideoFileName);
+
+		await CreateVideoPreview(fileName, workspace, cancellationToken);
 
 		return Result<string>.Success(resultVideoFileName);
 	}
+
+	private async Task CreateVideoPreview(string fileName, TempStorageService workspace, CancellationToken cancellationToken)
+	{
+		string resultVideoPreviewFileName = 
+			Path.GetFileNameWithoutExtension(fileName) 
+			+ _videoPreviewSuffix 
+			+ "."
+			+ _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
+		var inputFile = Path.Combine(workspace.TempFolder, fileName);
+		var outputFile = Path.Combine(workspace.TempFolder, resultVideoPreviewFileName);
+
+		_logger.LogDebug("Video preview creation started ({OriginalFileName} -> {NewFileName})", fileName, resultVideoPreviewFileName);
+		await _ffmpegService.CreateVideoPreviewAsync(inputFile, outputFile, _mediaFormatOptions.TargetImagePreset, cancellationToken);
+
+		await using var result = File.OpenRead(outputFile);
+		await _fileStorage.SaveFileAsync(resultVideoPreviewFileName, result, cancellationToken);
+		_logger.LogInformation("Video preview {NewFileName} was created", resultVideoPreviewFileName);
+	}	
 }

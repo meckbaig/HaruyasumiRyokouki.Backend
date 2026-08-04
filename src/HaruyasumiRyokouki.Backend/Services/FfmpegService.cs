@@ -28,17 +28,11 @@ internal class FfmpegService : IFfmpegService
 		await RunFfmpegAsync(arguments, cancellationToken: cancellationToken);
 	}
 
-	private string GetImagePreset(FfmpegImagePreset preset)
+	public async Task CreateVideoPreviewAsync(string input, string output, FfmpegImagePreset preset, CancellationToken cancellationToken)
 	{
-		switch (preset)
-		{
-			case FfmpegImagePreset.Webp:
-				return "-c:v libwebp -quality 90 -compression_level 6";
-			case FfmpegImagePreset.Avif:
-				return "-c:v libaom-av1 -still-picture 1 -crf 20";
-			default:
-				throw new NotImplementedException("Image preset does not exist.");
-		}
+		string videoPreviewArguments = "-ss 00:00:01 -vframes 1";
+		string arguments = $"-i \"{input}\" {videoPreviewArguments} {GetImagePreset(preset)} \"{output}\"";
+		await RunFfmpegAsync(arguments, cancellationToken: cancellationToken);
 	}
 
 	public async Task ConvertVideoAsync(string input, string output, FfmpegVideoPreset preset, CancellationToken cancellationToken)
@@ -69,6 +63,19 @@ internal class FfmpegService : IFfmpegService
 			Duration = double.Parse(result.Format.Duration ?? "0", CultureInfo.InvariantCulture),
 			Size = long.Parse(result.Format.Size ?? "0")
 		};
+	}
+
+	private string GetImagePreset(FfmpegImagePreset preset)
+	{
+		switch (preset)
+		{
+			case FfmpegImagePreset.Webp:
+				return "-c:v libwebp -quality 90 -compression_level 6";
+			case FfmpegImagePreset.Avif:
+				return "-c:v libaom-av1 -still-picture 1 -crf 20";
+			default:
+				throw new NotImplementedException("Image preset does not exist.");
+		}
 	}
 
 	private string GetVideoPreset(FfmpegVideoPreset preset, int pass = 1)
