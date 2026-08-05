@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using System.Text;
+using static HaruyasumiRyokouki.Backend.Common.Options.MediaStorageOptions;
 
 namespace HaruyasumiRyokouki.Backend.Common.Options.Validators;
 
@@ -17,12 +18,7 @@ sealed class MediaStorageOptionsValidator : IValidateOptions<MediaStorageOptions
 		if (!Enum.IsDefined(options.Provider))
 		{
 			failures.AppendLine($"'{MediaStorageOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaStorageOptions.Provider)}' is not valid.");
-		}
-		if (string.IsNullOrWhiteSpace(options.PublicPreviewBase))
-		{
-			failures.AppendLine($"'{MediaStorageOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaStorageOptions.PublicPreviewBase)}' cannot be null or empty.");
+				$"{nameof(MediaStorageOptions.Provider)}' is not valid. Available options: {string.Join(", ", Enum.GetNames(typeof(FileStorageProvider)))}");
 		}
 
 		return failures.Length > 0
