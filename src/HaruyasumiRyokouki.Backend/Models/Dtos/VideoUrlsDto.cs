@@ -2,8 +2,8 @@ namespace HaruyasumiRyokouki.Backend.Models.Dtos;
 
 public record VideoUrlsDto
 {
-	public string Download { get; set; } = null!;
-	public string Stream { get; set; } = null!;
+	public string? Download { get; set; } = null!;
+	public string? Stream { get; set; } = null!;
 	public MobileImagesDto Mobile { get; set; }
 	public DesktopImagesDto Desktop { get; set; }
 

@@ -200,6 +200,23 @@ internal static class MappingExtensions
 		return mediaDto;
 	}
 
+	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, IMediaPreviewService previewService)
+		where TPreviewDto: IPreviewDto
+	{
+		switch (mediaDto.Type)
+		{
+			case nameof(MediaType.Image):
+				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService);
+				break;
+			case nameof(MediaType.Video):
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService);
+				break;
+			default:
+				break;
+		}
+		return mediaDto;
+	}
+
 	private static ImageUrlsDto? CreateImageUrls(MediaFileDto media, IMediaPreviewService previewService)
 	{
 		return new ImageUrlsDto
@@ -223,6 +240,36 @@ internal static class MappingExtensions
 		{
 			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download),
 			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream),
+			Desktop = new()
+			{
+				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview),
+			},
+			Mobile = new()
+			{
+				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.MobilePreview)
+			},
+		};
+	}
+
+	private static ImageUrlsDto? CreateImageUrls(IPreviewDto media, IMediaPreviewService previewService)
+	{
+		return new ImageUrlsDto
+		{
+			Desktop = new()
+			{
+				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview),
+			},
+			Mobile = new()
+			{
+				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.MobilePreview)
+			}
+		};
+	}
+
+	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, IMediaPreviewService previewService)
+	{
+		return new VideoUrlsDto
+		{
 			Desktop = new()
 			{
 				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview),

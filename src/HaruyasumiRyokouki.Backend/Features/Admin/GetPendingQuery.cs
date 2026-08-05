@@ -3,6 +3,7 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -26,10 +27,12 @@ public class GetPendingResponse
 internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingResponse>
 {
 	private readonly IAppDbContext _context;
+	private readonly IMediaPreviewService _previewService;
 
-	public GetPendingHandler(IAppDbContext context)
+	public GetPendingHandler(IAppDbContext context, IMediaPreviewService previewService)
 	{
 		_context = context;
+		_previewService = previewService;
 	}
 
 	public async Task<GetPendingResponse> Handle(GetPendingQuery request, CancellationToken cancellationToken)
@@ -49,7 +52,7 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 
 		return new GetPendingResponse
 		{
-			Media = pendingMedia.ToEditDtos().ToList(),
+			Media = pendingMedia.ToEditDtos().Select(dto => dto.AddUrls(_previewService)).ToList(),
 			Days = pendingDays.ToEditDtos().ToList(),
 		};
 	}

@@ -1,8 +1,6 @@
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
-
 namespace HaruyasumiRyokouki.Backend.Models.Dtos;
 
-public record MediaFileEditDto
+public record MediaFileEditDto : IPreviewDto
 {
 	public int Id { get; set; }
 	public DateTime Created { get; set; }
@@ -13,4 +11,6 @@ public record MediaFileEditDto
 	public string Miniature { get; set; }
 
 	public List<MediaTranslationEditDto> Translations { get; set; } = [];
+	public ImageUrlsDto? ImageUrls { get; set; } = null;
+	public VideoUrlsDto? VideoUrls { get; set; } = null;
 }

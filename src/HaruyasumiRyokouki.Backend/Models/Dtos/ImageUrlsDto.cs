@@ -7,13 +7,13 @@ public record ImageUrlsDto
 
 	public record MobileImagesDto
 	{
-		public string Original { get; set; } = null!;
+		public string? Original { get; set; } = null!;
 		public string Preview { get; set; } = null!;
 	}
 
 	public record DesktopImagesDto
 	{
-		public string Original { get; set; } = null!;
+		public string? Original { get; set; } = null!;
 		public string Preview { get; set; } = null!;
 	}
 }

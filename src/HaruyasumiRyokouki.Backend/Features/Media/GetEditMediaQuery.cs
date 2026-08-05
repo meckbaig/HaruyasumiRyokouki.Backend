@@ -2,6 +2,7 @@ using FluentValidation;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,22 +31,29 @@ internal class GetEditMediaQueryValidator : AbstractValidator<GetEditMediaQuery>
 internal class GetEditMediaQueryHandler : IRequestHandler<GetEditMediaQuery, GetEditMediaResponse>
 {
 	private readonly IAppDbContext _context;
+	private readonly IMediaPreviewService _previewService;
 
-	public GetEditMediaQueryHandler(IAppDbContext context)
+	public GetEditMediaQueryHandler(IAppDbContext context, IMediaPreviewService previewService)
 	{
 		_context = context;
+		_previewService = previewService;
 	}
 
 	public async Task<GetEditMediaResponse> Handle(GetEditMediaQuery request, CancellationToken cancellationToken)
 	{
-		var result = await _context.MediaFiles
+		var mediaFileDtos = await _context.MediaFiles
 			.AsNoTracking()
 			.Include(m => m.Translations)
 			.Where(m => request.Ids.Contains(m.Id))
 			.Select(m => m.ToEditDto())
 			.ToListAsync(cancellationToken);
 
-		return new GetEditMediaResponse { Items = result };
+		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService));
+
+		return new GetEditMediaResponse 
+		{
+			Items = results.ToList() 
+		};
 	}
 }
 
