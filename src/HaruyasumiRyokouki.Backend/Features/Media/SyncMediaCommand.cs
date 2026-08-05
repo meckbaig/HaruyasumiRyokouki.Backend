@@ -2,6 +2,7 @@ using HaruyasumiRyokouki.Backend.Common.ResultType;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
@@ -35,7 +36,21 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	public async Task<SyncMediaResponse> Handle(SyncMediaCommand request, CancellationToken cancellationToken)
 	{
 		var datesFromDb = await _context.Days.ToListAsync(cancellationToken);
-		var filesFromDb = await _context.MediaFiles.Select(m => m.FileName).ToListAsync(cancellationToken);
+		var filesFromDb = await _context.MediaFiles
+			.Select(m => new MediaForMiniatureCheck(m.Id, m.FileName, !string.IsNullOrEmpty(m.Miniature)))
+			.ToListAsync(cancellationToken);
+
+		await CheckForNewFiles(datesFromDb, filesFromDb, cancellationToken);
+
+		await CheckForIncompleteFiles(filesFromDb, cancellationToken);
+
+		return new SyncMediaResponse();
+	}
+
+	private async Task CheckForNewFiles(List<Day> datesFromDb, IEnumerable<MediaForMiniatureCheck> filesFromDb, CancellationToken cancellationToken)
+	{
+		_logger.LogInformation("New files check started");
+		List<StorageFile> filesToCreate = [];
 		foreach (var storageFile in await _fileStorage.GetFilesAsync(cancellationToken))
 		{
 			string webFileName = _mediaProcessorService.GetVideoWebName(storageFile.FileName);
@@ -43,35 +58,59 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 			if (storageFile.FileName == webFileName || storageFile.FileName == previewFileName)
 				continue;
 
-			if (!filesFromDb.Any(fileName => fileName == storageFile.FileName))
+			if (!filesFromDb.Any(f => f.FileName == storageFile.FileName))
 			{
-				try
-				{
-					await CreateMediaFile(storageFile.FileName, storageFile.Created, datesFromDb, cancellationToken);
-				}
-				catch (Exception ex)
-				{
-					_logger.LogError(ex.Message);
-				}
+				filesToCreate.Add(storageFile);
 			}
 		}
-		return new SyncMediaResponse();
+		_logger.LogInformation("New files found: {Count}", filesToCreate.Count);
+
+		foreach (var fileToCreate in filesToCreate)
+		{
+			try
+			{
+				await CreateMediaFileAsync(fileToCreate.FileName, fileToCreate.Created, datesFromDb, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+		}
 	}
 
-	private async Task CreateMediaFile(string fileName, DateTime creationTime, List<Day> datesFromDb, CancellationToken cancellationToken)
+	private async Task CheckForIncompleteFiles(IEnumerable<MediaForMiniatureCheck> filesFromDb, CancellationToken cancellationToken)
+	{
+		_logger.LogInformation("Incomplete files check started");
+		var incompleteFiles = filesFromDb.Where(f => !f.HasMiniature);
+		_logger.LogInformation("Incomplete files found: {Count}", incompleteFiles.Count());
+
+		foreach (var fileFromDb in incompleteFiles)
+		{
+			try
+			{
+				await CreateMiniatureAsync(fileFromDb.Id, fileFromDb.FileName, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+		}
+	}
+
+	private async Task CreateMediaFileAsync(string fileName, DateTime creationTime, List<Day> datesFromDb, CancellationToken cancellationToken)
 	{
 		DateOnly creationDate = DateOnly.FromDateTime(creationTime);
+		bool dayCreated = false;
 		if (datesFromDb.FirstOrDefault(d => d.Date == creationDate) is not Day creationDay)
 		{
 			creationDay = new Day { Date = creationDate };
 			datesFromDb.Add(creationDay);
 			_context.Days.Add(creationDay);
-
-			_logger.LogDebug("Day {Date} created.", creationDate);
+			dayCreated = true;
 		}
 
 		var fileMediaType = GetMediaType(fileName);
-		Result<string> conversionResult;
+		Result<ConvertionsResponseDto> conversionResult;
 		switch (fileMediaType)
 		{
 			case MediaType.Image:
@@ -82,31 +121,60 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 				break;
 			default:
 				_logger.LogWarning("File {FileName} has unknown media type", fileName);
-				if (creationDay.Id == 0)
-					_logger.LogInformation("Day {Date} removed", creationDate);
 				return;
 		}
+
 		conversionResult.Switch
 		(
-			(newFileName) => 
+			(response) =>
 			{
 				if (fileMediaType == MediaType.Image)
-					fileName = newFileName;
+					fileName = response.NewFileName;
 			},
 			(error) => _logger.LogError("Error occured during {FileName} conversion: {ErrorMessage}", fileName, error)
 		);
+		if (conversionResult.IsFailure)
+			return;
 
 		var mediaFile = new MediaFile
 		{
 			FileName = fileName,
 			Created = creationTime,
 			Day = creationDay,
-			Type = fileMediaType
+			Type = fileMediaType,
+			Miniature = conversionResult.Value.Miniature
 		};
 		_context.MediaFiles.Add(mediaFile);
 		await _context.SaveChangesAsync(cancellationToken);
 
+		_logger.LogDebug("Day {Date} created in database", creationDate.ToString("yyyy-MM-dd"));
 		_logger.LogDebug("File {FileName} created in database", fileName);
+	}
+
+	private async Task CreateMiniatureAsync(int id, string fileName, CancellationToken cancellationToken)
+	{
+		string actualFileName;
+		if (_mediaProcessorService.IsAnImage(fileName))
+			actualFileName = fileName;
+		else if (_mediaProcessorService.IsAVideo(fileName))
+			actualFileName = _mediaProcessorService.GetVideoPreviewName(fileName);
+		else
+			throw new NotImplementedException($"File {fileName} is not an image or a video");
+
+		var result = await _mediaProcessorService.CreateMiniatureAsync(actualFileName, cancellationToken);
+		if (result.IsFailure)
+		{
+			_logger.LogError("Error occured during {FileName} conversion: {ErrorMessage}", fileName, result.Error);
+			return;
+		}
+		await _context.MediaFiles
+			.Where(m => m.Id == id)
+			.ExecuteUpdateAsync
+			(
+				m => m.SetProperty(m => m.Miniature, result.Value),
+				cancellationToken
+			);
+		_logger.LogInformation("Miniature for {FileName} was updated", fileName);
 	}
 
 	public MediaType GetMediaType(string fileName)
@@ -124,4 +192,6 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 
 		return MediaType.Unknown;
 	}
+
+	private record MediaForMiniatureCheck(int Id, string FileName, bool HasMiniature);
 }
