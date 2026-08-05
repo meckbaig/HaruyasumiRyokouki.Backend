@@ -16,4 +16,6 @@ public record MediaFileDto
 	public string? Description { get; set; }
 
 	public ICollection<string> Tags { get; set; } = [];
+	public ImageUrlsDto? ImageUrls { get; set; } = null;
+	public VideoUrlsDto? VideoUrls { get; set; } = null;
 }
