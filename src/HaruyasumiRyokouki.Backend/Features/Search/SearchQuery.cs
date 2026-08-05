@@ -4,6 +4,7 @@ using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,10 +40,12 @@ internal class SearchQueryValidator : AbstractValidator<SearchQuery>
 internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 {
 	private readonly IAppDbContext _context;
+	private readonly IMediaPreviewService _previewService;
 
-	public SearchQueryHandler(IAppDbContext context)
+	public SearchQueryHandler(IAppDbContext context, IMediaPreviewService previewService)
 	{
 		_context = context;
+		_previewService = previewService;
 	}
 
 	public async Task<SearchResponse> Handle(SearchQuery request, CancellationToken cancellationToken)
@@ -69,7 +72,8 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			.OrderByDescending(d => d.Date)
 			.ToListAsync(cancellationToken);
 
-		var result = searchResults.ToDtos();
+		var searchResultsDtos = searchResults.ToDtos();
+		var result = searchResultsDtos.AddUrls(_previewService);
 
 		return new SearchResponse
 		{

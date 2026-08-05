@@ -1,5 +1,8 @@
 using HaruyasumiRyokouki.Backend.Models.Db;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 namespace HaruyasumiRyokouki.Backend.Extensions;
 
@@ -164,5 +167,69 @@ internal static class MappingExtensions
 	public static IEnumerable<MediaTranslation> FromEditDtos(this IEnumerable<MediaTranslationEditDto> source)
 	{
 		return source.Select(FromEditDto);
+	}
+
+	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, IMediaPreviewService previewService)
+	{
+		return dayDtos.Select(d => d.AddUrls(previewService));
+	}
+
+	public static DayDto AddUrls(this DayDto dayDto, IMediaPreviewService previewService)
+	{
+		foreach (var media in dayDto.Media)
+		{
+			media.AddUrls(previewService);
+		}
+		return dayDto;
+	}
+
+	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, IMediaPreviewService previewService)
+	{
+		switch (mediaDto.Type)
+		{
+			case nameof(MediaType.Image):
+				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService);
+				break;
+			case nameof(MediaType.Video):
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService);
+				break;
+			default:
+				break;
+		}
+		return mediaDto;
+	}
+
+	private static ImageUrlsDto? CreateImageUrls(MediaFileDto media, IMediaPreviewService previewService)
+	{
+		return new ImageUrlsDto
+		{
+			Desktop = new()
+			{
+				Original = previewService.GetImageUrl(media.FileName, ImageUrlType.Original),
+				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview),
+			},
+			Mobile = new()
+			{
+				Original = previewService.GetImageUrl(media.FileName, ImageUrlType.MobileOriginal),
+				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.MobilePreview)
+			}
+		};
+	}
+
+	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, IMediaPreviewService previewService)
+	{
+		return new VideoUrlsDto
+		{
+			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download),
+			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream),
+			Desktop = new()
+			{
+				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview),
+			},
+			Mobile = new()
+			{
+				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.MobilePreview)
+			},
+		};
 	}
 }
