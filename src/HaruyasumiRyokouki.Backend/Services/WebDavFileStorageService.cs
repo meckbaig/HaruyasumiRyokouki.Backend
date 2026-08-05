@@ -83,15 +83,25 @@ internal class WebDavFileStorageService : IFileStorage
 
 	public async Task DeleteAsync(string fileName, CancellationToken cancellationToken = default)
 	{
-		var result = await _client.Delete(fileName);
-
-		if (!result.IsSuccessful)
+		if (await ExistsAsync(fileName, cancellationToken))
 		{
-			_logger.LogError("Failed to delete {FileName}", fileName);
-			throw new Exception($"Delete failed: {result.StatusCode}");
+			var result = await _client.Delete(fileName);
+
+			if (!result.IsSuccessful)
+			{
+				_logger.LogError("Failed to delete {FileName}", fileName);
+				throw new Exception($"Delete failed: {result.StatusCode}");
+			}
 		}
 
 		_logger.LogInformation("Deleted {FileName}", fileName);
+	}
+
+	public async Task<bool> ExistsAsync(string fileName, CancellationToken cancellationToken = default)
+	{
+		var result = await _client.Propfind(fileName);
+
+		return result.IsSuccessful;
 	}
 
 	private sealed class WebDavStream : Stream
