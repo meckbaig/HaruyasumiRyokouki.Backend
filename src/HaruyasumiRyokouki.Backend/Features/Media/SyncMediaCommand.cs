@@ -88,7 +88,11 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		}
 		conversionResult.Switch
 		(
-			(newFileName) => fileName = newFileName,
+			(newFileName) => 
+			{
+				if (fileMediaType == MediaType.Image)
+					fileName = newFileName;
+			},
 			(error) => _logger.LogError("Error occured during {FileName} conversion: {ErrorMessage}", fileName, error)
 		);
 
