@@ -81,6 +81,7 @@ internal static class MappingExtensions
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
 			IsApproved = source.IsApproved,
+			Miniature = source.Miniature,
 			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
 			Title = source.Translations.FirstOrDefault()?.Title,
 			Description = source.Translations.FirstOrDefault()?.Description,
@@ -103,7 +104,7 @@ internal static class MappingExtensions
 			Type = source.Type.ToString(),
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
-			IsApproved = source.IsApproved,
+			Miniature = source.Miniature,
 			Translations = source.Translations.ToEditDtos().ToList()
 		};
 	}
