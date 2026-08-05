@@ -9,4 +9,5 @@ internal interface IFfmpegService
 	Task CreateVideoPreviewAsync(string input, string output, FfmpegImagePreset preset, CancellationToken cancellationToken = default);
 	Task ConvertVideoAsync(string input, string output, FfmpegVideoPreset preset, CancellationToken cancellationToken = default);
 	Task<VideoFileInfo> GetVideoInfoAsync(MediaInput mediaInput, CancellationToken cancellationToken = default);
+	Task<byte[]> GetImageMiniatureBytesAsync(string input, int sideSize, CancellationToken cancellationToken);
 }

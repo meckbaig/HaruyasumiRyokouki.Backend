@@ -65,6 +65,16 @@ internal class FfmpegService : IFfmpegService
 		};
 	}
 
+	public async Task<byte[]> GetImageMiniatureBytesAsync(string input, int sideSize, CancellationToken cancellationToken)
+	{
+		string arguments =
+			$"-i \"{input}\" " +
+			$"-vf \"scale={sideSize}:{sideSize}:force_original_aspect_ratio=increase,crop={sideSize}:{sideSize}\" " +
+			$"-c:v libwebp -quality 75 -compression_level 6 -preset picture -f webp pipe:1";
+		return await RunFfmpegBytesAsync(arguments, cancellationToken);
+	}
+
+
 	private string GetImagePreset(FfmpegImagePreset preset)
 	{
 		switch (preset)
@@ -97,7 +107,7 @@ internal class FfmpegService : IFfmpegService
 		};
 	}
 
-	private async Task RunFfmpegAsync(string arguments, string workingDirectory = null, CancellationToken cancellationToken = default)
+	private async Task RunFfmpegAsync(string arguments, string? workingDirectory = null, CancellationToken cancellationToken = default)
 	{
 		using var process = new Process();
 
@@ -119,6 +129,34 @@ internal class FfmpegService : IFfmpegService
 		{
 			throw new Exception($"FFmpeg failed: {error}");
 		}
+	}
+
+	private async Task<byte[]> RunFfmpegBytesAsync(string arguments, CancellationToken cancellationToken = default)
+	{
+		using var process = new Process();
+
+		process.StartInfo.FileName = "ffmpeg";
+		process.StartInfo.Arguments = arguments;
+		process.StartInfo.RedirectStandardOutput = true;
+		process.StartInfo.RedirectStandardError = true;
+		process.StartInfo.UseShellExecute = false;
+		process.StartInfo.CreateNoWindow = true;
+		_logger.LogDebug("Run command: {Command}", $"{process.StartInfo.FileName} {arguments}");
+		process.Start();
+
+		using var output = new MemoryStream();
+		var copyTask = process.StandardOutput.BaseStream.CopyToAsync(output, cancellationToken);
+		var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+
+		await Task.WhenAll(copyTask, errorTask);
+		await process.WaitForExitAsync(cancellationToken);
+
+		if (process.ExitCode != 0)
+		{
+			throw new Exception($"FFmpeg failed: {errorTask.Result}");
+		}
+
+		return output.ToArray();
 	}
 
 	private async Task<string> RunFfprobeAsync(string arguments, CancellationToken cancellationToken = default)

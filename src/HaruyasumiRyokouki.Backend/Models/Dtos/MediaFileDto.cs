@@ -1,5 +1,3 @@
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
-
 namespace HaruyasumiRyokouki.Backend.Models.Dtos;
 
 public record MediaFileDto
@@ -14,6 +12,7 @@ public record MediaFileDto
 	public string LanguageCode { get; set; } = null!;
 	public string? Title { get; set; }
 	public string? Description { get; set; }
+	public string Miniature { get; set; }
 
 	public ICollection<string> Tags { get; set; } = [];
 	public ImageUrlsDto? ImageUrls { get; set; } = null;

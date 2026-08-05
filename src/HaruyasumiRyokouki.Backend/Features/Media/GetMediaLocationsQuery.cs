@@ -66,6 +66,7 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 				FileName = m.FileName,
 				Latitude = m.Latitude ?? 0,
 				Longitude = m.Longitude ?? 0,
+				Miniature = m.Miniature,
 				LanguageCode = request.AcceptLanguage,
 				Title = m.Translations
 					.Where(t => t.LanguageCode == request.AcceptLanguage)

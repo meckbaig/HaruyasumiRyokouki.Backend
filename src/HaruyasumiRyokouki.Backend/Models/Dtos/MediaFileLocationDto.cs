@@ -9,4 +9,5 @@ public record MediaFileLocationDto
 	public string FileName { get; set; }
 	public string? Title { get; set; }
 	public string? LanguageCode { get; set; }
+	public string Miniature { get; set; }
 }

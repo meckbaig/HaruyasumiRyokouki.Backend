@@ -1,6 +1,7 @@
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Common.ResultType;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Microsoft.Extensions.Options;
 
@@ -45,7 +46,7 @@ internal class MediaProcessorService : IMediaProcessorService
 	{
 		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(_videoPreviewSuffix))
 			return fileName;
-		return Path.GetFileNameWithoutExtension(fileName) + _videoWebSuffix + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
+		return Path.GetFileNameWithoutExtension(fileName) + _videoPreviewSuffix + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
 	}
 
 	public bool IsAnImage(string fileName)
@@ -75,20 +76,91 @@ internal class MediaProcessorService : IMediaProcessorService
 		throw new NotImplementedException();
 	}
 
-	public async Task<Result<string>> ConvertImageAsync(string fileName, CancellationToken cancellationToken)
+	public async Task<Result<ConvertionsResponseDto>> ConvertImageAsync(string fileName, CancellationToken cancellationToken)
+	{
+		if (!IsAnImage(fileName))
+			return Result<ConvertionsResponseDto>.Failure("File is not an image");
+
+		await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
+		await using var workspace = new TempStorageService(MediaType.Image);
+
+		string resultImageFileName = fileName;
+		var inputFile = Path.Combine(workspace.TempFolder, fileName);
+
+		Directory.CreateDirectory(workspace.TempFolder);
+		await using (var file = File.Create(inputFile))
+		{
+			await input.CopyToAsync(file, cancellationToken);
+		}
+
+		if (await ShouldBeConverted(fileName, MediaType.Image))
+		{
+			resultImageFileName = Path.GetFileNameWithoutExtension(fileName) + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
+			var outputFile = Path.Combine(workspace.TempFolder, resultImageFileName);
+
+			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
+			await _ffmpegService.ConvertImageAsync(inputFile, outputFile, _mediaFormatOptions.TargetImagePreset, cancellationToken);
+			_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
+			SetOriginalTimeInfo(inputFile, outputFile);
+
+			await using var result = File.OpenRead(outputFile);
+			await _fileStorage.SaveFileAsync(resultImageFileName, result, cancellationToken);
+			await _fileStorage.DeleteAsync(fileName, cancellationToken);
+			_logger.LogInformation("File {OriginalFileName} was replaced with {NewFileName}", fileName, resultImageFileName);
+		}
+
+		string miniature = await CreateMiniatureAsync(inputFile, workspace, cancellationToken);
+
+		return Result<ConvertionsResponseDto>.Success(new(resultImageFileName, miniature));
+	}
+
+	public async Task<Result<ConvertionsResponseDto>> ConvertVideoAsync(string fileName, CancellationToken cancellationToken)
+	{
+		if (!IsAVideo(fileName))
+			return Result<ConvertionsResponseDto>.Failure("File is not a video");
+
+		await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
+		await using var workspace = new TempStorageService(MediaType.Video);
+
+		string resultVideoFileName = fileName;
+		var inputFile = Path.Combine(workspace.TempFolder, fileName);
+
+		Directory.CreateDirectory(workspace.TempFolder);
+		await using (var file = File.Create(inputFile))
+		{
+			await input.CopyToAsync(file, cancellationToken);
+		}
+
+		if (await ShouldBeConverted(fileName, MediaType.Video))
+		{
+			resultVideoFileName = GetVideoWebName(fileName);
+			var outputFile = Path.Combine(workspace.TempFolder, resultVideoFileName);
+
+			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
+			await _ffmpegService.ConvertVideoAsync(inputFile, outputFile, _mediaFormatOptions.TargetVideoPreset, cancellationToken);
+			_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
+			SetOriginalTimeInfo(inputFile, outputFile);
+
+			await using var result = File.OpenRead(outputFile);
+			await _fileStorage.SaveFileAsync(resultVideoFileName, result, cancellationToken);
+			_logger.LogInformation("File {NewFileName} was created", resultVideoFileName);
+		}
+
+		string previewOutputFile = await CreateVideoPreviewAsync(inputFile, workspace, cancellationToken);
+		string miniature = await CreateMiniatureAsync(previewOutputFile, workspace, cancellationToken);
+
+		return Result<ConvertionsResponseDto>.Success(new(resultVideoFileName, miniature));
+	}
+
+	public async Task<Result<string>> CreateMiniatureAsync(string fileName, CancellationToken cancellationToken)
 	{
 		if (!IsAnImage(fileName))
 			return Result<string>.Failure("File is not an image");
-		if (!await ShouldBeConverted(fileName, MediaType.Image))
-			return Result<string>.Success(fileName);
-
-		string resultImageFileName = Path.GetFileNameWithoutExtension(fileName) + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
 
 		await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
 		await using var workspace = new TempStorageService(MediaType.Image);
 
 		var inputFile = Path.Combine(workspace.TempFolder, fileName);
-		var outputFile = Path.Combine(workspace.TempFolder, resultImageFileName);
 
 		Directory.CreateDirectory(workspace.TempFolder);
 		await using (var file = File.Create(inputFile))
@@ -96,64 +168,26 @@ internal class MediaProcessorService : IMediaProcessorService
 			await input.CopyToAsync(file, cancellationToken);
 		}
 
-		_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
-		await _ffmpegService.ConvertImageAsync(inputFile, outputFile, _mediaFormatOptions.TargetImagePreset, cancellationToken);
-		_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
+		string miniature = await CreateMiniatureAsync(inputFile, workspace, cancellationToken);
 
-		SetOriginalTimeInfo(inputFile, outputFile);
-
-		await using var result = File.OpenRead(outputFile);
-		await _fileStorage.SaveFileAsync(resultImageFileName, result, cancellationToken);
-		await _fileStorage.DeleteAsync(fileName, cancellationToken);
-
-		_logger.LogInformation("File {OriginalFileName} was replaced with {NewFileName}", fileName, resultImageFileName);
-
-		return Result<string>.Success(resultImageFileName);
+		_logger.LogInformation("Miniature for {FileName} was created", fileName);
+		return miniature;
 	}
 
-	public async Task<Result<string>> ConvertVideoAsync(string fileName, CancellationToken cancellationToken)
+	private async Task<string> CreateMiniatureAsync(string fileName, TempStorageService workspace, CancellationToken cancellationToken)
 	{
-		if (!IsAVideo(fileName))
-			return Result<string>.Failure("File is not a video");
-		if (!await ShouldBeConverted(fileName, MediaType.Video))
-			return Result<string>.Success(fileName);
-
-		string resultVideoFileName = Path.GetFileNameWithoutExtension(fileName) + _videoWebSuffix + Path.GetExtension(fileName);
-
-		await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
-		await using var workspace = new TempStorageService(MediaType.Video);
-
-		var inputFile = Path.Combine(workspace.TempFolder, fileName);
-		var outputFile = Path.Combine(workspace.TempFolder, resultVideoFileName);
-
-		Directory.CreateDirectory(workspace.TempFolder);
-		await using (var file = File.Create(inputFile))
-		{
-			await input.CopyToAsync(file, cancellationToken);
-		}
-
-		_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
-		await _ffmpegService.ConvertVideoAsync(inputFile, outputFile, _mediaFormatOptions.TargetVideoPreset, cancellationToken);
-		_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
-
-		SetOriginalTimeInfo(inputFile, outputFile);
-
-		await using var result = File.OpenRead(outputFile);
-		await _fileStorage.SaveFileAsync(resultVideoFileName, result, cancellationToken);
-		_logger.LogInformation("File {NewFileName} was created", resultVideoFileName);
-
-		await CreateVideoPreview(fileName, workspace, cancellationToken);
-
-		return Result<string>.Success(resultVideoFileName);
+		var miniatureBytes = await _ffmpegService.GetImageMiniatureBytesAsync
+		(
+			fileName,
+			_mediaFormatOptions.PreviewSize,
+			cancellationToken
+		);
+		return Convert.ToBase64String(miniatureBytes);
 	}
 
-	private async Task CreateVideoPreview(string fileName, TempStorageService workspace, CancellationToken cancellationToken)
+	private async Task<string> CreateVideoPreviewAsync(string fileName, TempStorageService workspace, CancellationToken cancellationToken)
 	{
-		string resultVideoPreviewFileName = 
-			Path.GetFileNameWithoutExtension(fileName) 
-			+ _videoPreviewSuffix 
-			+ "."
-			+ _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
+		string resultVideoPreviewFileName = GetVideoPreviewName(fileName);
 		var inputFile = Path.Combine(workspace.TempFolder, fileName);
 		var outputFile = Path.Combine(workspace.TempFolder, resultVideoPreviewFileName);
 
@@ -165,6 +199,8 @@ internal class MediaProcessorService : IMediaProcessorService
 		await using var result = File.OpenRead(outputFile);
 		await _fileStorage.SaveFileAsync(resultVideoPreviewFileName, result, cancellationToken);
 		_logger.LogInformation("Video preview {NewFileName} was created", resultVideoPreviewFileName);
+
+		return outputFile;
 	}
 
 	private void SetOriginalTimeInfo(string sourceFile, string targetFile)

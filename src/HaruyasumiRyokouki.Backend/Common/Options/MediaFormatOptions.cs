@@ -7,5 +7,8 @@ sealed class MediaFormatOptions
 	public const string ConfigurationSectionName = "MediaFormat";
 
 	public required FfmpegImagePreset TargetImagePreset { get; set; }
+
 	public required FfmpegVideoPreset TargetVideoPreset { get; set; }
+
+	public int PreviewSize { get; set; }
 }

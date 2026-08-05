@@ -26,6 +26,11 @@ sealed class MediaFormatOptionsValidator : IValidateOptions<MediaFormatOptions>
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
 				$"{nameof(MediaFormatOptions.TargetImagePreset)}' is not valid. Available options: {string.Join(", ", Enum.GetNames(typeof(FfmpegVideoPreset)))}");
 		}
+		if (options.PreviewSize <= 0)
+		{
+			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaFormatOptions.PreviewSize)}' must be greater than 0.");
+		}
 
 		return failures.Length > 0
 			? ValidateOptionsResult.Fail(failures.ToString())
