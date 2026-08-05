@@ -70,7 +70,7 @@ internal class FfmpegService : IFfmpegService
 		switch (preset)
 		{
 			case FfmpegImagePreset.Webp:
-				return "-map_metadata 0 -c:v libwebp -quality 90 -compression_level 6";
+				return "-map_metadata 0 -c:v libwebp -quality 88 -compression_level 6 -preset picture";
 			case FfmpegImagePreset.Avif:
 				return "-map_metadata 0 -c:v libaom-av1 -still-picture 1 -crf 20";
 			default:
