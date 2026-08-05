@@ -201,7 +201,7 @@ internal static class ServiceCollectionExtensions
 		return services;
 	}
 
-	internal static IServiceCollection AddFileStorageClient(this IServiceCollection services)
+	internal static IServiceCollection AddFileStorageProvider(this IServiceCollection services)
 	{
 		var storageOptions = services
 			.BuildServiceProvider()
@@ -236,6 +236,29 @@ internal static class ServiceCollectionExtensions
 			default:
 				throw new NotSupportedException(
 					$"Unsupported file storage provider: {storageOptions.Provider}");
+		}
+
+		return services;
+	}
+
+	internal static IServiceCollection AddMediaPreviewProvider(this IServiceCollection services)
+	{
+		var previewOptions = services
+			.BuildServiceProvider()
+			.GetRequiredService<IOptions<MediaPreviewOptions>>()
+			.Value;
+
+		switch (previewOptions.Provider)
+		{
+			case MediaPreviewOptions.MediaPreviewProvider.Nextcloud:
+				services.AddSingleton<IMediaPreviewService, NextcloudMediaPreviewService>();
+				break;
+			case MediaPreviewOptions.MediaPreviewProvider.Imgproxy:
+				services.AddSingleton<IMediaPreviewService, ImgproxyMediaPreviewService>();
+				break;
+			default:
+				throw new NotSupportedException(
+					$"Unsupported media preview provider: {previewOptions.Provider}");
 		}
 
 		return services;

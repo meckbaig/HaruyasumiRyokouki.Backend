@@ -19,7 +19,8 @@ try
 	builder.Services.AddTransient<IAiChatService, AiChatApiService>();
 	builder.Services.AddTransient<IMediaProcessorService, MediaProcessorService>();
 	builder.Services.AddSingleton<IFfmpegService, FfmpegService>();
-	builder.Services.AddFileStorageClient();
+	builder.Services.AddFileStorageProvider();
+	builder.Services.AddMediaPreviewProvider();
 	builder.Services.AddControllersWithJsonNamingPolicy();
 	builder.Services.AddHttpContextAccessor();
 	builder.Services.AddMediatRFromAssembly();
