@@ -44,6 +44,9 @@ internal static class ServiceCollectionExtensions
 			.AddOptionsWithValidateOnStart<MediaPreviewOptions>()
 			.BindConfiguration(MediaPreviewOptions.ConfigurationSectionName);
 		services
+			.AddOptionsWithValidateOnStart<MediaSizesOptions>()
+			.BindConfiguration(MediaSizesOptions.ConfigurationSectionName);
+		services
 			.AddOptionsWithValidateOnStart<MediaFormatOptions>()
 			.BindConfiguration(MediaFormatOptions.ConfigurationSectionName);
 		services
@@ -82,6 +85,7 @@ internal static class ServiceCollectionExtensions
 		services.AddSingleton<IValidateOptions<SwaggerAuthOptions>, SwaggerAuthOptionsValidator>();
 		services.AddSingleton<IValidateOptions<MediaStorageOptions>, MediaStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<MediaPreviewOptions>, MediaPreviewOptionsValidator>();
+		services.AddSingleton<IValidateOptions<MediaSizesOptions>, MediaSizesOptionsValidator>();
 		services.AddSingleton<IValidateOptions<MediaFormatOptions>, MediaFormatOptionsValidator>();
 		services.AddSingleton<IValidateOptions<LocalStorageOptions>, LocalStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<WebDavOptions>, WebDavOptionsValidator>();

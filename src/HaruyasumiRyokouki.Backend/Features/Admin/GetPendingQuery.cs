@@ -52,7 +52,7 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 
 		return new GetPendingResponse
 		{
-			Media = pendingMedia.ToEditDtos().Select(dto => dto.AddUrls(_previewService)).ToList(),
+			Media = pendingMedia.ToEditDtos().Select(dto => dto.AddUrls(_previewService, request.ClientDisplay)).ToList(),
 			Days = pendingDays.ToEditDtos().ToList(),
 		};
 	}

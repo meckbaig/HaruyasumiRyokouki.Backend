@@ -1,6 +1,7 @@
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
@@ -170,29 +171,29 @@ internal static class MappingExtensions
 		return source.Select(FromEditDto);
 	}
 
-	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, IMediaPreviewService previewService)
+	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
-		return dayDtos.Select(d => d.AddUrls(previewService));
+		return dayDtos.Select(d => d.AddUrls(previewService, clientDisplay));
 	}
 
-	public static DayDto AddUrls(this DayDto dayDto, IMediaPreviewService previewService)
+	public static DayDto AddUrls(this DayDto dayDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		foreach (var media in dayDto.Media)
 		{
-			media.AddUrls(previewService);
+			media.AddUrls(previewService, clientDisplay);
 		}
 		return dayDto;
 	}
 
-	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, IMediaPreviewService previewService)
+	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		switch (mediaDto.Type)
 		{
 			case nameof(MediaType.Image):
-				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService);
+				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService, clientDisplay);
 				break;
 			case nameof(MediaType.Video):
-				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService);
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService, clientDisplay);
 				break;
 			default:
 				break;
@@ -200,16 +201,16 @@ internal static class MappingExtensions
 		return mediaDto;
 	}
 
-	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, IMediaPreviewService previewService)
+	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 		where TPreviewDto: IPreviewDto
 	{
 		switch (mediaDto.Type)
 		{
 			case nameof(MediaType.Image):
-				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService);
+				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService, clientDisplay);
 				break;
 			case nameof(MediaType.Video):
-				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService);
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService, clientDisplay);
 				break;
 			default:
 				break;
@@ -217,68 +218,39 @@ internal static class MappingExtensions
 		return mediaDto;
 	}
 
-	private static ImageUrlsDto? CreateImageUrls(MediaFileDto media, IMediaPreviewService previewService)
+	private static ImageUrlsDto? CreateImageUrls(MediaFileDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		return new ImageUrlsDto
 		{
-			Original = previewService.GetImageUrl(media.FileName, ImageUrlType.Original),
-			Desktop = new()
-			{
-				FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen),
-				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview),
-			},
-			Mobile = new()
-			{
-				FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.MobileFullScreen),
-				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.MobilePreview)
-			}
+			Original = previewService.GetImageUrl(media.FileName, ImageUrlType.Original, clientDisplay),
+			FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay),
+			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay)
 		};
 	}
 
-	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, IMediaPreviewService previewService)
+	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		return new VideoUrlsDto
 		{
-			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download),
-			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream),
-			Desktop = new()
-			{
-				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview),
-			},
-			Mobile = new()
-			{
-				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.MobilePreview)
-			},
+			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, clientDisplay),
+			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, clientDisplay),
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay)
 		};
 	}
 
-	private static ImageUrlsDto? CreateImageUrls(IPreviewDto media, IMediaPreviewService previewService)
+	private static ImageUrlsDto? CreateImageUrls(IPreviewDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		return new ImageUrlsDto
 		{
-			Desktop = new()
-			{
-				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview),
-			},
-			Mobile = new()
-			{
-				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.MobilePreview)
-			}
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay)
 		};
 	}
 
-	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, IMediaPreviewService previewService)
+	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		return new VideoUrlsDto
 		{
-			Desktop = new()
-			{
-				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview),
-			},
-			Mobile = new()
-			{
-				Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.MobilePreview)
-			},
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay)
 		};
 	}
 }

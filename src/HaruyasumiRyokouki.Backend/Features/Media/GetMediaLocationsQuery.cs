@@ -79,7 +79,7 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 			})
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFileLocationDtos.Select(dto => dto.AddUrls(_previewService));
+		var results = mediaFileLocationDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
 
 		return new GetMediaLocationsResponse
 		{

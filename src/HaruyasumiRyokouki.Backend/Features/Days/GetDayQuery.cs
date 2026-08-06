@@ -59,7 +59,7 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 			throw new EntityNotFoundException($"Day {request.Date:yyyy-MM-dd} doesn't exist");
 
 		var searchResultsDtos = searchResults.ToDto();
-		var result = searchResultsDtos.AddUrls(_previewService);
+		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
 
 		return new GetDayResponse
 		{

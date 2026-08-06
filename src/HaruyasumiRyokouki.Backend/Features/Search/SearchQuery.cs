@@ -72,7 +72,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			.ToListAsync(cancellationToken);
 
 		var searchResultsDtos = searchResults.ToDtos();
-		var result = searchResultsDtos.AddUrls(_previewService);
+		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
 
 		return new SearchResponse
 		{

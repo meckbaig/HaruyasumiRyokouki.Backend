@@ -52,7 +52,7 @@ internal class GetEditMediaQueryHandler : IRequestHandler<GetEditMediaQuery, Get
 			.Select(m => m.ToEditDto())
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService));
+		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
 
 		return new GetEditMediaResponse 
 		{

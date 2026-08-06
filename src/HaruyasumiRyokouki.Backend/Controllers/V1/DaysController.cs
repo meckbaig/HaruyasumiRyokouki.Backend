@@ -1,7 +1,6 @@
 using Asp.Versioning;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Features.Days;
-using HaruyasumiRyokouki.Backend.Features.Media;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -16,7 +16,7 @@ public class ImgproxyPreviewUrlBuilder : AbstractUrlBuilder
 		"yAxis"
 	];
 
-	private const string _insecureSignature = "insecure";
+	private const string InsecureSignature = "insecure";
 	private readonly bool _insecure;
 	private readonly byte[] _key;
 	private readonly byte[] _salt;
@@ -44,7 +44,7 @@ public class ImgproxyPreviewUrlBuilder : AbstractUrlBuilder
 
 		if (_insecure)
 		{
-			signature = _insecureSignature;
+			signature = InsecureSignature;
 		}
 		else
 		{
@@ -70,7 +70,7 @@ public class ImgproxyPreviewUrlBuilder : AbstractUrlBuilder
 
 		if (_insecure)
 		{
-			signature = _insecureSignature;
+			signature = InsecureSignature;
 		}
 		else
 		{

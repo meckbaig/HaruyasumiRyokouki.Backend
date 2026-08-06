@@ -24,8 +24,8 @@ internal class MediaProcessorService : IMediaProcessorService
 		".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg"
 	];
 
-	private const string _videoWebSuffix = "_web";
-	private const string _videoPreviewSuffix = "_preview";
+	private const string VideoWebSuffix = "_web";
+	private const string VideoPreviewSuffix = "_preview";
 
 	public MediaProcessorService(ILogger<MediaProcessorService> logger, IFileStorage fileStorage, IFfmpegService ffmpegService, IOptions<MediaFormatOptions> mediaFormatOptions)
 	{
@@ -37,16 +37,16 @@ internal class MediaProcessorService : IMediaProcessorService
 
 	public string GetVideoWebName(string fileName)
 	{
-		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(_videoWebSuffix))
+		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(VideoWebSuffix))
 			return fileName;
-		return Path.GetFileNameWithoutExtension(fileName) + _videoWebSuffix + Path.GetExtension(fileName);
+		return Path.GetFileNameWithoutExtension(fileName) + VideoWebSuffix + Path.GetExtension(fileName);
 	}
 
 	public string GetVideoPreviewName(string fileName)
 	{
-		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(_videoPreviewSuffix))
+		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(VideoPreviewSuffix))
 			return fileName;
-		return Path.GetFileNameWithoutExtension(fileName) + _videoPreviewSuffix + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
+		return Path.GetFileNameWithoutExtension(fileName) + VideoPreviewSuffix + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
 	}
 
 	public bool IsAnImage(string fileName)
