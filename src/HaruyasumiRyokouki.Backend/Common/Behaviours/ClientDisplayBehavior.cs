@@ -6,12 +6,16 @@ using System.Globalization;
 
 namespace HaruyasumiRyokouki.Backend.Common.Behaviours;
 
-internal class ClientDisplayBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+internal class ClientDisplayBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>, IHeaderAwareBehavior
 	where TRequest : IDisplayAwareRequest
 {
 	private readonly IHttpContextAccessor _httpContextAccessor;
 	private readonly IValidator<ClientDisplay> _validator;
-	private const string HeaderName = "X-Display";
+
+	public static string HeaderName => "X-Display";
+	public static string Description => "Client display information to determine media sizes in response.";
+	public static string Example => "dpr=1.25; min-side=864";
+	public static bool Required => false;
 
 	public ClientDisplayBehavior(IHttpContextAccessor httpContextAccessor, IValidator<ClientDisplay> validator)
 	{

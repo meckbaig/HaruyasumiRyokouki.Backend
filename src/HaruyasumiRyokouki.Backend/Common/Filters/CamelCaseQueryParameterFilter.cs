@@ -16,8 +16,8 @@ public class CamelCaseQueryParameterFilter : IParameterFilter
 	/// <param name="context"></param>
 	public void Apply(OpenApiParameter parameter, ParameterFilterContext context)
 	{
-		var originalName = parameter.Name;
-		var camelCaseName = JsonNamingPolicy.CamelCase.ConvertName(originalName);
-		parameter.Name = camelCaseName;
+		if (parameter.In != ParameterLocation.Query && parameter.In != ParameterLocation.Path)
+			return;
+		parameter.Name = JsonNamingPolicy.CamelCase.ConvertName(parameter.Name);
 	}
 }

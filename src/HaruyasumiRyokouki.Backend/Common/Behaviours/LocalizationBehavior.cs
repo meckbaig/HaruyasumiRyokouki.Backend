@@ -3,10 +3,15 @@ using MediatR;
 
 namespace HaruyasumiRyokouki.Backend.Common.Behaviours;
 
-public class LocalizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+internal class LocalizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>, IHeaderAwareBehavior
 	where TRequest : ILocalizableRequest
 {
 	private readonly IHttpContextAccessor _httpContextAccessor;
+
+	public static string HeaderName => "Accept-Language";
+	public static string Description => "Localization of response contents.";
+	public static string Example => "en";
+	public static bool Required => true;
 
 	public LocalizationBehavior(IHttpContextAccessor httpContextAccessor)
 	{

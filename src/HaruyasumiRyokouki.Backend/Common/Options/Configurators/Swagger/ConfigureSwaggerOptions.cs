@@ -46,6 +46,8 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
 				return groupName == docName;
 			});
 			options.ParameterFilter<CamelCaseQueryParameterFilter>(); 
+			options.ParameterFilter<HeaderParameterFilter>(); 
+			options.OperationFilter<HeaderAwareOperationFilter>();
 			options.DocumentFilter<RemoveSwaggerIgnoredParamsDocumentFilter>();
 
 			options.AddSecurityDefinition("Basic", new OpenApiSecurityScheme
