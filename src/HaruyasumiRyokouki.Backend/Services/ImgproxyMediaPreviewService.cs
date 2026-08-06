@@ -37,10 +37,12 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		switch (linkType)
 		{
 			case ImageUrlType.Original:
-				return _originBuilder.Build(fileName);
+				return _builder.BuildRaw(fileName);
+			case ImageUrlType.FullScreen:
+				return _builder.Build(fileName, 3072, 3072);
 			case ImageUrlType.Preview:
 				return _builder.Build(fileName, 256, 256);
-			case ImageUrlType.MobileOriginal:
+			case ImageUrlType.MobileFullScreen:
 				return _builder.Build(fileName, 2048, 2048);
 			case ImageUrlType.MobilePreview:
 				return _builder.Build(fileName, 512, 512);

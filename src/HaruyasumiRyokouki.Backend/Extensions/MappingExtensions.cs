@@ -221,14 +221,15 @@ internal static class MappingExtensions
 	{
 		return new ImageUrlsDto
 		{
+			Original = previewService.GetImageUrl(media.FileName, ImageUrlType.Original),
 			Desktop = new()
 			{
-				Original = previewService.GetImageUrl(media.FileName, ImageUrlType.Original),
+				FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen),
 				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview),
 			},
 			Mobile = new()
 			{
-				Original = previewService.GetImageUrl(media.FileName, ImageUrlType.MobileOriginal),
+				FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.MobileFullScreen),
 				Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.MobilePreview)
 			}
 		};

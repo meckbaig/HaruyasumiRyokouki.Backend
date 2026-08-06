@@ -32,10 +32,12 @@ internal class NextcloudMediaPreviewService : IMediaPreviewService
 		{
 			case ImageUrlType.Original:
 				return _originBuilder.Build(fileName);
+			case ImageUrlType.FullScreen:
+				return _originBuilder.Build(fileName);
 			case ImageUrlType.Preview:
 				return _builder.Build(fileName, 256, 256);
-			case ImageUrlType.MobileOriginal:
-				return _originBuilder.Build(fileName);
+			case ImageUrlType.MobileFullScreen:
+				return _builder.Build(fileName, 1024, 1024);
 			case ImageUrlType.MobilePreview:
 				return _builder.Build(fileName, 1024, 1024);
 			default:
