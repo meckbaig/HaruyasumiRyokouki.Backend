@@ -9,6 +9,8 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
@@ -17,8 +19,12 @@ public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisp
 	[FromRoute]
 	public required DateOnly Date { get; set; }
 
+	[SwaggerIgnore]
+	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
 
+	[SwaggerIgnore]
+	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 }
 
