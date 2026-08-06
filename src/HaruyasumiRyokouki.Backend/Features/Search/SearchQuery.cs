@@ -4,6 +4,7 @@ using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Search;
 
-public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest
+public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisplayAwareRequest
 {
 	[FromQuery]
 	public required string Text { get; init; }
@@ -22,6 +23,10 @@ public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public ClientDisplay? ClientDisplay { get; set; }
 }
 
 public class SearchResponse

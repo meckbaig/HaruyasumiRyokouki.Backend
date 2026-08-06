@@ -20,7 +20,9 @@ public class LocalizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
 		{
 			request.AcceptLanguage = httpContext.Request.Headers.AcceptLanguage.ToString();
 		}
+		
+		/// TODO: add validation and default???
 
-		return await next();
+		return await next(cancellationToken);
 	}
 }

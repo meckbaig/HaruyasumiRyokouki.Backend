@@ -4,6 +4,7 @@ using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
-public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest
+public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisplayAwareRequest
 {
 	[FromRoute]
 	public required DateOnly Date { get; set; }
@@ -21,6 +22,10 @@ public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public ClientDisplay? ClientDisplay { get; set; }
 }
 
 public class GetDayResponse

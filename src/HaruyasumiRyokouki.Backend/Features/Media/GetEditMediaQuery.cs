@@ -1,18 +1,26 @@
 using FluentValidation;
+using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetEditMediaQuery : IRequest<GetEditMediaResponse>
+public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareRequest
 {
 	[FromQuery]
 	public required ICollection<int> Ids { get; init; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public ClientDisplay? ClientDisplay { get; set; }
 }
 
 public class GetEditMediaResponse

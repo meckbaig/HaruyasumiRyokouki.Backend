@@ -4,6 +4,7 @@ using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Extensions.TypeExtensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetMediaLocationsQuery : IRequest<GetMediaLocationsResponse>, ILocalizableRequest
+public record GetMediaLocationsQuery : IRequest<GetMediaLocationsResponse>, ILocalizableRequest, IDisplayAwareRequest
 {
 	[FromQuery]
 	public required DateOnly From { get; set; }
@@ -24,6 +25,10 @@ public record GetMediaLocationsQuery : IRequest<GetMediaLocationsResponse>, ILoc
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public ClientDisplay? ClientDisplay { get; set; }
 }
 
 internal class GetMediaLocationsQueryValidator : AbstractValidator<GetMediaLocationsQuery>

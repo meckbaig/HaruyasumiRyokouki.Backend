@@ -1,7 +1,6 @@
 using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
-using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

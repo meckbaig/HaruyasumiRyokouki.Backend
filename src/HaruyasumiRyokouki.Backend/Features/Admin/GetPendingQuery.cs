@@ -3,6 +3,7 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,11 +12,15 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Admin;
 
-public record GetPendingQuery : IRequest<GetPendingResponse>, ILocalizableRequest
+public record GetPendingQuery : IRequest<GetPendingResponse>, ILocalizableRequest, IDisplayAwareRequest
 {
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public ClientDisplay? ClientDisplay { get; set; }
 }
 
 public class GetPendingResponse
