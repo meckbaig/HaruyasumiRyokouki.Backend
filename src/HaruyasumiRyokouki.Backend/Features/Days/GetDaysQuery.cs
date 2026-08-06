@@ -1,5 +1,3 @@
-using FluentValidation;
-using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
 using MediatR;
@@ -7,9 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
-public record GetDaysQuery : IRequest<GetDaysResponse>, ILocalizableRequest
+public record GetDaysQuery : IRequest<GetDaysResponse>
 {
-	public string? AcceptLanguage { get; set; }
 }
 
 public class GetDaysResponse
@@ -31,7 +28,7 @@ internal class GetDaysQueryHandler : IRequestHandler<GetDaysQuery, GetDaysRespon
 		var days = await _context.Days
 			.AsNoTracking()
 			.OrderBy(d => d.Date)
-			.Select(d => new DayShortDto { Date = d.Date, IsReady = d.IsReady, MediaCount = d.Media.Count})
+			.Select(d => new DayShortDto { Date = d.Date, IsReady = d.IsReady, MediaCount = d.Media.Count })
 			.ToListAsync(cancellationToken);
 
 		return new GetDaysResponse
