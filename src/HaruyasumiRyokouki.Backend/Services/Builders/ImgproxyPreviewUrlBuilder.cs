@@ -1,5 +1,7 @@
+using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace HaruyasumiRyokouki.Backend.Services.Builders;
 
@@ -27,6 +29,38 @@ public class ImgproxyPreviewUrlBuilder : AbstractUrlBuilder
 			_key = Convert.FromHexString(key ?? "");
 			_salt = Convert.FromHexString(salt ?? "");
 		}
+	}
+
+	public string BuildRaw(string fileName)
+	{
+		string fileFormat = Path.GetExtension(fileName).TrimStart('.').ToLower();
+		string signature;
+
+		var templateForRawResult = Regex.Replace(
+			_template,
+			@"/[^/]*(\{xAxis\}|\{yAxis\})[^/]*/",
+			"/raw:1/"
+		);
+
+		if (_insecure)
+		{
+			signature = _insecureSignature;
+		}
+		else
+		{
+			string payloadTemplate = templateForRawResult.Split("{signature}").Last();
+
+			string payloadString = payloadTemplate
+				.Replace("{fileFormat}", fileFormat)
+				.Replace("{fileName}", Uri.EscapeDataString(fileName));
+
+			signature = GenerateSignature(payloadString);
+		}
+
+		return templateForRawResult
+			.Replace("{signature}", signature)
+			.Replace("{fileFormat}", fileFormat)
+			.Replace("{fileName}", Uri.EscapeDataString(fileName));
 	}
 
 	public string Build(string fileName, int xAxis, int yAxis)
