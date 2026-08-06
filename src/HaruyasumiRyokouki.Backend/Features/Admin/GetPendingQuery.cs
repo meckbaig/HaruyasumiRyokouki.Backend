@@ -14,12 +14,7 @@ namespace HaruyasumiRyokouki.Backend.Features.Admin;
 
 public record GetPendingQuery : IRequest<GetPendingResponse>, ILocalizableRequest, IDisplayAwareRequest
 {
-	[SwaggerIgnore]
-	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
-
-	[SwaggerIgnore]
-	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 }
 

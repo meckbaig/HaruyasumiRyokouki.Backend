@@ -9,9 +9,7 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Swashbuckle.AspNetCore.Annotations;
 using System.Linq.Expressions;
-using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Search;
 
@@ -20,12 +18,8 @@ public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisp
 	[FromQuery]
 	public required string Text { get; init; }
 
-	[SwaggerIgnore]
-	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
 
-	[SwaggerIgnore]
-	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 }
 

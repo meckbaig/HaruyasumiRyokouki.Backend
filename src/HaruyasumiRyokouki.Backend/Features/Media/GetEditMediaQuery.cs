@@ -8,8 +8,6 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Swashbuckle.AspNetCore.Annotations;
-using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
@@ -18,8 +16,6 @@ public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareR
 	[FromQuery]
 	public required ICollection<int> Ids { get; init; }
 
-	[SwaggerIgnore]
-	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 }
 

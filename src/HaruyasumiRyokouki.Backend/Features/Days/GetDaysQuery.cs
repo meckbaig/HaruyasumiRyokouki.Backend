@@ -4,15 +4,11 @@ using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Swashbuckle.AspNetCore.Annotations;
-using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
 public record GetDaysQuery : IRequest<GetDaysResponse>, ILocalizableRequest
 {
-	[SwaggerIgnore]
-	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
 }
 
