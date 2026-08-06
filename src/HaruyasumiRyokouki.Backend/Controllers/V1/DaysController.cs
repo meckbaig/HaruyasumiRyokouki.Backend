@@ -42,8 +42,9 @@ public class DaysController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<GetDaysResponse>> GetList([FromQuery] GetDaysQuery query)
+	public async Task<ActionResult<GetDaysResponse>> GetList()
 	{
+		GetDaysQuery query = new();
 		var result = await _mediator.Send(query);
 		return result.ToJsonResponse();
 	}
