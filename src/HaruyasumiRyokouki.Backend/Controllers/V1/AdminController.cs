@@ -28,9 +28,9 @@ public class AdminController : ControllerBase
 
 	[Authorize]
 	[HttpGet("pending")]
-	public async Task<ActionResult<GetPendingResponse>> GetList([FromQuery] GetPendingQuery query)
+	public async Task<ActionResult<GetPendingResponse>> GetList([FromQuery] GetPendingQuery query, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(query);
+		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
 	}
 

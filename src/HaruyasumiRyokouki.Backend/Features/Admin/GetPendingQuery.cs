@@ -42,18 +42,18 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 
 	public async Task<GetPendingResponse> Handle(GetPendingQuery request, CancellationToken cancellationToken)
 	{
-		var pendingDays = _context.Days
+		var pendingDays = await _context.Days
 			.AsNoTracking()
 			.Include(d => d.Translations/*.Where(t => t.LanguageCode == request.AcceptLanguage)*/)
 			.Where(d => !d.IsReady)
 			.OrderBy(d => d.Date)
-			.ToList();
-		var pendingMedia = _context.MediaFiles
+			.ToListAsync(cancellationToken);
+		var pendingMedia = await _context.MediaFiles
 			.AsNoTracking()
 			.Include(m => m.Translations/*.Where(t => t.LanguageCode == request.AcceptLanguage)*/)
 			.Where(m => !m.IsApproved)
 			.OrderBy(m => m.Created)
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		return new GetPendingResponse
 		{

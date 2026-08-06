@@ -29,41 +29,41 @@ public class MediaController : ControllerBase
 
 	[Authorize]
 	[HttpDelete("{mediaId}")]
-	public async Task<IActionResult> DeleteMedia(DeleteMediaCommand command)
+	public async Task<IActionResult> DeleteMedia(DeleteMediaCommand command, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(command);
+		var result = await _mediator.Send(command, cancellationToken);
 		return Ok();
 	}
 
 	[Authorize]
 	[HttpPatch]
-	public async Task<ActionResult<EditMediaResponse>> EditMedia(EditMediaCommand command)
+	public async Task<ActionResult<EditMediaResponse>> EditMedia(EditMediaCommand command, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(command);
+		var result = await _mediator.Send(command, cancellationToken);
 		return result.ToJsonResponse();
 	}
 
 	[Authorize]
 	[HttpPut("sync")]
-	public async Task<IActionResult> SyncMedia()
+	public async Task<IActionResult> SyncMedia(CancellationToken cancellationToken)
 	{
 		SyncMediaCommand command = new();
-		var result = await _mediator.Send(command);
+		var result = await _mediator.Send(command, cancellationToken);
 		return Ok();
 	}
 
 	[Authorize]
 	[HttpGet("edit")]
-	public async Task<ActionResult<GetEditMediaResponse>> GetEditMedia(GetEditMediaQuery query)
+	public async Task<ActionResult<GetEditMediaResponse>> GetEditMedia(GetEditMediaQuery query, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(query);
+		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
 	}
 
 	[HttpGet("locations")]
-	public async Task<ActionResult<GetMediaLocationsResponse>> GetMediaLocations(GetMediaLocationsQuery query)
+	public async Task<ActionResult<GetMediaLocationsResponse>> GetMediaLocations(GetMediaLocationsQuery query, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(query);
+		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
 	}	
 }

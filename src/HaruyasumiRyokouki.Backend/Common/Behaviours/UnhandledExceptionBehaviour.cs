@@ -27,6 +27,11 @@ internal class UnhandledExceptionBehaviour<TRequest, TResponse> : IPipelineBehav
 			_logger.LogInformation("Validation error: {ErrorMessage}", ex.Message);
 			throw;
 		}
+		catch (OperationCanceledException ex)
+		{
+			_logger.LogInformation("Operation was canceled: {ErrorMessage}", ex.Message);
+			throw;
+		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Unhandled exception");

@@ -85,7 +85,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 
 		if (request.Body.AutoTranslate)
 		{
-			var newTranslationsDtos = await TranslateMedia(request.Body.Changes.Translations.Value ?? []);
+			var newTranslationsDtos = await TranslateMedia(request.Body.Changes.Translations.Value ?? [], cancellationToken);
 			var newTranslations = newTranslationsDtos.FromEditDtos().ToList();
 			mediaToEdit.ForEach(m => UpdateTranslations(m.Translations, newTranslations));
 		}
@@ -100,7 +100,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 		new LanguagePriority(LanguageCode.Japanese, nameof(LanguageCode.Japanese), 3),
 	];
 
-	private async Task<ICollection<MediaTranslationEditDto>> TranslateMedia(ICollection<MediaTranslationEditDto> mediaTranslations)
+	private async Task<ICollection<MediaTranslationEditDto>> TranslateMedia(ICollection<MediaTranslationEditDto> mediaTranslations, CancellationToken cancellationToken)
 	{
 		var existingTranslations = mediaTranslations
 			.Where(t => !string.IsNullOrWhiteSpace(t.Title) && t.Tags.Any())
@@ -131,7 +131,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 				Tags = string.Join(',', source.Tags),
 				TargetLanguage = missingLanguage.LanguageName
 			};
-			var translationResponse = await _mediator.Send(command);
+			var translationResponse = await _mediator.Send(command, cancellationToken);
 			return new MediaTranslationEditDto
 			{
 				Title = translationResponse.Title,

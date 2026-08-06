@@ -28,32 +28,32 @@ public class DaysController : ControllerBase
 
 	[Authorize]
 	[HttpPut("{date}")]
-	public async Task<ActionResult<EditDayResponse>> EditDay(EditDayCommand command)
+	public async Task<ActionResult<EditDayResponse>> EditDay(EditDayCommand command, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(command);
+		var result = await _mediator.Send(command, cancellationToken);
 		return result.ToJsonResponse();
 	}
 
 	[HttpGet("{date}")]
-	public async Task<ActionResult<GetDayResponse>> GetDay(GetDayQuery query)
+	public async Task<ActionResult<GetDayResponse>> GetDay(GetDayQuery query, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(query);
+		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<GetDaysResponse>> GetList()
+	public async Task<ActionResult<GetDaysResponse>> GetList(CancellationToken cancellationToken)
 	{
 		GetDaysQuery query = new();
-		var result = await _mediator.Send(query);
+		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
 	}
 
 	[Authorize]
 	[HttpGet("{date}/edit")]
-	public async Task<ActionResult<GetEditDayResponse>> GetEditDay(GetEditDayQuery query)
+	public async Task<ActionResult<GetEditDayResponse>> GetEditDay(GetEditDayQuery query, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(query);
+		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
 	}
 }

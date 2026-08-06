@@ -1,11 +1,10 @@
 using Asp.Versioning;
+using HaruyasumiRyokouki.Backend.Extensions;
+using HaruyasumiRyokouki.Backend.Features.Search;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
-using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Features.Search;
 
 namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 
@@ -27,9 +26,9 @@ public class SearchController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<SearchResponse>> GetList(SearchQuery query)
+	public async Task<ActionResult<SearchResponse>> GetList(SearchQuery query, CancellationToken cancellationToken)
 	{
-		var result = await _mediator.Send(query);
+		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
 	}
 }

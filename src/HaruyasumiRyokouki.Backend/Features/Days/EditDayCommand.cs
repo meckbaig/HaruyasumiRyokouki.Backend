@@ -76,7 +76,7 @@ internal class EditDayHandler : IRequestHandler<EditDayCommand, EditDayResponse>
 		await _context.SaveChangesAsync(cancellationToken);
 
 		if (request.Body.AutoTranslate)
-			day.Translations = await TranslateNote(day);
+			day.Translations = await TranslateNoteAsync(day, cancellationToken);
 
 		return new EditDayResponse { Day = day.ToEditDto() };
 	}
@@ -88,7 +88,7 @@ internal class EditDayHandler : IRequestHandler<EditDayCommand, EditDayResponse>
 		new LanguagePriority(LanguageCode.Japanese, nameof(LanguageCode.Japanese), 3),
 	];
 
-	private async Task<ICollection<DayTranslation>> TranslateNote(Day day)
+	private async Task<ICollection<DayTranslation>> TranslateNoteAsync(Day day, CancellationToken cancellationToken)
 	{
 		var existingTranslations = day.Translations
 			.Where(x => !string.IsNullOrWhiteSpace(x.Note))
@@ -117,7 +117,7 @@ internal class EditDayHandler : IRequestHandler<EditDayCommand, EditDayResponse>
 				InputText = source.Note,
 				TargetLanguage = missingLanguage.LanguageName
 			};
-			var translationResponse = await _mediator.Send(command);
+			var translationResponse = await _mediator.Send(command, cancellationToken);
 			return new DayTranslation
 			{
 				Note = translationResponse.Result,
