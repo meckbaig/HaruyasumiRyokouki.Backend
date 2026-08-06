@@ -45,7 +45,7 @@ internal class FfmpegService : IFfmpegService
 		await RunFfmpegAsync(pass2Arguments, workDir, cancellationToken);
 	}
 
-	public async Task<VideoFileInfo> GetVideoInfoAsync(MediaInput mediaInput, CancellationToken cancellationToken = default)
+	public async Task<VideoFileInfo> GetVideoInfoAsync(MediaInput mediaInput, CancellationToken cancellationToken)
 	{
 		var arguments = new StringBuilder();
 		foreach (var header in mediaInput.Headers)
@@ -87,21 +87,29 @@ internal class FfmpegService : IFfmpegService
 				throw new NotImplementedException("Image preset does not exist.");
 		}
 	}
-
+	
 	private string GetVideoPreset(FfmpegVideoPreset preset, int pass = 1)
 	{
 		const string errorMessage = "Video preset does not exist.";
-		return pass switch
+		return preset switch
 		{
-			1 => preset switch
+			FfmpegVideoPreset.h254_1440p_2pass_20M => pass switch
 			{
-				FfmpegVideoPreset.h254_1440p_2pass_20M => "-map_metadata 0 -vf scale=-2:1440 -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 1 -an -f null -",
-				_ => throw new NotImplementedException(errorMessage),
+				1 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,1440)':'if(gt(iw,ih),1440,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 1 -an -f null -",
+				2 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,1440)':'if(gt(iw,ih),1440,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 2 -c:a copy -movflags +faststart",
+				_ => throw new NotImplementedException(errorMessage)
 			},
-			2 => preset switch
+			FfmpegVideoPreset.h254_1080p_2pass_10M => pass switch
 			{
-				FfmpegVideoPreset.h254_1440p_2pass_20M => "-map_metadata 0 -vf scale=-2:1440 -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 2 -c:a copy -movflags +faststart",
-				_ => throw new NotImplementedException(errorMessage),
+				1 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,1080)':'if(gt(iw,ih),1080,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 10M -pass 1 -an -f null -",
+				2 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,1080)':'if(gt(iw,ih),1080,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 10M -pass 2 -c:a copy -movflags +faststart",
+				_ => throw new NotImplementedException(errorMessage)
+			},
+			FfmpegVideoPreset.h254_720p_2pass_5M => pass switch
+			{
+				1 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,720)':'if(gt(iw,ih),720,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 5M -pass 1 -an -f null -",
+				2 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,720)':'if(gt(iw,ih),720,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 5M -pass 2 -c:a copy -movflags +faststart",
+				_ => throw new NotImplementedException(errorMessage)
 			},
 			_ => throw new NotImplementedException(errorMessage),
 		};
