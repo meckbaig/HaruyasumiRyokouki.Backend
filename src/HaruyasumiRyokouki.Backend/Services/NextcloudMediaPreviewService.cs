@@ -34,7 +34,7 @@ internal class NextcloudMediaPreviewService : IMediaPreviewService
 		int imageSize;
 		switch (linkType)
 		{
-			case ImageUrlType.Original:
+			case ImageUrlType.Download:
 				return _originBuilder.Build(fileName);
 			case ImageUrlType.FullScreen:
 			case ImageUrlType.Preview:

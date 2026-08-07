@@ -46,7 +46,7 @@ internal class ClientDisplayBehavior<TRequest, TResponse> : IPipelineBehavior<TR
 			switch (pair[0].ToLowerInvariant())
 			{
 				case "dpr":
-					if (double.TryParse(pair[1],
+					if (float.TryParse(pair[1],
 						NumberStyles.Float,
 						CultureInfo.InvariantCulture,
 						out var dpr))

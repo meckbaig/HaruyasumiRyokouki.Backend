@@ -4,7 +4,7 @@ namespace HaruyasumiRyokouki.Backend.Models.InternalDtos;
 
 public record ClientDisplay
 {
-	public double? Dpr { get; set; }
+	public float? Dpr { get; set; }
 	public int? MinSide { get; set; }
 }
 

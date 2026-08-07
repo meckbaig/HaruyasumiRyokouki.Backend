@@ -69,19 +69,17 @@ sealed class MediaPreviewOptionsValidator : IValidateOptions<MediaPreviewOptions
 	private bool ValidateImgproxyOptions(ImgproxyOptions options, out string errors)
 	{
 		var failures = new StringBuilder();
-		if (string.IsNullOrWhiteSpace(options.PublicPreviewBase))
+		if (string.IsNullOrWhiteSpace(options.Endpoint))
 		{
 			failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
 				$"{nameof(MediaPreviewOptions.Imgproxy)}." +
-				$"{nameof(ImgproxyOptions.PublicPreviewBase)}' cannot be null or empty.");
+				$"{nameof(ImgproxyOptions.Endpoint)}' cannot be null or empty.");
 		}
-		else
+		if (string.IsNullOrWhiteSpace(options.FilePath))
 		{
-			var builder = new ImgproxyPreviewUrlBuilder(options.PublicPreviewBase, options.Insecure, options.Key, options.Salt);
-			if (!builder.Validate(out var missingTokens))
-				failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
-					$"{nameof(MediaPreviewOptions.Imgproxy)}." +
-					$"{nameof(ImgproxyOptions.PublicPreviewBase)}' is missing tokens: {string.Join(',', missingTokens)}.");
+			failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaPreviewOptions.Imgproxy)}." +
+				$"{nameof(ImgproxyOptions.FilePath)}' cannot be null or empty.");
 		}
 		if (!options.Insecure)
 		{

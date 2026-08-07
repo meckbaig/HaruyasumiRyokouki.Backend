@@ -222,7 +222,7 @@ internal static class MappingExtensions
 	{
 		return new ImageUrlsDto
 		{
-			Original = previewService.GetImageUrl(media.FileName, ImageUrlType.Original, clientDisplay),
+			Download = previewService.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay),
 			FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay),
 			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay)
 		};
@@ -242,7 +242,7 @@ internal static class MappingExtensions
 	{
 		return new ImageUrlsDto
 		{
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay)
+			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay)
 		};
 	}
 

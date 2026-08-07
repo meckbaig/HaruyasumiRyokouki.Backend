@@ -20,7 +20,8 @@ sealed class MediaPreviewOptions
 
 	public class ImgproxyOptions
 	{
-		public string PublicPreviewBase { get; set; }
+		public string Endpoint { get; set; }
+		public string FilePath { get; set; }
 		public string? Key { get; set; }
 		public string? Salt { get; set; }
 		public bool Insecure { get; set; }

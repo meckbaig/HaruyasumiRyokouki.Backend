@@ -9,19 +9,19 @@ internal class MediaResolutionCalculationService : IMediaResolutionCalculationSe
 {
 	private readonly MediaSizesOptions _options;
 
-	private const int DefaultAspectRatio = 4 / 3;
+	private const float DefaultAspectRatio = 4f / 3f;
 
 	public MediaResolutionCalculationService(IOptions<MediaSizesOptions> options)
 	{
 		_options = options.Value;
 	}
 
-	public int GetResolution(ImageUrlType linkType, double? dpr, int? resolution)
+	public int GetResolution(ImageUrlType linkType, float? dpr, int? resolution)
 	{
 		return GetNearestResolution(CalculateSize(linkType, dpr, resolution));
 	}
 
-	public int CalculateSize(ImageUrlType linkType, double? dpr, int? resolution)
+	public int CalculateSize(ImageUrlType linkType, float? dpr, int? resolution)
 	{
 		dpr ??= 1;
 		resolution ??= _options.DefaultScreenResolution;
