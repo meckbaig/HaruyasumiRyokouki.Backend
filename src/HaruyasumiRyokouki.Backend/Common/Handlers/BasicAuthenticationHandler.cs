@@ -24,7 +24,7 @@ internal class BasicAuthenticationHandler : AuthenticationHandler<Authentication
 	protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
 	{
 		if (!Request.Headers.ContainsKey("Authorization"))
-			return AuthenticateResult.Fail("Missing Authorization Header");
+			return AuthenticateResult.NoResult();
 
 		try
 		{
