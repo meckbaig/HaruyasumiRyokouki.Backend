@@ -1,14 +1,16 @@
-using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
-
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 sealed class MediaFormatOptions
 {
 	public const string ConfigurationSectionName = "MediaFormat";
 
-	public required FfmpegImagePreset TargetImagePreset { get; set; }
+	public required string VideoPreset { get; set; }
 
-	public required FfmpegVideoPreset TargetVideoPreset { get; set; }
+	public required string VideoThumbnailPreset { get; set; }
 
-	public int PreviewSize { get; set; }
+	public required string ImagePreset { get; set; }
+
+	public required string MiniaturePreset { get; set; }
+
+	public required int MiniatureSize { get; set; }
 }

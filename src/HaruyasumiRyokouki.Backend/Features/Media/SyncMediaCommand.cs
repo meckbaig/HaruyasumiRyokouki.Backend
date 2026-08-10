@@ -74,6 +74,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 			catch (Exception ex)
 			{
 				_logger.LogError(ex.Message);
+				_logger.LogWarning("File skipped: {FileName}", fileToCreate.FileName);
 			}
 		}
 	}

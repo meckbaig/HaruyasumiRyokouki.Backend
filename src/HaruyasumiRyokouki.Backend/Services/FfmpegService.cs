@@ -1,6 +1,7 @@
+using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
-using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -11,10 +12,19 @@ namespace HaruyasumiRyokouki.Backend.Services;
 internal class FfmpegService : IFfmpegService
 {
 	private readonly ILogger<FfmpegService> _logger;
+	private readonly MediaFormatOptions _mediaFormatOptions;
+	private readonly MediaPresetsOptions _mediaPresetsOptions;
 
-	public FfmpegService(ILogger<FfmpegService> logger)
+	private const string Input = "{input}";
+	private const string Output = "{output}";
+	private const string MiniatureSize = "{miniatureSize}";
+	private const string VideoThumbnailPrefix = "{videoThumbnailPrefix}";
+
+	public FfmpegService(ILogger<FfmpegService> logger, IOptions<MediaFormatOptions> mediaFormatOptions, IOptions<MediaPresetsOptions> mediaPresetsOptions)
 	{
 		_logger = logger;
+		_mediaFormatOptions = mediaFormatOptions.Value;
+		_mediaPresetsOptions = mediaPresetsOptions.Value;
 	}
 
 	private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions()
@@ -22,27 +32,43 @@ internal class FfmpegService : IFfmpegService
 		PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
 	};
 
-	public async Task ConvertImageAsync(string input, string output, FfmpegImagePreset preset, CancellationToken cancellationToken)
+	public async Task ConvertImageAsync(string input, string output, CancellationToken cancellationToken)
 	{
-		string arguments = $"-i \"{input}\" {GetImagePreset(preset)} \"{output}\"";
+		string arguments = _mediaPresetsOptions.Image
+			.GetValueOrDefault(_mediaFormatOptions.ImagePreset)!
+			.Replace(Input, input)
+			.Replace(Output, output)
+			.Replace(VideoThumbnailPrefix, "")
+			.Trim();
 		await RunFfmpegAsync(arguments, cancellationToken: cancellationToken);
 	}
 
-	public async Task CreateVideoPreviewAsync(string input, string output, FfmpegImagePreset preset, CancellationToken cancellationToken)
+	public async Task CreateVideoPreviewAsync(string input, string output, CancellationToken cancellationToken)
 	{
-		string videoPreviewArguments = "-ss 00:00:01 -vframes 1";
-		string arguments = $"-i \"{input}\" {videoPreviewArguments} {GetImagePreset(preset)} \"{output}\"";
+		string videoThumbnailPrefix = _mediaPresetsOptions.VideoThumbnailPrefix
+			.GetValueOrDefault(_mediaFormatOptions.VideoThumbnailPreset)!
+			.Trim();
+		string arguments = _mediaPresetsOptions.Image
+			.GetValueOrDefault(_mediaFormatOptions.ImagePreset)!
+			.Replace(Input, input)
+			.Replace(Output, output)
+			.Replace(VideoThumbnailPrefix, videoThumbnailPrefix)
+			.Trim();
 		await RunFfmpegAsync(arguments, cancellationToken: cancellationToken);
 	}
 
-	public async Task ConvertVideoAsync(string input, string output, FfmpegVideoPreset preset, CancellationToken cancellationToken)
+	public async Task ConvertVideoAsync(string input, string output, CancellationToken cancellationToken)
 	{
 		string workDir = Path.GetDirectoryName(input);
-		string pass1Arguments = $"-i \"{input}\" {GetVideoPreset(preset, pass: 1)}";
-		string pass2Arguments = $"-i \"{input}\" {GetVideoPreset(preset, pass: 2)} \"{output}\"";
-
-		await RunFfmpegAsync(pass1Arguments, workDir, cancellationToken);
-		await RunFfmpegAsync(pass2Arguments, workDir, cancellationToken);
+		string[] passes = _mediaPresetsOptions.Video.GetValueOrDefault(_mediaFormatOptions.VideoPreset)!;
+		foreach (var pass in passes)
+		{
+			string arguments = pass
+				.Replace(Input, input)
+				.Replace(Output, output)
+				.Trim();
+			await RunFfmpegAsync(arguments, workDir, cancellationToken);
+		}
 	}
 
 	public async Task<VideoFileInfo> GetVideoInfoAsync(MediaInput mediaInput, CancellationToken cancellationToken)
@@ -65,54 +91,15 @@ internal class FfmpegService : IFfmpegService
 		};
 	}
 
-	public async Task<byte[]> GetImageMiniatureBytesAsync(string input, int sideSize, CancellationToken cancellationToken)
+	public async Task<byte[]> GetImageMiniatureBytesAsync(string input, CancellationToken cancellationToken)
 	{
-		string arguments =
-			$"-i \"{input}\" " +
-			$"-vf \"scale={sideSize}:{sideSize}:force_original_aspect_ratio=increase,crop={sideSize}:{sideSize}\" " +
-			$"-c:v libwebp -quality 75 -compression_level 6 -preset picture -f webp pipe:1";
+		int miniatureSize = _mediaFormatOptions.MiniatureSize;
+		string arguments = _mediaPresetsOptions.Miniature
+			.GetValueOrDefault(_mediaFormatOptions.MiniaturePreset)!
+			.Replace(Input, input)
+			.Replace(MiniatureSize, miniatureSize.ToString())
+			.Trim();
 		return await RunFfmpegBytesAsync(arguments, cancellationToken);
-	}
-
-
-	private string GetImagePreset(FfmpegImagePreset preset)
-	{
-		switch (preset)
-		{
-			case FfmpegImagePreset.Webp:
-				return "-map_metadata 0 -c:v libwebp -quality 88 -compression_level 6 -preset picture";
-			case FfmpegImagePreset.Avif:
-				return "-map_metadata 0 -c:v libaom-av1 -still-picture 1 -crf 20";
-			default:
-				throw new NotImplementedException("Image preset does not exist.");
-		}
-	}
-	
-	private string GetVideoPreset(FfmpegVideoPreset preset, int pass = 1)
-	{
-		const string errorMessage = "Video preset does not exist.";
-		return preset switch
-		{
-			FfmpegVideoPreset.h254_1440p_2pass_20M => pass switch
-			{
-				1 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,1440)':'if(gt(iw,ih),1440,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 1 -an -f null -",
-				2 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,1440)':'if(gt(iw,ih),1440,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 20M -pass 2 -c:a copy -movflags +faststart",
-				_ => throw new NotImplementedException(errorMessage)
-			},
-			FfmpegVideoPreset.h254_1080p_2pass_10M => pass switch
-			{
-				1 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,1080)':'if(gt(iw,ih),1080,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 10M -pass 1 -an -f null -",
-				2 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,1080)':'if(gt(iw,ih),1080,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 10M -pass 2 -c:a copy -movflags +faststart",
-				_ => throw new NotImplementedException(errorMessage)
-			},
-			FfmpegVideoPreset.h254_720p_2pass_5M => pass switch
-			{
-				1 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,720)':'if(gt(iw,ih),720,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 5M -pass 1 -an -f null -",
-				2 => "-map_metadata 0 -vf \"scale='if(gt(iw,ih),-2,720)':'if(gt(iw,ih),720,-2)'\" -c:v libx264 -preset slow -aq-mode 3 -profile:v high -level 5.1 -b:v 5M -pass 2 -c:a copy -movflags +faststart",
-				_ => throw new NotImplementedException(errorMessage)
-			},
-			_ => throw new NotImplementedException(errorMessage),
-		};
 	}
 
 	private async Task RunFfmpegAsync(string arguments, string? workingDirectory = null, CancellationToken cancellationToken = default)

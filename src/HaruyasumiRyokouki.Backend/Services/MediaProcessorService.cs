@@ -46,7 +46,7 @@ internal class MediaProcessorService : IMediaProcessorService
 	{
 		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(VideoPreviewSuffix))
 			return fileName;
-		return Path.GetFileNameWithoutExtension(fileName) + VideoPreviewSuffix + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
+		return Path.GetFileNameWithoutExtension(fileName) + VideoPreviewSuffix + "." + _mediaFormatOptions.ImagePreset.ToString().ToLower();
 	}
 
 	public bool IsAnImage(string fileName)
@@ -64,7 +64,7 @@ internal class MediaProcessorService : IMediaProcessorService
 		if (mediaType == MediaType.Image)
 		{
 			string fileExtension = Path.GetExtension(fileName).TrimStart('.').ToLower();
-			string targetExtension = _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
+			string targetExtension = _mediaFormatOptions.ImagePreset.ToString().ToLower();
 			return fileExtension != targetExtension;
 		}
 		if (mediaType == MediaType.Video)
@@ -95,11 +95,11 @@ internal class MediaProcessorService : IMediaProcessorService
 
 		if (await ShouldBeConverted(fileName, MediaType.Image))
 		{
-			resultImageFileName = Path.GetFileNameWithoutExtension(fileName) + "." + _mediaFormatOptions.TargetImagePreset.ToString().ToLower();
+			resultImageFileName = Path.GetFileNameWithoutExtension(fileName) + "." + _mediaFormatOptions.ImagePreset.ToString().ToLower();
 			var outputFile = Path.Combine(workspace.TempFolder, resultImageFileName);
 
 			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
-			await _ffmpegService.ConvertImageAsync(inputFile, outputFile, _mediaFormatOptions.TargetImagePreset, cancellationToken);
+			await _ffmpegService.ConvertImageAsync(inputFile, outputFile, cancellationToken);
 			_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
 			SetOriginalTimeInfo(inputFile, outputFile);
 
@@ -137,7 +137,7 @@ internal class MediaProcessorService : IMediaProcessorService
 			var outputFile = Path.Combine(workspace.TempFolder, resultVideoFileName);
 
 			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
-			await _ffmpegService.ConvertVideoAsync(inputFile, outputFile, _mediaFormatOptions.TargetVideoPreset, cancellationToken);
+			await _ffmpegService.ConvertVideoAsync(inputFile, outputFile, cancellationToken);
 			_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
 			SetOriginalTimeInfo(inputFile, outputFile);
 
@@ -179,7 +179,6 @@ internal class MediaProcessorService : IMediaProcessorService
 		var miniatureBytes = await _ffmpegService.GetImageMiniatureBytesAsync
 		(
 			fileName,
-			_mediaFormatOptions.PreviewSize,
 			cancellationToken
 		);
 		return Convert.ToBase64String(miniatureBytes);
@@ -192,7 +191,7 @@ internal class MediaProcessorService : IMediaProcessorService
 		var outputFile = Path.Combine(workspace.TempFolder, resultVideoPreviewFileName);
 
 		_logger.LogDebug("Video preview creation started ({OriginalFileName} -> {NewFileName})", fileName, resultVideoPreviewFileName);
-		await _ffmpegService.CreateVideoPreviewAsync(inputFile, outputFile, _mediaFormatOptions.TargetImagePreset, cancellationToken);
+		await _ffmpegService.CreateVideoPreviewAsync(inputFile, outputFile, cancellationToken);
 
 		SetOriginalTimeInfo(inputFile, outputFile);
 

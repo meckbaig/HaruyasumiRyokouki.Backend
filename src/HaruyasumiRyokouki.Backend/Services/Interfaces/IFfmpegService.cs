@@ -1,13 +1,12 @@
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
-using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
 
 namespace HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 internal interface IFfmpegService
 {
-	Task ConvertImageAsync(string input, string output, FfmpegImagePreset preset, CancellationToken cancellationToken = default);
-	Task CreateVideoPreviewAsync(string input, string output, FfmpegImagePreset preset, CancellationToken cancellationToken = default);
-	Task ConvertVideoAsync(string input, string output, FfmpegVideoPreset preset, CancellationToken cancellationToken = default);
+	Task ConvertImageAsync(string input, string output, CancellationToken cancellationToken = default);
+	Task CreateVideoPreviewAsync(string input, string output, CancellationToken cancellationToken = default);
+	Task ConvertVideoAsync(string input, string output, CancellationToken cancellationToken = default);
 	Task<VideoFileInfo> GetVideoInfoAsync(MediaInput mediaInput, CancellationToken cancellationToken = default);
-	Task<byte[]> GetImageMiniatureBytesAsync(string input, int sideSize, CancellationToken cancellationToken);
+	Task<byte[]> GetImageMiniatureBytesAsync(string input, CancellationToken cancellationToken);
 }

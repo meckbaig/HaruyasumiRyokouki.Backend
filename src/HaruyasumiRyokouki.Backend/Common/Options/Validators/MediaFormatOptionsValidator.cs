@@ -1,12 +1,16 @@
-using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
 using Microsoft.Extensions.Options;
-using System;
 using System.Text;
 
 namespace HaruyasumiRyokouki.Backend.Common.Options.Validators;
 
 sealed class MediaFormatOptionsValidator : IValidateOptions<MediaFormatOptions>
 {
+	private readonly MediaPresetsOptions _presetsOptions;
+	public MediaFormatOptionsValidator(IOptions<MediaPresetsOptions> presetsOptions)
+	{
+		_presetsOptions = presetsOptions.Value;
+	}
+
 	public ValidateOptionsResult Validate(string? name, MediaFormatOptions options)
 	{
 		var failures = new StringBuilder();
@@ -16,20 +20,30 @@ sealed class MediaFormatOptionsValidator : IValidateOptions<MediaFormatOptions>
 			return ValidateOptionsResult.Fail($"'{MediaFormatOptions.ConfigurationSectionName}' must not be null.");
 		}
 
-		if (!Enum.IsDefined(options.TargetImagePreset))
+		if (!_presetsOptions.Video.ContainsKey(options.VideoPreset))
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaFormatOptions.TargetImagePreset)}' is not valid. Available options: {string.Join(", ", Enum.GetNames(typeof(FfmpegImagePreset)))}");
+				$"{nameof(MediaFormatOptions.VideoPreset)}' must be valid key from {MediaPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Video)}.");
 		}
-		if (!Enum.IsDefined(options.TargetVideoPreset))
+		if (!_presetsOptions.VideoThumbnailPrefix.ContainsKey(options.VideoThumbnailPreset))
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaFormatOptions.TargetImagePreset)}' is not valid. Available options: {string.Join(", ", Enum.GetNames(typeof(FfmpegVideoPreset)))}");
+				$"{nameof(MediaFormatOptions.VideoThumbnailPreset)}' must be valid key from {MediaPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.VideoThumbnailPrefix)}.");
 		}
-		if (options.PreviewSize <= 0)
+		if (!_presetsOptions.Image.ContainsKey(options.ImagePreset))
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaFormatOptions.PreviewSize)}' must be greater than 0.");
+				$"{nameof(MediaFormatOptions.ImagePreset)}' must be valid key from {MediaPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Image)}.");
+		}
+		if (!_presetsOptions.Miniature.ContainsKey(options.MiniaturePreset))
+		{
+			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaFormatOptions.MiniaturePreset)}' must be valid key from {MediaPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Miniature)}.");
+		}
+		if (options.MiniatureSize <= 0)
+		{
+			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaFormatOptions.MiniatureSize)}' must be greater than 0.");
 		}
 
 		return failures.Length > 0
