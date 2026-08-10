@@ -1,18 +1,8 @@
-# Build
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-
-# Copy
-COPY . .
-
-WORKDIR /src/HaruyasumiRyokouki.Backend
-RUN dotnet restore
-RUN dotnet publish -c Release -o /app/publish
-
-# Start
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=build /app/publish .
-
+COPY ./publish ./
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "HaruyasumiRyokouki.Backend.dll"]

@@ -1,16 +1,15 @@
-version: '3.9'
-
 services:
-  ultimate_messenger:
+  haruyasumi_ryokouki:
     build: .
-    container_name: ultimate_messenger
+    container_name: haruyasumi_ryokouki
     deploy:
       resources:
         limits:
-          memory: 1024Mb
-          cpus: "2"
+          memory: 1536Mb
+          cpus: "4"
     ports:
-      - "8080:80"
+      - "5104:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
     restart: unless-stopped
