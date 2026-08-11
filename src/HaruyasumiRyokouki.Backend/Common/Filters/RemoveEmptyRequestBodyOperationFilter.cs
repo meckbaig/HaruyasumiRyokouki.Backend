@@ -9,13 +9,5 @@ public sealed class RemoveEmptyRequestBodyOperationFilter : IOperationFilter
 	{
 		if (operation.RequestBody is null)
 			return;
-
-		var schema = operation.RequestBody.Content.Values
-			.FirstOrDefault()?.Schema;
-
-		if (schema?.Properties is { Count: 0 })
-		{
-			operation.RequestBody = null;
-		}
 	}
 }
