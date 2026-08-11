@@ -24,7 +24,7 @@ internal static class MappingExtensions
 		return source.Select(ToShortDto);
 	}
 
-	public static DayDto ToDto(this Day source)
+	public static DayDto ToDto(this Day source, bool includeFavorites = false)
 	{
 		return new DayDto
 		{
@@ -32,13 +32,13 @@ internal static class MappingExtensions
 			IsReady = source.IsReady,
 			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
 			Note = source.Translations.FirstOrDefault()?.Note,
-			Media = source.Media.ToDtos().ToList()
+			Media = source.Media.ToDtos(includeFavorites).ToList()
 		};
 	}
 
-	public static IEnumerable<DayDto> ToDtos(this IEnumerable<Day> source)
+	public static IEnumerable<DayDto> ToDtos(this IEnumerable<Day> source, bool includeFavorites = false)
 	{
-		return source.Select(ToDto);
+		return source.Select(x => x.ToDto(includeFavorites));
 	}
 
 	public static DayEditDto ToEditDto(this Day source)
@@ -71,7 +71,7 @@ internal static class MappingExtensions
 		return source.Select(ToEditDto);
 	}
 
-	public static MediaFileDto ToDto(this MediaFile source)
+	public static MediaFileDto ToDto(this MediaFile source, bool includeFavorite = false)
 	{
 		return new MediaFileDto
 		{
@@ -86,13 +86,14 @@ internal static class MappingExtensions
 			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
 			Title = source.Translations.FirstOrDefault()?.Title,
 			Description = source.Translations.FirstOrDefault()?.Description,
-			Tags = source.Translations.FirstOrDefault()?.Tags
+			Tags = source.Translations.FirstOrDefault()?.Tags,
+			Favorite = includeFavorite ? source.Favorite : null
 		};
 	}
 
-	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source)
+	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source, bool includeFavorite = false)
 	{
-		return source.Select(ToDto);
+		return source.Select(x => x.ToDto(includeFavorite));
 	}
 
 	public static MediaFileEditDto ToEditDto(this MediaFile source)
@@ -106,7 +107,8 @@ internal static class MappingExtensions
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
 			Miniature = source.Miniature,
-			Translations = source.Translations.ToEditDtos().ToList()
+			Translations = source.Translations.ToEditDtos().ToList(),
+			Favorite = source.Favorite
 		};
 	}
 

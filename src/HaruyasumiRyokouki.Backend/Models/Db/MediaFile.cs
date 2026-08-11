@@ -13,6 +13,7 @@ public class MediaFile
 	public double? Longitude { get; set; }
 	public bool IsApproved { get; set; }
 	public string? Miniature { get; set; }
+	public bool Favorite { get; set; } = false;
 
 	public ICollection<MediaTranslation> Translations { get; set; } = [];
 	public Day Day { get; set; }

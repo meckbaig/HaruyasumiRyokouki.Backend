@@ -64,4 +64,11 @@ public class MediaController : ControllerBase
 		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
 	}	
+
+	[HttpGet("favorites")]
+	public async Task<ActionResult<GetFavoriteMediaResponse>> GetFavoriteMedia([FromQuery] GetFavoriteMediaQuery query, CancellationToken cancellationToken)
+	{
+		var result = await _mediator.Send(query, cancellationToken);
+		return result.ToJsonResponse();
+	}	
 }

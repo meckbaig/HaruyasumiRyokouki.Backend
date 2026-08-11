@@ -14,6 +14,11 @@ public record MediaFileDto
 	public string? Description { get; set; }
 	public string Miniature { get; set; }
 
+	/// <summary>
+	/// <see langword="null"/> when user is not admin.
+	/// </summary>
+	public bool? Favorite { get; set; }
+
 	public ICollection<string> Tags { get; set; } = [];
 	public ImageUrlsDto? ImageUrls { get; set; } = null;
 	public VideoUrlsDto? VideoUrls { get; set; } = null;

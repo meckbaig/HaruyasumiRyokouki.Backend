@@ -13,4 +13,8 @@ sealed class MediaFormatOptions
 	public required string MiniaturePreset { get; set; }
 
 	public required int MiniatureSize { get; set; }
+
+	public required float FavoriteTargetCssMultiplier { get; set; }
+
+	public required int FavoritesReturnCount { get; set; }
 }
