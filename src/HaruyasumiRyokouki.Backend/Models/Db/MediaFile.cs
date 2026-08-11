@@ -8,6 +8,7 @@ public class MediaFile
 	public int DayId { get; set; }
 	public DateTime Created { get; set; }
 	public required string FileName { get; set; } = null!;
+	public float AspectRatio { get; set; }
 	public MediaType Type { get; set; } = MediaType.Unknown; 
 	public double? Latitude { get; set; }
 	public double? Longitude { get; set; }

@@ -78,6 +78,7 @@ internal static class MappingExtensions
 			Id = source.Id,
 			Created = source.Created,
 			FileName = source.FileName,
+			AspectRatio = source.AspectRatio,
 			Type = source.Type.ToString(),
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
@@ -103,6 +104,7 @@ internal static class MappingExtensions
 			Id = source.Id,
 			Created = source.Created,
 			FileName = source.FileName,
+			AspectRatio = source.AspectRatio,
 			Type = source.Type.ToString(),
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
@@ -224,9 +226,9 @@ internal static class MappingExtensions
 	{
 		return new ImageUrlsDto
 		{
-			Download = previewService.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay),
-			FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay),
-			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay)
+			Download = previewService.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay, media.AspectRatio),
+			FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay, media.AspectRatio),
+			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
 
@@ -234,9 +236,9 @@ internal static class MappingExtensions
 	{
 		return new VideoUrlsDto
 		{
-			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, clientDisplay),
-			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, clientDisplay),
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay)
+			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, clientDisplay, media.AspectRatio),
+			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, clientDisplay, media.AspectRatio),
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
 
@@ -244,7 +246,7 @@ internal static class MappingExtensions
 	{
 		return new ImageUrlsDto
 		{
-			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay)
+			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
 
@@ -252,7 +254,7 @@ internal static class MappingExtensions
 	{
 		return new VideoUrlsDto
 		{
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay)
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
 }

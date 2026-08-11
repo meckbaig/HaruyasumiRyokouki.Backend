@@ -140,6 +140,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		var mediaFile = new MediaFile
 		{
 			FileName = fileName,
+			AspectRatio = conversionResult.Value.AspectRatio,
 			Created = creationTime,
 			Day = creationDay,
 			Type = fileMediaType,

@@ -77,7 +77,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			.OrderByDescending(d => d.Date)
 			.ToListAsync(cancellationToken);
 
-		var searchResultsDtos = searchResults.ToDtos();
+		var searchResultsDtos = searchResults.ToDtos(includeFavorites: request.IsAuthenticated);
 		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
 
 		return new SearchResponse

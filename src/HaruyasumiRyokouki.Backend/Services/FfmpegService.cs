@@ -91,6 +91,14 @@ internal class FfmpegService : IFfmpegService
 		};
 	}
 
+	public async Task<float> GetMediaAspectRatioAsync(string input, CancellationToken cancellationToken)
+	{
+		string arguments = $"-v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x \"{input}\"";
+		string result = await RunFfprobeAsync(arguments, cancellationToken);
+		double[] sides = result.Split('x').Select(double.Parse).ToArray();
+		return (float)(sides[0] / sides[1]);
+	}
+
 	public async Task<byte[]> GetImageMiniatureBytesAsync(string input, CancellationToken cancellationToken)
 	{
 		int miniatureSize = _mediaFormatOptions.MiniatureSize;
