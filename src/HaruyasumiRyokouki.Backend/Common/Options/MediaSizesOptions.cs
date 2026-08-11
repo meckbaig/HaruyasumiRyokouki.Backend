@@ -9,4 +9,5 @@ sealed class MediaSizesOptions
 	public IReadOnlyCollection<int> SizeBuckets { get => _sizeBuckets; set => _sizeBuckets = value.Order().ToArray(); }
 	public int PreviewTargetCss { get; set; }
 	public int DefaultScreenResolution { get; set; }
+	public float DefaultAspectRatio { get; set; } = 4f / 3f;
 }

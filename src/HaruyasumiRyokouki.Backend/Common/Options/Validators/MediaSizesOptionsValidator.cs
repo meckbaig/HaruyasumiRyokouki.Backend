@@ -34,6 +34,11 @@ sealed class MediaSizesOptionsValidator : IValidateOptions<MediaSizesOptions>
 			failures.AppendLine($"'{MediaSizesOptions.ConfigurationSectionName}:" +
 				$"{nameof(MediaSizesOptions.DefaultScreenResolution)}' must be greater than 0.");
 		}
+		if (options.DefaultAspectRatio <= 0)
+		{
+			failures.AppendLine($"'{MediaSizesOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaSizesOptions.DefaultAspectRatio)}' must be greater than 0.");
+		}
 
 		return failures.Length > 0
 			? ValidateOptionsResult.Fail(failures.ToString())

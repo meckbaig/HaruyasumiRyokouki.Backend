@@ -9,36 +9,37 @@ internal class MediaResolutionCalculationService : IMediaResolutionCalculationSe
 {
 	private readonly MediaSizesOptions _options;
 
-	private const float DefaultAspectRatio = 4f / 3f;
-
 	public MediaResolutionCalculationService(IOptions<MediaSizesOptions> options)
 	{
 		_options = options.Value;
 	}
 
-	public int GetResolution(ImageUrlType linkType, float? dpr, int? resolution)
-	{
-		return GetNearestResolution(CalculateSize(linkType, dpr, resolution));
-	}
-
-	public int CalculateSize(ImageUrlType linkType, float? dpr, int? resolution)
+	public int GetResolution(ImageUrlType linkType, float? dpr, int? resolution, float? aspectRatio)
 	{
 		dpr ??= 1;
 		resolution ??= _options.DefaultScreenResolution;
-		return linkType switch
+		float ratioMultiplier = NormalizeAspectRatioMultiplier(aspectRatio ?? _options.DefaultAspectRatio);
+		int minimalResolution = linkType switch
 		{
-			ImageUrlType.FullScreen => (int)(DefaultAspectRatio * dpr.Value * resolution.Value),
-			ImageUrlType.Preview => (int)(DefaultAspectRatio * dpr.Value * _options.PreviewTargetCss),
+			ImageUrlType.FullScreen => (int)(dpr.Value * resolution.Value),
+			ImageUrlType.Preview => (int)(dpr.Value * _options.PreviewTargetCss),
 			_ => throw new NotImplementedException(),
 		};
+		int nearestResolution = GetNearestResolution(minimalResolution);
+		return (int)(nearestResolution * ratioMultiplier); 
 	}
 
-	public int GetNearestResolution(int calculatedSize)
+	private int GetNearestResolution(int calculatedSize)
 	{
 		return _options.SizeBuckets.FirstOrDefault(s => s >= calculatedSize) switch
 		{
 			> 0 and var result => result,
 			_ => _options.SizeBuckets.Last()
 		};
+	}
+
+	private float NormalizeAspectRatioMultiplier(float aspectRatio)
+	{
+		return aspectRatio > 1 ? aspectRatio : (float)(1 / aspectRatio);
 	}
 }

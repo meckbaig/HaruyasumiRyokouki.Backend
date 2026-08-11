@@ -4,7 +4,8 @@ namespace HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 internal interface IMediaResolutionCalculationService
 {
-	int CalculateSize(ImageUrlType linkType, float? dpr, int? resolution);
-	int GetNearestResolution(int calculatedSize);
-	int GetResolution(ImageUrlType linkType, float? dpr, int? resolution);
+	/// <summary>
+	/// Calculating the size in which the image will fit.
+	/// </summary>
+	int GetResolution(ImageUrlType linkType, float? dpr, int? resolution, float? aspectRatio = default);
 }

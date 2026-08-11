@@ -68,21 +68,7 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 				m.Latitude != null &&
 				m.Longitude != null)
 			.OrderBy(m => m.Created)
-			.Select(m => new MediaFileLocationDto
-			{
-				Id = m.Id,
-				Created = m.Created,
-				FileName = m.FileName,
-				Latitude = m.Latitude ?? 0,
-				Longitude = m.Longitude ?? 0,
-				Miniature = m.Miniature,
-				Type = m.Type.ToString(),
-				LanguageCode = request.AcceptLanguage,
-				Title = m.Translations
-					.Where(t => t.LanguageCode == request.AcceptLanguage)
-					.Select(t => t.Title)
-					.FirstOrDefault()
-			})
+			.Select(m => ToLocationDto(m, request.AcceptLanguage))
 			.ToListAsync(cancellationToken);
 
 		var results = mediaFileLocationDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
@@ -90,6 +76,26 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 		return new GetMediaLocationsResponse
 		{
 			Items = results.ToList()
+		};
+	}
+
+	private static MediaFileLocationDto ToLocationDto(Models.Db.MediaFile source, string languageCode)
+	{
+		return new MediaFileLocationDto
+		{
+			Id = source.Id,
+			Created = source.Created,
+			FileName = source.FileName,
+			AspectRatio = source.AspectRatio,
+			Latitude = source.Latitude ?? 0,
+			Longitude = source.Longitude ?? 0,
+			Miniature = source.Miniature,
+			Type = source.Type.ToString(),
+			LanguageCode = languageCode,
+			Title = source.Translations
+							.Where(t => t.LanguageCode == languageCode)
+							.Select(t => t.Title)
+							.FirstOrDefault()
 		};
 	}
 }

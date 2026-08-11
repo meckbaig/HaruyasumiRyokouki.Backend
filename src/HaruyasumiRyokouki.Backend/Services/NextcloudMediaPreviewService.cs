@@ -29,7 +29,7 @@ internal class NextcloudMediaPreviewService : IMediaPreviewService
 			throw new ArgumentException("Video storage base url is invalid", nameof(options));
 	}
 
-	public string GetImageUrl(string fileName, ImageUrlType linkType, ClientDisplay? clientDisplay = null)
+	public string GetImageUrl(string fileName, ImageUrlType linkType, ClientDisplay? clientDisplay = null, float? aspectRatio = default)
 	{
 		int imageSize;
 		switch (linkType)
@@ -38,14 +38,14 @@ internal class NextcloudMediaPreviewService : IMediaPreviewService
 				return _originBuilder.Build(fileName);
 			case ImageUrlType.FullScreen:
 			case ImageUrlType.Preview:
-				imageSize = _resolutionCalculator.GetResolution(linkType, clientDisplay?.Dpr, clientDisplay?.MinSide);
+				imageSize = _resolutionCalculator.GetResolution(linkType, clientDisplay?.Dpr, clientDisplay?.MinSide, aspectRatio);
 				return _builder.Build(fileName, imageSize, imageSize);
 			default:
 				throw new NotImplementedException();
 		}
 	}
 
-	public string GetVideoUrl(string fileName, VideoUrlType linkType, ClientDisplay? clientDisplay = null)
+	public string GetVideoUrl(string fileName, VideoUrlType linkType, ClientDisplay? clientDisplay = null, float? aspectRatio = default)
 	{
 		int imageSize;
 		switch (linkType)
@@ -55,7 +55,7 @@ internal class NextcloudMediaPreviewService : IMediaPreviewService
 			case VideoUrlType.Stream:
 				return _originBuilder.Build(_mediaProcessor.GetVideoWebName(fileName));
 			case VideoUrlType.Preview:
-				imageSize = _resolutionCalculator.GetResolution(ImageUrlType.Preview, clientDisplay?.Dpr, clientDisplay?.MinSide);
+				imageSize = _resolutionCalculator.GetResolution(ImageUrlType.Preview, clientDisplay?.Dpr, clientDisplay?.MinSide, aspectRatio);
 				return _builder.Build(_mediaProcessor.GetVideoPreviewName(fileName), imageSize, imageSize);
 			default:
 				throw new NotImplementedException();
