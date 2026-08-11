@@ -1,6 +1,5 @@
 using Asp.Versioning;
 using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Features.Days;
 using HaruyasumiRyokouki.Backend.Features.Media;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -45,9 +44,8 @@ public class MediaController : ControllerBase
 
 	[Authorize]
 	[HttpPut("sync")]
-	public async Task<IActionResult> SyncMedia(CancellationToken cancellationToken)
+	public async Task<IActionResult> SyncMedia([FromQuery] SyncMediaCommand command, CancellationToken cancellationToken)
 	{
-		SyncMediaCommand command = new();
 		var result = await _mediator.Send(command, cancellationToken);
 		return Ok();
 	}

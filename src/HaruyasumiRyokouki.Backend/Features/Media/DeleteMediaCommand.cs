@@ -7,7 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace HaruyasumiRyokouki.Backend.Features.Days;
+namespace HaruyasumiRyokouki.Backend.Features.Media;
 
 public record DeleteMediaCommand : IRequest<DeleteMediaResponse>
 {

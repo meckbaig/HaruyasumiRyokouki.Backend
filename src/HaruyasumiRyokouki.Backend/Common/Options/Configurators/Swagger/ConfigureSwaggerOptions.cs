@@ -30,7 +30,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
 			{
 				Title = Assembly.GetExecutingAssembly().GetName().Name,
 				Version = description.GroupName,
-				Description = "API for suggestions during typing in messengers.",
+				Description = "Backend project for website to display all my media and thoughts from my Japan trip.",
 				Contact = new OpenApiContact()
 				{
 					Name = "meckbaig"
@@ -48,6 +48,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
 			options.ParameterFilter<CamelCaseQueryParameterFilter>(); 
 			options.ParameterFilter<HeaderParameterFilter>(); 
 			options.OperationFilter<HeaderAwareOperationFilter>();
+			options.OperationFilter<RemoveEmptyRequestBodyOperationFilter>();
 			options.DocumentFilter<RemoveSwaggerIgnoredParamsDocumentFilter>();
 
 			options.AddSecurityDefinition("Basic", new OpenApiSecurityScheme

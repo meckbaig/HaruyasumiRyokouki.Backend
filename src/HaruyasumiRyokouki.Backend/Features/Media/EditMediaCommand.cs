@@ -6,11 +6,10 @@ using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace HaruyasumiRyokouki.Backend.Features.Days;
+namespace HaruyasumiRyokouki.Backend.Features.Media;
 
 public record EditMediaCommand : IRequest<EditMediaResponse>
 {
