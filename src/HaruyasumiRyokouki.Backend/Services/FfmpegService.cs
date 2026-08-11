@@ -13,18 +13,18 @@ internal class FfmpegService : IFfmpegService
 {
 	private readonly ILogger<FfmpegService> _logger;
 	private readonly MediaFormatOptions _mediaFormatOptions;
-	private readonly MediaPresetsOptions _mediaPresetsOptions;
+	private readonly FfmpegPresetsOptions _ffmpegPresetsOptions;
 
 	private const string Input = "{input}";
 	private const string Output = "{output}";
 	private const string MiniatureSize = "{miniatureSize}";
 	private const string VideoThumbnailPrefix = "{videoThumbnailPrefix}";
 
-	public FfmpegService(ILogger<FfmpegService> logger, IOptions<MediaFormatOptions> mediaFormatOptions, IOptions<MediaPresetsOptions> mediaPresetsOptions)
+	public FfmpegService(ILogger<FfmpegService> logger, IOptions<MediaFormatOptions> mediaFormatOptions, IOptions<FfmpegPresetsOptions> mediaPresetsOptions)
 	{
 		_logger = logger;
 		_mediaFormatOptions = mediaFormatOptions.Value;
-		_mediaPresetsOptions = mediaPresetsOptions.Value;
+		_ffmpegPresetsOptions = mediaPresetsOptions.Value;
 	}
 
 	private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions()
@@ -34,7 +34,7 @@ internal class FfmpegService : IFfmpegService
 
 	public async Task ConvertImageAsync(string input, string output, CancellationToken cancellationToken)
 	{
-		string arguments = _mediaPresetsOptions.Image
+		string arguments = _ffmpegPresetsOptions.Image
 			.GetValueOrDefault(_mediaFormatOptions.ImagePreset)!
 			.Replace(Input, input)
 			.Replace(Output, output)
@@ -45,10 +45,10 @@ internal class FfmpegService : IFfmpegService
 
 	public async Task CreateVideoPreviewAsync(string input, string output, CancellationToken cancellationToken)
 	{
-		string videoThumbnailPrefix = _mediaPresetsOptions.VideoThumbnailPrefix
+		string videoThumbnailPrefix = _ffmpegPresetsOptions.VideoThumbnailPrefix
 			.GetValueOrDefault(_mediaFormatOptions.VideoThumbnailPreset)!
 			.Trim();
-		string arguments = _mediaPresetsOptions.Image
+		string arguments = _ffmpegPresetsOptions.Image
 			.GetValueOrDefault(_mediaFormatOptions.ImagePreset)!
 			.Replace(Input, input)
 			.Replace(Output, output)
@@ -60,7 +60,7 @@ internal class FfmpegService : IFfmpegService
 	public async Task ConvertVideoAsync(string input, string output, CancellationToken cancellationToken)
 	{
 		string workDir = Path.GetDirectoryName(input);
-		string[] passes = _mediaPresetsOptions.Video.GetValueOrDefault(_mediaFormatOptions.VideoPreset)!;
+		string[] passes = _ffmpegPresetsOptions.Video.GetValueOrDefault(_mediaFormatOptions.VideoPreset)!;
 		foreach (var pass in passes)
 		{
 			string arguments = pass
@@ -94,7 +94,7 @@ internal class FfmpegService : IFfmpegService
 	public async Task<byte[]> GetImageMiniatureBytesAsync(string input, CancellationToken cancellationToken)
 	{
 		int miniatureSize = _mediaFormatOptions.MiniatureSize;
-		string arguments = _mediaPresetsOptions.Miniature
+		string arguments = _ffmpegPresetsOptions.Miniature
 			.GetValueOrDefault(_mediaFormatOptions.MiniaturePreset)!
 			.Replace(Input, input)
 			.Replace(MiniatureSize, miniatureSize.ToString())

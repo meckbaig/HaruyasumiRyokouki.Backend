@@ -5,8 +5,8 @@ namespace HaruyasumiRyokouki.Backend.Common.Options.Validators;
 
 sealed class MediaFormatOptionsValidator : IValidateOptions<MediaFormatOptions>
 {
-	private readonly MediaPresetsOptions _presetsOptions;
-	public MediaFormatOptionsValidator(IOptions<MediaPresetsOptions> presetsOptions)
+	private readonly FfmpegPresetsOptions _presetsOptions;
+	public MediaFormatOptionsValidator(IOptions<FfmpegPresetsOptions> presetsOptions)
 	{
 		_presetsOptions = presetsOptions.Value;
 	}
@@ -23,22 +23,22 @@ sealed class MediaFormatOptionsValidator : IValidateOptions<MediaFormatOptions>
 		if (!_presetsOptions.Video.ContainsKey(options.VideoPreset))
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaFormatOptions.VideoPreset)}' must be valid key from {MediaPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Video)}.");
+				$"{nameof(MediaFormatOptions.VideoPreset)}' must be valid key from {FfmpegPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Video)}.");
 		}
 		if (!_presetsOptions.VideoThumbnailPrefix.ContainsKey(options.VideoThumbnailPreset))
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaFormatOptions.VideoThumbnailPreset)}' must be valid key from {MediaPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.VideoThumbnailPrefix)}.");
+				$"{nameof(MediaFormatOptions.VideoThumbnailPreset)}' must be valid key from {FfmpegPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.VideoThumbnailPrefix)}.");
 		}
 		if (!_presetsOptions.Image.ContainsKey(options.ImagePreset))
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaFormatOptions.ImagePreset)}' must be valid key from {MediaPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Image)}.");
+				$"{nameof(MediaFormatOptions.ImagePreset)}' must be valid key from {FfmpegPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Image)}.");
 		}
 		if (!_presetsOptions.Miniature.ContainsKey(options.MiniaturePreset))
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaFormatOptions.MiniaturePreset)}' must be valid key from {MediaPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Miniature)}.");
+				$"{nameof(MediaFormatOptions.MiniaturePreset)}' must be valid key from {FfmpegPresetsOptions.ConfigurationSectionName}.{nameof(_presetsOptions.Miniature)}.");
 		}
 		if (options.MiniatureSize <= 0)
 		{

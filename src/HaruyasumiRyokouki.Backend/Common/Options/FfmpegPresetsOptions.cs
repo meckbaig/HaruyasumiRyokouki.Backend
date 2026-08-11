@@ -1,8 +1,8 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
-sealed class MediaPresetsOptions
+sealed class FfmpegPresetsOptions
 {
-	public const string ConfigurationSectionName = "MediaPresets";
+	public const string ConfigurationSectionName = "FfmpegPresets";
 
 	public Dictionary<string, string[]> Video { get; set; }
 
@@ -12,3 +12,4 @@ sealed class MediaPresetsOptions
 
 	public Dictionary<string, string> Miniature { get; set; }
 }
+

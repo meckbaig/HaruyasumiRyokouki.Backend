@@ -50,8 +50,8 @@ internal static class ServiceCollectionExtensions
 			.AddOptionsWithValidateOnStart<MediaFormatOptions>()
 			.BindConfiguration(MediaFormatOptions.ConfigurationSectionName);
 		services
-			.AddOptionsWithValidateOnStart<MediaPresetsOptions>()
-			.BindConfiguration(MediaPresetsOptions.ConfigurationSectionName);
+			.AddOptionsWithValidateOnStart<FfmpegPresetsOptions>()
+			.BindConfiguration(FfmpegPresetsOptions.ConfigurationSectionName);
 		services
 			.AddOptionsWithValidateOnStart<LocalStorageOptions>()
 			.BindConfiguration(LocalStorageOptions.ConfigurationSectionName);
@@ -90,7 +90,7 @@ internal static class ServiceCollectionExtensions
 		services.AddSingleton<IValidateOptions<MediaPreviewOptions>, MediaPreviewOptionsValidator>();
 		services.AddSingleton<IValidateOptions<MediaSizesOptions>, MediaSizesOptionsValidator>();
 		services.AddSingleton<IValidateOptions<MediaFormatOptions>, MediaFormatOptionsValidator>();
-		services.AddSingleton<IValidateOptions<MediaPresetsOptions>, MediaPresetsOptionsValidator>();
+		services.AddSingleton<IValidateOptions<FfmpegPresetsOptions>, FfmpegPresetsOptionsValidator>();
 		services.AddSingleton<IValidateOptions<LocalStorageOptions>, LocalStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<WebDavOptions>, WebDavOptionsValidator>();
 		services.AddSingleton<IValidateOptions<AiApiOptions>, AiApiOptionsValidator>();
