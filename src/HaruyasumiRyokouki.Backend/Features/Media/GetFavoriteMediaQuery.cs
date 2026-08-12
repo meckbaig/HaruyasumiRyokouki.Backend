@@ -14,8 +14,12 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, IDisplayAwareRequest
+public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, ILocalizableRequest, IDisplayAwareRequest
 {
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public string? AcceptLanguage { get; set; }
+
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
@@ -44,21 +48,14 @@ internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQu
 	{
 		var mediaFileDtos = await _context.MediaFiles
 			.AsNoTracking()
-			.Include(m => m.Translations)
+			.Include(m => m.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
 			.Where(m => m.Favorite)
 			.OrderBy(_ => EF.Functions.Random())
 			.Take(_mediaFormatOptions.FavoritesReturnCount)
 			.Select(m => m.ToDto(IncludeFavorites))
 			.ToListAsync(cancellationToken);
 
-		ClientDisplay? scaledDisplay = null;
-		if (request.ClientDisplay != null)
-		{
-			scaledDisplay = request.ClientDisplay with
-			{
-				Dpr = request.ClientDisplay.Dpr * _mediaFormatOptions.FavoriteTargetCssMultiplier
-			};
-		};
+		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
 
 		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService, scaledDisplay));
 

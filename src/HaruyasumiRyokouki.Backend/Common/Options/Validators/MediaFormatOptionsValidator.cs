@@ -45,11 +45,6 @@ sealed class MediaFormatOptionsValidator : IValidateOptions<MediaFormatOptions>
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
 				$"{nameof(MediaFormatOptions.MiniatureSize)}' must be greater than 0.");
 		}
-		if (options.FavoriteTargetCssMultiplier <= 0)
-		{
-			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaFormatOptions.FavoriteTargetCssMultiplier)}' must be greater than 0.");
-		}
 		if (options.FavoritesReturnCount <= 0)
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
