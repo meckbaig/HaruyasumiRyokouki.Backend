@@ -110,7 +110,7 @@ internal class MediaProcessorService : IMediaProcessorService
 		}
 
 		string miniature = await CreateMiniatureAsync(inputFile, workspace, cancellationToken);
-		float aspectRatio = await _ffmpegService.GetMediaAspectRatioAsync(inputFile, cancellationToken);
+		float aspectRatio = await _ffmpegService.GetImageAspectRatioAsync(inputFile, cancellationToken);
 
 		return Result<ConvertionsResponseDto>.Success(new(resultImageFileName, miniature, aspectRatio));
 	}
@@ -149,7 +149,7 @@ internal class MediaProcessorService : IMediaProcessorService
 
 		string previewOutputFile = await CreateVideoPreviewAsync(inputFile, workspace, cancellationToken);
 		string miniature = await CreateMiniatureAsync(previewOutputFile, workspace, cancellationToken);
-		float aspectRatio = await _ffmpegService.GetMediaAspectRatioAsync(previewOutputFile, cancellationToken);
+		float aspectRatio = await _ffmpegService.GetImageAspectRatioAsync(previewOutputFile, cancellationToken);
 
 		return Result<ConvertionsResponseDto>.Success(new(resultVideoFileName, miniature, aspectRatio));
 	}

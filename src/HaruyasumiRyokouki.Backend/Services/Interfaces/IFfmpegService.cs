@@ -9,5 +9,5 @@ internal interface IFfmpegService
 	Task ConvertVideoAsync(string input, string output, CancellationToken cancellationToken = default);
 	Task<VideoFileInfo> GetVideoInfoAsync(MediaInput mediaInput, CancellationToken cancellationToken = default);
 	Task<byte[]> GetImageMiniatureBytesAsync(string input, CancellationToken cancellationToken);
-	Task<float> GetMediaAspectRatioAsync(string input, CancellationToken cancellationToken);
+	Task<float> GetImageAspectRatioAsync(string input, CancellationToken cancellationToken);
 }
