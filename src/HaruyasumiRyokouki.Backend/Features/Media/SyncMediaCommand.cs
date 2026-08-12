@@ -7,6 +7,7 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
@@ -69,7 +70,8 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		{
 			try
 			{
-				await CreateMediaFileAsync(fileToCreate.FileName, fileToCreate.Created, datesFromDb, cancellationToken);
+				var localCreationDate = GetMediaDateTime(fileToCreate.FileName, fileToCreate.Created);
+				await CreateMediaFileAsync(fileToCreate.FileName, localCreationDate, datesFromDb, cancellationToken);
 			}
 			catch (Exception ex)
 			{
@@ -179,7 +181,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		_logger.LogInformation("Miniature for {FileName} was updated", fileName);
 	}
 
-	public MediaType GetMediaType(string fileName)
+	private MediaType GetMediaType(string fileName)
 	{
 		var extension = Path.GetExtension(fileName);
 
@@ -193,6 +195,58 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 			return MediaType.Video;
 
 		return MediaType.Unknown;
+	}
+
+	private static readonly TimeZoneInfo JapanTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
+		OperatingSystem.IsWindows()
+			? "Tokyo Standard Time"
+			: "Asia/Tokyo");
+
+	protected static DateTime GetMediaDateTime(string fileName, DateTime lastModifiedDate)
+	{
+		var dateTime = TryParseMediaDateTime(fileName)
+			?? TimeZoneInfo.ConvertTime(lastModifiedDate, JapanTimeZone);
+		return DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
+	}
+
+	private static DateTime? TryParseMediaDateTime(string fileName)
+	{
+		var name = Path.GetFileNameWithoutExtension(fileName);
+
+		// PXL_20260409_080520000
+		if (name.StartsWith("PXL_") && name.Length >= 22)
+		{
+			var value = name.Substring(4, 8) + name.Substring(13, 6);
+
+			if (DateTime.TryParseExact(
+					value,
+					"yyyyMMddHHmmss",
+					CultureInfo.InvariantCulture,
+					DateTimeStyles.None,
+					out var date))
+			{
+				return date;
+			}
+		}
+
+		// 20260409_080520
+		// 20260409_080520_HDR
+		if (name.Length >= 15)
+		{
+			var value = name[..8] + name[9..15];
+
+			if (DateTime.TryParseExact(
+					value,
+					"yyyyMMddHHmmss",
+					CultureInfo.InvariantCulture,
+					DateTimeStyles.None,
+					out var date))
+			{
+				return date;
+			}
+		}
+
+		return null;
 	}
 
 	private record MediaForMiniatureCheck(int Id, string FileName, bool HasMiniature);
