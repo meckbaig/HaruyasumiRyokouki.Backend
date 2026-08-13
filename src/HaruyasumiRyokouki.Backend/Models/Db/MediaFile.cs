@@ -12,8 +12,9 @@ public class MediaFile
 	public MediaType Type { get; set; } = MediaType.Unknown; 
 	public double? Latitude { get; set; }
 	public double? Longitude { get; set; }
-	public bool IsApproved { get; set; }
 	public string? Miniature { get; set; }
+	public bool IsApproved { get; set; }
+	public bool Private { get; set; } = false;
 	public bool Favorite { get; set; } = false;
 
 	public ICollection<MediaTranslation> Translations { get; set; } = [];

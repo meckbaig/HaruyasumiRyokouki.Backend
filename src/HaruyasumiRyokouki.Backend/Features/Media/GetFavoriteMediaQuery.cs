@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, ILocalizableRequest, IDisplayAwareRequest
+public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
 {
 	[SwaggerIgnore]
 	[JsonIgnore]
@@ -23,6 +23,10 @@ public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, ILocal
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public bool IsAuthenticated { get; set; }
 }
 
 public class GetFavoriteMediaResponse
@@ -49,15 +53,13 @@ internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQu
 		var mediaFileDtos = await _context.MediaFiles
 			.AsNoTracking()
 			.Include(m => m.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
-			.Where(m => m.Favorite)
+			.Where(m => (request.IsAuthenticated || !m.Private) && m.Favorite)
 			.OrderBy(_ => EF.Functions.Random())
 			.Take(_mediaFormatOptions.FavoritesReturnCount)
-			.Select(m => m.ToDto(IncludeFavorites))
+			.Select(m => m.ToDto(IncludeFavorites, request.IsAuthenticated))
 			.ToListAsync(cancellationToken);
 
 		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
-
-		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService, scaledDisplay));
 
 		return new GetFavoriteMediaResponse
 		{

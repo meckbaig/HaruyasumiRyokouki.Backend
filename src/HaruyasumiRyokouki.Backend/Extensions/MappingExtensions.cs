@@ -24,7 +24,7 @@ internal static class MappingExtensions
 		return source.Select(ToShortDto);
 	}
 
-	public static DayDto ToDto(this Day source, bool includeFavorites = false)
+	public static DayDto ToDto(this Day source, bool admin = false)
 	{
 		return new DayDto
 		{
@@ -32,13 +32,13 @@ internal static class MappingExtensions
 			IsReady = source.IsReady,
 			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
 			Note = source.Translations.FirstOrDefault()?.Note,
-			Media = source.Media.ToDtos(includeFavorites).ToList()
+			Media = source.Media.ToDtos(admin, admin).ToList()
 		};
 	}
 
-	public static IEnumerable<DayDto> ToDtos(this IEnumerable<Day> source, bool includeFavorites = false)
+	public static IEnumerable<DayDto> ToDtos(this IEnumerable<Day> source, bool admin = false)
 	{
-		return source.Select(x => x.ToDto(includeFavorites));
+		return source.Select(x => x.ToDto(admin));
 	}
 
 	public static DayEditDto ToEditDto(this Day source)
@@ -71,7 +71,7 @@ internal static class MappingExtensions
 		return source.Select(ToEditDto);
 	}
 
-	public static MediaFileDto ToDto(this MediaFile source, bool includeFavorite = false)
+	public static MediaFileDto ToDto(this MediaFile source, bool includeFavorite = false, bool admin = false)
 	{
 		return new MediaFileDto
 		{
@@ -88,13 +88,14 @@ internal static class MappingExtensions
 			Title = source.Translations.FirstOrDefault()?.Title,
 			Description = source.Translations.FirstOrDefault()?.Description,
 			Tags = source.Translations.FirstOrDefault()?.Tags,
+			Private = admin ? source.Private : null,
 			Favorite = includeFavorite ? source.Favorite : null
 		};
 	}
 
-	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source, bool includeFavorite = false)
+	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source, bool includeFavorite = false, bool admin = false)
 	{
-		return source.Select(x => x.ToDto(includeFavorite));
+		return source.Select(x => x.ToDto(includeFavorite, admin));
 	}
 
 	public static MediaFileEditDto ToEditDto(this MediaFile source)
@@ -110,6 +111,7 @@ internal static class MappingExtensions
 			Longitude = source.Longitude,
 			Miniature = source.Miniature,
 			Translations = source.Translations.ToEditDtos().ToList(),
+			Private = source.Private,
 			Favorite = source.Favorite
 		};
 	}

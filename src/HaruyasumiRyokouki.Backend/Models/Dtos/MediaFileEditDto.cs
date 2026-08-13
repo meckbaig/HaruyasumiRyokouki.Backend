@@ -10,6 +10,7 @@ public record MediaFileEditDto : IPreviewDto
 	public double? Latitude { get; set; }
 	public double? Longitude { get; set; }
 	public string Miniature { get; set; }
+	public bool Private { get; set; }
 	public bool Favorite { get; set; }
 
 	public List<MediaTranslationEditDto> Translations { get; set; } = [];

@@ -15,7 +15,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Search;
 
-public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisplayAwareRequest
+public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
 {
 	[FromQuery]
 	public required string Text { get; init; }
@@ -27,6 +27,10 @@ public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisp
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public bool IsAuthenticated { get; set; }
 }
 
 public class SearchResponse
@@ -59,6 +63,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 		Expression<Func<MediaFile, bool>> mediaFilter = m =>
 			//m.IsApproved &&
+			(request.IsAuthenticated || !m.Private) &&
 			m.Translations.Any(mt =>
 				EF.Functions.ILike(mt.Title, likePattern) ||
 				EF.Functions.ILike(mt.Description, likePattern) ||
@@ -77,7 +82,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			.OrderByDescending(d => d.Date)
 			.ToListAsync(cancellationToken);
 
-		var searchResultsDtos = searchResults.ToDtos(includeFavorites: request.IsAuthenticated);
+		var searchResultsDtos = searchResults.ToDtos(request.IsAuthenticated);
 		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
 
 		return new SearchResponse

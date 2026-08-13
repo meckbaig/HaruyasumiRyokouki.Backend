@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetMediaLocationsQuery : IRequest<GetMediaLocationsResponse>, ILocalizableRequest, IDisplayAwareRequest
+public record GetMediaLocationsQuery : IRequest<GetMediaLocationsResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
 {
 	[FromQuery]
 	public required DateOnly From { get; set; }
@@ -29,6 +29,10 @@ public record GetMediaLocationsQuery : IRequest<GetMediaLocationsResponse>, ILoc
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public bool IsAuthenticated { get; set; }
 }
 
 internal class GetMediaLocationsQueryValidator : AbstractValidator<GetMediaLocationsQuery>
@@ -63,6 +67,7 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 		var mediaFileLocationDtos = await _context.MediaFiles
 			.AsNoTracking()
 			.Where(m =>
+				(request.IsAuthenticated || !m.Private) &&
 				m.Created >= fromDate &&
 				m.Created <= toDate &&
 				m.Latitude != null &&

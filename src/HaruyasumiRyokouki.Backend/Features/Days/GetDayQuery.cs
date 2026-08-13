@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
-public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisplayAwareRequest
+public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
 {
 	[FromRoute]
 	public required DateOnly Date { get; set; }
@@ -26,6 +26,10 @@ public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisp
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public bool IsAuthenticated { get; set; }
 }
 
 public class GetDayResponse
@@ -56,7 +60,7 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 	{
 		var searchResults = await _context.Days
 			.AsNoTracking()
-			.Include(d => d.Media.OrderBy(d => d.Created))
+			.Include(d => d.Media.Where(m => request.IsAuthenticated || !m.Private).OrderBy(d => d.Created))
 			.ThenInclude(m => m.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
 			.Include(d => d.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
 			.FirstOrDefaultAsync(d => d.Date == request.Date, cancellationToken);
@@ -64,7 +68,7 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 		if (searchResults == null)
 			throw new EntityNotFoundException($"Day {request.Date:yyyy-MM-dd} doesn't exist");
 
-		var searchResultsDtos = searchResults.ToDto(includeFavorites: request.IsAuthenticated);
+		var searchResultsDtos = searchResults.ToDto(request.IsAuthenticated);
 		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
 
 		return new GetDayResponse

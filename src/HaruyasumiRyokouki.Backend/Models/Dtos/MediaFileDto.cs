@@ -14,6 +14,7 @@ public record MediaFileDto
 	public string? Title { get; set; }
 	public string? Description { get; set; }
 	public string Miniature { get; set; }
+	public bool? Private { get; set; }
 
 	/// <summary>
 	/// <see langword="null"/> when user is not admin.

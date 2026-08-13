@@ -74,6 +74,8 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			mediaToEdit.ForEach(m => m.Longitude = request.Body.Changes.Longitude);
 		if (request.Body.Changes.IsApproved.HasValue)
 			mediaToEdit.ForEach(m => m.IsApproved = request.Body.Changes.IsApproved);
+		if (request.Body.Changes.Private.HasValue)
+			mediaToEdit.ForEach(m => m.Private = request.Body.Changes.Private);
 		if (request.Body.Changes.Favorite.HasValue)
 			mediaToEdit.ForEach(m => m.Favorite = request.Body.Changes.Favorite);
 		if (request.Body.Changes.Translations.HasValue)

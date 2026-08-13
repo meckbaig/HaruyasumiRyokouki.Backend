@@ -164,7 +164,8 @@ internal static class ServiceCollectionExtensions
 			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
 			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ClientDisplayBehavior<,>));
 			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LocalizationBehavior<,>));
+			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LocalizationBehavior<,>)); 
+			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ClientAuthentificationBehavior<,>));
 		});
 	}
 
