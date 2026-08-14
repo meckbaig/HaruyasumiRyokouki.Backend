@@ -1,4 +1,6 @@
-namespace HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
+
+namespace HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 
 public record MediaFileDto
 {
@@ -21,7 +23,7 @@ public record MediaFileDto
 	/// </summary>
 	public bool? Favorite { get; set; }
 
-	public ICollection<string> Tags { get; set; } = [];
+	public ICollection<TagPublicDto> Tags { get; set; } = [];
 	public ImageUrlsDto? ImageUrls { get; set; } = null;
 	public VideoUrlsDto? VideoUrls { get; set; } = null;
 }

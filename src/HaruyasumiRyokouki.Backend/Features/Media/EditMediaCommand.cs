@@ -3,7 +3,7 @@ using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Features.Translation;
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -64,6 +64,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 	public async Task<EditMediaResponse> Handle(EditMediaCommand request, CancellationToken cancellationToken)
 	{
 		var mediaToEdit = await _context.MediaFiles
+			.Include(m => m.Tags)
 			.Include(m => m.Translations)
 			.Where(m => request.Body.Ids.Contains(m.Id))
 			.ToListAsync(cancellationToken);
@@ -78,6 +79,13 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			mediaToEdit.ForEach(m => m.Private = request.Body.Changes.Private);
 		if (request.Body.Changes.Favorite.HasValue)
 			mediaToEdit.ForEach(m => m.Favorite = request.Body.Changes.Favorite);
+		if (request.Body.Changes.TagIds.HasValue)
+		{
+			mediaToEdit.ForEach(async m =>
+			{
+				m.Tags = (await TagConversion(m.Id, m.Tags, request.Body.Changes.TagIds.Value, cancellationToken)).ToList();
+			});
+		}
 		if (request.Body.Changes.Translations.HasValue)
 		{
 			var newTranslations = request.Body.Changes.Translations.Value!.FromEditDtos().ToList();
@@ -106,7 +114,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 	private async Task<ICollection<MediaTranslationEditDto>> TranslateMedia(ICollection<MediaTranslationEditDto> mediaTranslations, CancellationToken cancellationToken)
 	{
 		var existingTranslations = mediaTranslations
-			.Where(t => !string.IsNullOrWhiteSpace(t.Title) && t.Tags.Any())
+			.Where(t => !string.IsNullOrWhiteSpace(t.Title))
 			.ToList();
 
 		var source = _priorities
@@ -131,7 +139,6 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			{
 				Title = source.Title,
 				Description = source.Description,
-				Tags = string.Join(',', source.Tags),
 				TargetLanguage = missingLanguage.LanguageName
 			};
 			var translationResponse = await _mediator.Send(command, cancellationToken);
@@ -139,7 +146,6 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			{
 				Title = translationResponse.Title,
 				Description = translationResponse.Description,
-				Tags = translationResponse.Tags.Split(',').Select(s => s.Trim()).ToList(),
 				LanguageCode = missingLanguage.LanguageCode
 			};
 		});
@@ -158,12 +164,45 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			{
 				sourceTranslation.Title = newTranslation.Title;
 				sourceTranslation.Description = newTranslation.Description;
-				sourceTranslation.Tags = newTranslation.Tags;
 			}
 			else
 			{
 				source.Add(newTranslation.Clone());
 			}
 		}
+	}
+
+	private async Task<IEnumerable<Tag>> TagConversion
+	(
+		int currentMediaFileId,
+		IEnumerable<Tag> currentMediaFileTags,
+		IEnumerable<int> newTags,
+		CancellationToken cancellationToken
+	)
+	{
+		var normalizedTags = newTags.ToHashSet();
+
+		List<Tag> existingTags = await _context.Tags
+			.Where(t => normalizedTags.Contains(t.Id))
+			.ToListAsync(cancellationToken);
+
+		List<Tag> tagsToCreate = normalizedTags
+			.Except(existingTags.Select(t => t.Id))
+			.Select(id => new Tag { Id = id })
+			.ToList();
+
+		List<int> tagIdsToCheck = currentMediaFileTags
+			.Where(t => !normalizedTags.Contains(t.Id))
+			.Select(t => t.Id)
+			.ToList();
+
+		List<Tag> tagsToRemove = _context.Tags
+			.Where(t => tagIdsToCheck.Contains(t.Id) && t.Media.Single().Id == currentMediaFileId)
+			.ToList();
+
+		if (tagsToRemove.Count > 0)
+			_context.Tags.RemoveRange(tagsToRemove);
+
+		return tagsToCreate.Concat(existingTags);
 	}
 }

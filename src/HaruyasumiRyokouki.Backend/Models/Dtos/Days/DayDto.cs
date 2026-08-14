@@ -1,6 +1,7 @@
 using HaruyasumiRyokouki.Backend.Models.Db;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 
-namespace HaruyasumiRyokouki.Backend.Models.Dtos;
+namespace HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 
 public record DayDto
 {

@@ -3,7 +3,7 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Db;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
@@ -18,7 +18,10 @@ namespace HaruyasumiRyokouki.Backend.Features.Search;
 public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
 {
 	[FromQuery]
-	public required string Text { get; init; }
+	public string? Text { get; init; }
+
+	[FromQuery]
+	public int? TagId { get; init; }
 
 	[SwaggerIgnore]
 	[JsonIgnore]
@@ -42,7 +45,7 @@ internal class SearchQueryValidator : AbstractValidator<SearchQuery>
 {
 	public SearchQueryValidator()
 	{
-
+		RuleFor(x => x).Must(x => !string.IsNullOrWhiteSpace(x.Text) || x.TagId.HasValue);
 	}
 }
 
@@ -59,28 +62,11 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 	public async Task<SearchResponse> Handle(SearchQuery request, CancellationToken cancellationToken)
 	{
-		string likePattern = $"%{request.Text}%";
+		var searchFunction = request.TagId.HasValue 
+			? SearchByTagAsync(request, cancellationToken)
+			: SearchByTextAsync(request, cancellationToken);
 
-		Expression<Func<MediaFile, bool>> mediaFilter = m =>
-			//m.IsApproved &&
-			(request.IsAuthenticated || !m.Private) &&
-			m.Translations.Any(mt =>
-				EF.Functions.ILike(mt.Title, likePattern) ||
-				EF.Functions.ILike(mt.Description, likePattern) ||
-				mt.Tags.Any(tag => EF.Functions.ILike(tag, likePattern))
-			);
-
-		var searchResults = await _context.Days
-			.AsNoTracking()
-			.Where(d =>
-				d.Translations.Any(dt => EF.Functions.ILike(dt.Note, likePattern)) ||
-				d.Media.AsQueryable().Any(mediaFilter)
-			)
-			.Include(d => d.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
-			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
-				.ThenInclude(m => m.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
-			.OrderByDescending(d => d.Date)
-			.ToListAsync(cancellationToken);
+		List<Day> searchResults = await searchFunction;
 
 		var searchResultsDtos = searchResults.ToDtos(request.IsAuthenticated);
 		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
@@ -89,5 +75,52 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 		{
 			Items = result.ToList(),
 		};
+	}
+
+	private async Task<List<Day>> SearchByTagAsync(SearchQuery request, CancellationToken cancellationToken)
+	{
+		Expression<Func<MediaFile, bool>> mediaFilter = m =>
+			m.IsApproved &&
+			m.Tags.Any(t => t.Id == request.TagId!.Value);
+
+		var searchResults = await _context.Days
+			.AsNoTracking()
+			.Where(d => d.Media.AsQueryable().Any(mediaFilter))
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
+				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
+				.ThenInclude(m => m.Tags)
+					.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedTags())
+			.OrderByDescending(d => d.Date)
+			.ToListAsync(cancellationToken);
+		return searchResults;
+	}
+
+	private async Task<List<Day>> SearchByTextAsync(SearchQuery request, CancellationToken cancellationToken)
+	{
+		string likePattern = $"%{request.Text}%";
+
+		Expression<Func<MediaFile, bool>> mediaFilter = m =>
+			//m.IsApproved &&
+			(request.IsAuthenticated || !m.Private) &&
+			m.Translations.Any(mt =>
+				EF.Functions.ILike(mt.Title, likePattern) ||
+				EF.Functions.ILike(mt.Description, likePattern)) ||
+			m.Tags.Any(t => t.Translations.Any(l =>
+					EF.Functions.ILike(l.Text, likePattern)));
+
+		var searchResults = await _context.Days
+			.AsNoTracking()
+			.Where(d =>
+				d.Translations.Any(dt => EF.Functions.ILike(dt.Note, likePattern)) ||
+				d.Media.AsQueryable().Any(mediaFilter)
+			)
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
+				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.OrderByDescending(d => d.Date)
+			.ToListAsync(cancellationToken);
+		return searchResults;
 	}
 }

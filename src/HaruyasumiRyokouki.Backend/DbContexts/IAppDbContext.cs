@@ -7,6 +7,7 @@ internal interface IAppDbContext
 {
 	DbSet<Day> Days { get; }
 	DbSet<MediaFile> MediaFiles { get; }
+	DbSet<Tag> Tags { get; }
 
 	Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

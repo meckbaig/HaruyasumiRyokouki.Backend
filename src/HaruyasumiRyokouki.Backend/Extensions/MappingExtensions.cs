@@ -1,6 +1,8 @@
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
@@ -9,6 +11,7 @@ namespace HaruyasumiRyokouki.Backend.Extensions;
 
 internal static class MappingExtensions
 {
+	#region Day
 	public static DayShortDto ToShortDto(this Day source)
 	{
 		return new DayShortDto
@@ -71,6 +74,27 @@ internal static class MappingExtensions
 		return source.Select(ToEditDto);
 	}
 
+	public static Day FromEditDto(this Day source, DayEditDto dto)
+	{
+		source.IsReady = dto.IsReady;
+		source.Translations = dto.Translations.FromEditDtos().ToList();
+		return source;
+	}
+
+	public static DayTranslation FromEditDto(this DayTranslationEditDto source)
+	{
+		return new DayTranslation
+		{
+			Id = source.Id, 
+			LanguageCode = source.LanguageCode, 
+			Note = source.Note
+		};
+	}
+
+	#endregion
+
+	#region Media
+
 	public static MediaFileDto ToDto(this MediaFile source, bool includeFavorite = false, bool admin = false)
 	{
 		return new MediaFileDto
@@ -87,7 +111,7 @@ internal static class MappingExtensions
 			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
 			Title = source.Translations.FirstOrDefault()?.Title,
 			Description = source.Translations.FirstOrDefault()?.Description,
-			Tags = source.Translations.FirstOrDefault()?.Tags,
+			Tags = source.Tags.ToPublicDtos().ToList(),
 			Private = admin ? source.Private : null,
 			Favorite = includeFavorite ? source.Favorite : null
 		};
@@ -111,6 +135,7 @@ internal static class MappingExtensions
 			Longitude = source.Longitude,
 			Miniature = source.Miniature,
 			Translations = source.Translations.ToEditDtos().ToList(),
+			Tags = source.Tags.ToDtos().ToList(),
 			Private = source.Private,
 			Favorite = source.Favorite
 		};
@@ -128,31 +153,13 @@ internal static class MappingExtensions
 			Id = source.Id,
 			Description = source.Description,
 			LanguageCode = source.LanguageCode,
-			Title = source.Title,
-			Tags = source.Tags
+			Title = source.Title
 		};
 	}
 
 	public static IEnumerable<MediaTranslationEditDto> ToEditDtos(this IEnumerable<MediaTranslation> source)
 	{
 		return source.Select(ToEditDto);
-	}
-
-	public static Day FromEditDto(this Day source, DayEditDto dto)
-	{
-		source.IsReady = dto.IsReady;
-		source.Translations = dto.Translations.FromEditDtos().ToList();
-		return source;
-	}
-
-	public static DayTranslation FromEditDto(this DayTranslationEditDto source)
-	{
-		return new DayTranslation
-		{
-			Id = source.Id, 
-			LanguageCode = source.LanguageCode, 
-			Note = source.Note
-		};
 	}
 
 	public static IEnumerable<DayTranslation> FromEditDtos(this IEnumerable<DayTranslationEditDto> source)
@@ -167,8 +174,7 @@ internal static class MappingExtensions
 			Id = source.Id, 
 			LanguageCode = source.LanguageCode,
 			Title = source.Title,
-			Description = source.Description,
-			Tags = source.Tags
+			Description = source.Description
 		};
 	}
 
@@ -176,6 +182,10 @@ internal static class MappingExtensions
 	{
 		return source.Select(FromEditDto);
 	}
+
+	#endregion
+
+	#region Urls
 
 	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
@@ -259,4 +269,104 @@ internal static class MappingExtensions
 			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
+
+	#endregion
+
+	#region Tags
+
+	public static TagDto ToDto(this Tag source)
+	{
+		return new TagDto
+		{
+			Id = source.Id,
+			Slug = source.Slug,
+			Translations = source.Translations.Primary().ToDtos().ToList(),
+			Aliases = source.Translations.Aliases().ToDtos().ToList(),
+			UsageCount = source.Media.Count
+		};
+	}
+
+	public static IEnumerable<TagDto> ToDtos(this IEnumerable<Tag> source)
+	{
+		return source.Select(ToDto);
+	}
+
+	public static TagTranslationDto ToDto(this TagTranslation source)
+	{
+		return new TagTranslationDto
+		{
+			LanguageCode = source.LanguageCode,
+			Text = source.Text
+		};
+	}
+
+	public static IEnumerable<TagTranslationDto> ToDtos(this IEnumerable<TagTranslation> source)
+	{
+		return source.Select(ToDto);
+	}
+
+	public static TagSuggestionDto ToSuggestionDto(this Tag source, string? acceptLanguage = null)
+	{
+		return new TagSuggestionDto
+		{
+			Id = source.Id,
+			Value = source.Translations
+				.Primary(acceptLanguage)
+				.Select(l => l.Text)
+				.FirstOrDefault()
+			?? source.Slug,
+			UsageCount = source.Media.Count(m => !m.Private)
+		};
+	}
+
+	public static TagPublicDto ToPublicDto(this Tag source, string? acceptLanguage = null)
+	{
+		return new TagPublicDto
+		{
+			Id = source.Id,
+			Value = source.Translations
+				.Primary(acceptLanguage)
+				.Select(l => l.Text)
+				.FirstOrDefault()
+			?? source.Slug
+		};
+	}
+
+	public static IEnumerable<TagPublicDto> ToPublicDtos(this IEnumerable<Tag> source, string? acceptLanguage = null)
+	{
+		return source.Select(x => x.ToPublicDto(acceptLanguage));
+	}
+
+	public static string ToFlatTag(this Tag source, string? acceptLanguage = null)
+	{
+		return source.Translations.Primary(acceptLanguage).First().Text;
+	}
+
+	public static IEnumerable<string> ToFlatTags(this IEnumerable<Tag> source, string? acceptLanguage = null)
+	{
+		return source.Select(x => x.ToFlatTag(acceptLanguage));
+	}
+
+	public static Tag FromDto(this CreateTagDto source)
+	{
+		var translations = source.Translations.Select(x => new TagTranslation
+		{
+			LanguageCode = x.LanguageCode,
+			Text = x.Text,
+			IsPrimary = true
+		});
+		var aliases = source.Translations.Select(x => new TagTranslation
+		{
+			LanguageCode = x.LanguageCode,
+			Text = x.Text,
+			IsPrimary = false
+		});
+		return new Tag
+		{
+			Slug = source.Slug,
+			Translations = translations.Concat(aliases).ToList()
+		}
+	}
+
+	#endregion
 }

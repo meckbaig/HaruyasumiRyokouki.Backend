@@ -18,5 +18,6 @@ public class MediaFile
 	public bool Favorite { get; set; } = false;
 
 	public ICollection<MediaTranslation> Translations { get; set; } = [];
+	public ICollection<Tag> Tags { get; set; } = [];
 	public Day Day { get; set; }
 }

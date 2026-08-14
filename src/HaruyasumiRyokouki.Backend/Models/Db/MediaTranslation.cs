@@ -8,7 +8,6 @@ public class MediaTranslation
 	public string? Title { get; set; }
 	public string? Description { get; set; }
 
-	public ICollection<string> Tags { get; set; } = [];
 	public MediaFile MediaFile { get; set; }
 
 	public MediaTranslation Clone()
@@ -18,7 +17,6 @@ public class MediaTranslation
 			LanguageCode = LanguageCode,
 			Title = Title,
 			Description = Description,
-			Tags = Tags
 		};
 	}
 }

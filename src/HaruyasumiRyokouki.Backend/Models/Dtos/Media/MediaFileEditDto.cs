@@ -1,4 +1,6 @@
-namespace HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
+
+namespace HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 
 public record MediaFileEditDto : IPreviewDto
 {
@@ -13,7 +15,8 @@ public record MediaFileEditDto : IPreviewDto
 	public bool Private { get; set; }
 	public bool Favorite { get; set; }
 
-	public List<MediaTranslationEditDto> Translations { get; set; } = [];
+	public ICollection<MediaTranslationEditDto> Translations { get; set; } = [];
+	public ICollection<TagDto> Tags { get; set; } = [];
 	public ImageUrlsDto? ImageUrls { get; set; } = null;
 	public VideoUrlsDto? VideoUrls { get; set; } = null;
 }

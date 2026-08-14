@@ -3,7 +3,7 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
@@ -61,8 +61,8 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 		var searchResults = await _context.Days
 			.AsNoTracking()
 			.Include(d => d.Media.Where(m => request.IsAuthenticated || !m.Private).OrderBy(d => d.Created))
-			.ThenInclude(m => m.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
-			.Include(d => d.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
+			.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
 			.FirstOrDefaultAsync(d => d.Date == request.Date, cancellationToken);
 
 		if (searchResults == null)

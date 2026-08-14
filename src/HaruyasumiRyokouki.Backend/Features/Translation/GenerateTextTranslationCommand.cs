@@ -44,7 +44,7 @@ Text to translate:
 {{request.InputText}}
 """;
 
-		var responseString = await _aiChatService.GetChatResponseAsync(structurePrompt, returnJson: true, cancellationToken); 
+		var responseString = await _aiChatService.GetChatResponseAsync(structurePrompt, returnJson: true, cancellationToken: cancellationToken); 
 		_logger.LogDebug("Ai response: {ResponseString}", responseString);
 
 		return JsonSerializer.Deserialize<GenerateTextTranslationResponse>(responseString, _options)
