@@ -6,6 +6,6 @@ public class Tag
 	public string Slug { get; set; }
 
 	public ICollection<TagTranslation> Translations { get; set; } = [];
-
+	public ICollection<MediaFileTag> MediaTags { get; set; } = [];
 	public ICollection<MediaFile> Media { get; set; } = [];
 }

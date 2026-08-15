@@ -64,7 +64,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 	public async Task<EditMediaResponse> Handle(EditMediaCommand request, CancellationToken cancellationToken)
 	{
 		var mediaToEdit = await _context.MediaFiles
-			.Include(m => m.Tags)
+			.Include(m => m.MediaTags)
 			.Include(m => m.Translations)
 			.Where(m => request.Body.Ids.Contains(m.Id))
 			.ToListAsync(cancellationToken);
@@ -81,10 +81,13 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			mediaToEdit.ForEach(m => m.Favorite = request.Body.Changes.Favorite);
 		if (request.Body.Changes.TagIds.HasValue)
 		{
-			mediaToEdit.ForEach(async m =>
+			var tagChanges = request.Body.Changes.TagIds.Value;
+			foreach (var media in mediaToEdit)
 			{
-				m.Tags = (await TagConversion(m.Id, m.Tags, request.Body.Changes.TagIds.Value, cancellationToken)).ToList();
-			});
+				var toAdd = tagChanges.Where(mt => !media.MediaTags.Any(m => m.TagId == mt));
+				media.MediaTags = media.MediaTags.Where(mt => !tagChanges.Contains(mt.TagId)).ToList();
+				media.MediaTags = media.MediaTags.Concat(toAdd.Select(x => new MediaFileTag { TagId = x })).ToList();
+			}
 		}
 		if (request.Body.Changes.Translations.HasValue)
 		{
@@ -170,39 +173,5 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 				source.Add(newTranslation.Clone());
 			}
 		}
-	}
-
-	private async Task<IEnumerable<Tag>> TagConversion
-	(
-		int currentMediaFileId,
-		IEnumerable<Tag> currentMediaFileTags,
-		IEnumerable<int> newTags,
-		CancellationToken cancellationToken
-	)
-	{
-		var normalizedTags = newTags.ToHashSet();
-
-		List<Tag> existingTags = await _context.Tags
-			.Where(t => normalizedTags.Contains(t.Id))
-			.ToListAsync(cancellationToken);
-
-		List<Tag> tagsToCreate = normalizedTags
-			.Except(existingTags.Select(t => t.Id))
-			.Select(id => new Tag { Id = id })
-			.ToList();
-
-		List<int> tagIdsToCheck = currentMediaFileTags
-			.Where(t => !normalizedTags.Contains(t.Id))
-			.Select(t => t.Id)
-			.ToList();
-
-		List<Tag> tagsToRemove = _context.Tags
-			.Where(t => tagIdsToCheck.Contains(t.Id) && t.Media.Single().Id == currentMediaFileId)
-			.ToList();
-
-		if (tagsToRemove.Count > 0)
-			_context.Tags.RemoveRange(tagsToRemove);
-
-		return tagsToCreate.Concat(existingTags);
 	}
 }
