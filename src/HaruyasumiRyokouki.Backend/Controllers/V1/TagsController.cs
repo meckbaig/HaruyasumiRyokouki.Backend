@@ -47,11 +47,19 @@ public class TagsController : ControllerBase
 	{
 		var result = await _mediator.Send(command, cancellationToken);
 		return result.ToJsonResponse();
-	}	
+	}
 
 	[Authorize]
 	[HttpPost]
 	public async Task<ActionResult<AddTagResponse>> AddTag(AddTagCommand command, CancellationToken cancellationToken)
+	{
+		var result = await _mediator.Send(command, cancellationToken);
+		return result.ToJsonResponse();
+	}
+
+	[Authorize]
+	[HttpPatch("{id}")]
+	public async Task<ActionResult<EditTagResponse>> EditTag(EditTagCommand command, CancellationToken cancellationToken)
 	{
 		var result = await _mediator.Send(command, cancellationToken);
 		return result.ToJsonResponse();
