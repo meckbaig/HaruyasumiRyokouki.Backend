@@ -38,7 +38,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	{
 		var datesFromDb = await _context.Days.ToListAsync(cancellationToken);
 		var filesFromDb = await _context.MediaFiles
-			.Select(m => new MediaForMiniatureCheck(m.Id, m.FileName, !string.IsNullOrEmpty(m.Miniature)))
+			.Select(m => new MediaForMiniatureCheck(m.Id, m.FileName, !string.IsNullOrEmpty(m.Miniature), m.AdditionalFiles))
 			.ToListAsync(cancellationToken);
 
 		await CheckForNewFiles(datesFromDb, filesFromDb, cancellationToken);
@@ -52,7 +52,8 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	{
 		_logger.LogInformation("New files check started");
 		List<StorageFile> filesToCreate = [];
-		foreach (var storageFile in await _fileStorage.GetFilesAsync(cancellationToken))
+		var storageFiles = await _fileStorage.GetFilesAsync(cancellationToken);
+		foreach (var storageFile in storageFiles)
 		{
 			string webFileName = _mediaProcessorService.GetVideoWebName(storageFile.FileName);
 			string previewFileName = _mediaProcessorService.GetVideoPreviewName(storageFile.FileName);
@@ -79,6 +80,27 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 				_logger.LogWarning("File skipped: {FileName}", fileToCreate.FileName);
 			}
 		}
+
+		CheckForMissingFiles(filesFromDb, storageFiles);
+	}
+
+	private void CheckForMissingFiles(IEnumerable<MediaForMiniatureCheck> filesFromDb, IReadOnlyCollection<StorageFile> storageFiles)
+	{
+		List<string> expectedFileNames = filesFromDb.Select(x => x.FileName).ToList();
+		foreach (var file in filesFromDb.Where(f => f.AdditionalFiles.Count > 0))
+		{
+			expectedFileNames.AddRange(file.AdditionalFiles);
+		}
+
+		var missingFiles = expectedFileNames.Where(f => !storageFiles.Any(sf => sf.FileName == f)).ToList();
+
+		if (missingFiles.Count > 0)
+			_logger.LogWarning
+			(
+				"{Count} files are missing from file storage! Missing files list:\n{List}",
+				missingFiles.Count,
+				string.Join("\n", missingFiles)
+			);
 	}
 
 	private async Task CheckForIncompleteFiles(IEnumerable<MediaForMiniatureCheck> filesFromDb, CancellationToken cancellationToken)
@@ -127,31 +149,27 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 				return;
 		}
 
-		conversionResult.Switch
-		(
-			(response) =>
-			{
-				if (fileMediaType == MediaType.Image)
-					fileName = response.NewFileName;
-			},
-			(error) => _logger.LogError("Error occured during {FileName} conversion: {ErrorMessage}", fileName, error)
-		);
 		if (conversionResult.IsFailure)
+		{
+			_logger.LogError("Error occured during {FileName} conversion: {ErrorMessage}", fileName, conversionResult.Error);
 			return;
+		}
 
 		var mediaFile = new MediaFile
 		{
-			FileName = fileName,
+			FileName = conversionResult.Value.NewFileName,
 			AspectRatio = conversionResult.Value.AspectRatio,
 			Created = creationTime,
 			Day = creationDay,
 			Type = fileMediaType,
-			Miniature = conversionResult.Value.Miniature
+			Miniature = conversionResult.Value.Miniature,
+			AdditionalFiles = conversionResult.Value.AdditionalFileNames
 		};
 		_context.MediaFiles.Add(mediaFile);
 		await _context.SaveChangesAsync(cancellationToken);
-
-		_logger.LogDebug("Day {Date} created in database", creationDate.ToString("yyyy-MM-dd"));
+		
+		if (dayCreated)
+			_logger.LogDebug("Day {Date} created in database", creationDate.ToString("yyyy-MM-dd"));
 		_logger.LogDebug("File {FileName} created in database", fileName);
 	}
 
@@ -249,5 +267,5 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		return null;
 	}
 
-	private record MediaForMiniatureCheck(int Id, string FileName, bool HasMiniature);
+	private record MediaForMiniatureCheck(int Id, string FileName, bool HasMiniature, ICollection<string> AdditionalFiles);
 }
