@@ -48,7 +48,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
 			options.ParameterFilter<CamelCaseQueryParameterFilter>(); 
 			options.ParameterFilter<HeaderParameterFilter>(); 
 			options.OperationFilter<HeaderAwareOperationFilter>();
-			options.OperationFilter<RemoveEmptyRequestBodyOperationFilter>();
+			options.OperationFilter<RemoveEmptyRequestParametersOperationFilter>();
 			options.DocumentFilter<RemoveSwaggerIgnoredParamsDocumentFilter>();
 
 			options.AddSecurityDefinition("Basic", new OpenApiSecurityScheme
@@ -81,18 +81,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
 				if (resolved.TryGetValue(type, out var name))
 					return name;
 
-				string shortName;
-
-				if (type.IsGenericType)
-				{
-					var genericTypeName = type.GetGenericTypeDefinition().Name;
-					var genericArgs = string.Join(",", type.GetGenericArguments().Select(t => t.Name));
-					shortName = $"{genericTypeName}<{genericArgs}>";
-				}
-				else
-				{
-					shortName = type.Name;
-				}
+				string shortName = GetGenericName(type);
 
 				if (!used.TryGetValue(shortName, out List<Type>? typesWithSameName))
 				{
@@ -120,5 +109,21 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
 				return shortName;
 			});
 		}
+	}
+
+	private static string GetGenericName(Type type)
+	{
+		var args = type.GenericTypeArguments;
+		List<string> names = new List<string>();
+		foreach (var arg in args)
+		{
+			names.Add(GetGenericName(arg));
+		}
+
+		if (names.Count > 0)
+		{
+			return $"{type.Name}<{string.Join(",", names)}>";
+		}
+		return type.Name;
 	}
 }
