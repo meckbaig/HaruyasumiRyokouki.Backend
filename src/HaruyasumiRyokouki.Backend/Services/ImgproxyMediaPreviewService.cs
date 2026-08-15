@@ -11,6 +11,7 @@ namespace HaruyasumiRyokouki.Backend.Services;
 
 internal class ImgproxyMediaPreviewService : IMediaPreviewService
 {
+	private readonly ILogger<ImgproxyMediaPreviewService> _logger;
 	private readonly ImgproxyOptions _options;
 	private readonly IMediaProcessorService _mediaProcessor;
 	private readonly IMediaResolutionCalculationService _resolutionCalculator;
@@ -20,13 +21,14 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		.WithEndpoint(_options.Endpoint)
 		.WithCredentials(_options.Key, _options.Salt);
 
-	public ImgproxyMediaPreviewService(IOptions<MediaPreviewOptions> options, IMediaResolutionCalculationService resolutionCalculator, IMediaProcessorService mediaProcessor)
+	public ImgproxyMediaPreviewService(ILogger<ImgproxyMediaPreviewService> logger, IOptions<MediaPreviewOptions> options, IMediaResolutionCalculationService resolutionCalculator, IMediaProcessorService mediaProcessor)
 	{
-		_options = options.Value.Imgproxy 
+		_logger = logger;
+		_options = options.Value.Imgproxy
 			?? throw new OptionsValidationException
 			(
-				nameof(MediaPreviewOptions), 
-				typeof(MediaPreviewOptions), 
+				nameof(MediaPreviewOptions),
+				typeof(MediaPreviewOptions),
 				["Imgproxy option is null."]
 			);
 		_mediaProcessor = mediaProcessor;
@@ -55,17 +57,22 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		}
 	}
 
-	public string GetVideoUrl(string fileName, VideoUrlType linkType, ClientDisplay? clientDisplay = null, float? aspectRatio = default)
+	public string GetVideoUrl(string fileName, VideoUrlType linkType, ICollection<string> additionalFiles, ClientDisplay? clientDisplay = null, float? aspectRatio = default)
 	{
-		int imageSize;
 		switch (linkType)
 		{
 			case VideoUrlType.Download:
 				return _originBuilder.Build(fileName);
 			case VideoUrlType.Stream:
-				return _originBuilder.Build(_mediaProcessor.GetVideoWebName(fileName));
+				string webFileName = _mediaProcessor.GetVideoWebName(fileName);
+				if (additionalFiles.Contains(webFileName))
+					return _originBuilder.Build(webFileName);
+				return _originBuilder.Build(fileName);
 			case VideoUrlType.Preview:
-				imageSize = _resolutionCalculator.GetResolution(ImageUrlType.Preview, clientDisplay?.Dpr, clientDisplay?.MinSide, aspectRatio);
+				string previewFileName = _mediaProcessor.GetVideoPreviewName(fileName);
+				if (!additionalFiles.Contains(previewFileName))
+					_logger.LogWarning("{PreviewFileName} does not exist in DB!", previewFileName);
+				int imageSize = _resolutionCalculator.GetResolution(ImageUrlType.Preview, clientDisplay?.Dpr, clientDisplay?.MinSide, aspectRatio);
 				return BuildImgproxyString(_mediaProcessor.GetVideoPreviewName(fileName), imageSize, imageSize);
 			default:
 				throw new NotImplementedException();

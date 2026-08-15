@@ -104,6 +104,9 @@ internal class AppDbContext : DbContext, IAppDbContext
 
 						join.ToTable("media_file_tag");
 					});
+
+			entity.Property(t => t.AdditionalFiles)
+				  .HasColumnType("text[]");
 		});
 
 		modelBuilder.Entity<MediaTranslation>(entity =>

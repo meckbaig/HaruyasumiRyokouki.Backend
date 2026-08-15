@@ -187,21 +187,22 @@ internal static class MappingExtensions
 
 	#region Urls
 
-	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, ICollection<Day> sources, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
-		return dayDtos.Select(d => d.AddUrls(previewService, clientDisplay));
+		return dayDtos.Select(d => d.AddUrls(sources.First(s => s.Date == d.Date), previewService, clientDisplay));
 	}
 
-	public static DayDto AddUrls(this DayDto dayDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static DayDto AddUrls(this DayDto dayDto, Day source, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
-		foreach (var media in dayDto.Media)
+		foreach (var mediaDto in dayDto.Media)
 		{
-			media.AddUrls(previewService, clientDisplay);
+			var media = source.Media.First(m => m.Id == mediaDto.Id);
+			mediaDto.AddUrls(media.AdditionalFiles, previewService, clientDisplay);
 		}
 		return dayDto;
 	}
 
-	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		switch (mediaDto.Type)
 		{
@@ -209,7 +210,7 @@ internal static class MappingExtensions
 				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService, clientDisplay);
 				break;
 			case nameof(MediaType.Video):
-				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService, clientDisplay);
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, additionalFiles, previewService, clientDisplay);
 				break;
 			default:
 				break;
@@ -217,7 +218,7 @@ internal static class MappingExtensions
 		return mediaDto;
 	}
 
-	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 		where TPreviewDto: IPreviewDto
 	{
 		switch (mediaDto.Type)
@@ -226,7 +227,7 @@ internal static class MappingExtensions
 				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService, clientDisplay);
 				break;
 			case nameof(MediaType.Video):
-				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService, clientDisplay);
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, additionalFiles, previewService, clientDisplay);
 				break;
 			default:
 				break;
@@ -244,13 +245,13 @@ internal static class MappingExtensions
 		};
 	}
 
-	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		return new VideoUrlsDto
 		{
-			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, clientDisplay, media.AspectRatio),
-			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, clientDisplay, media.AspectRatio),
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay, media.AspectRatio)
+			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, additionalFiles, clientDisplay, media.AspectRatio),
+			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, additionalFiles, clientDisplay, media.AspectRatio),
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, additionalFiles, clientDisplay, media.AspectRatio)
 		};
 	}
 
@@ -258,15 +259,19 @@ internal static class MappingExtensions
 	{
 		return new ImageUrlsDto
 		{
+			Download = previewService.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay, media.AspectRatio),
+			FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay, media.AspectRatio),
 			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
 
-	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		return new VideoUrlsDto
 		{
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay, media.AspectRatio)
+			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, additionalFiles, clientDisplay, media.AspectRatio),
+			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, additionalFiles, clientDisplay, media.AspectRatio),
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, additionalFiles, clientDisplay, media.AspectRatio)
 		};
 	}
 
@@ -355,7 +360,7 @@ internal static class MappingExtensions
 			Text = x.Text,
 			IsPrimary = true
 		});
-		var aliases = source.Translations.Select(x => new TagTranslation
+		var aliases = source.Aliases.Select(x => new TagTranslation
 		{
 			LanguageCode = x.LanguageCode,
 			Text = x.Text,
@@ -365,7 +370,7 @@ internal static class MappingExtensions
 		{
 			Slug = source.Slug,
 			Translations = translations.Concat(aliases).ToList()
-		}
+		};
 	}
 
 	#endregion
