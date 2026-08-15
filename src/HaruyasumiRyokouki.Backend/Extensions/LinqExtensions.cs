@@ -90,26 +90,6 @@ public static class LinqExtensions
 			return query.Where(t => t.IsPrimary && t.LanguageCode == acceptLanguage);
 		return query.Where(t => !t.IsPrimary);
 	}
-
-	public static async Task<IEnumerable<TResult>> SearchAsync<TResult, TKey>
-	(
-		this IQueryable<Tag> query,
-		string likePattern,
-		Expression<Func<Tag, TKey>> orderBy,
-		Expression<Func<Tag, TResult>> mapping,
-		int take = 8,
-		CancellationToken cancellationToken = default
-	)
-	{
-		return await query
-			.AsNoTracking()
-			.Where(t => t.Translations.Any(l => EF.Functions.ILike(l.Text, likePattern)))
-			.Where(t => t.Media.Any(m => !m.Private))
-			.OrderByDescending(orderBy)
-			.Select(mapping)
-			.Take(take)
-			.ToListAsync(cancellationToken);
-	}
 }
 
 public sealed class ReplaceExpressionVisitor : ExpressionVisitor

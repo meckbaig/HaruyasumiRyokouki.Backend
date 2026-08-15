@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareRequest
+public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareRequest, ILocalizableRequest
 {
 	[FromQuery]
 	public required ICollection<int> Ids { get; init; }
@@ -21,6 +21,10 @@ public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareR
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public string? AcceptLanguage { get; set; }
 }
 
 public class GetEditMediaResponse
@@ -52,6 +56,8 @@ internal class GetEditMediaQueryHandler : IRequestHandler<GetEditMediaQuery, Get
 		var mediaFiles = await _context.MediaFiles
 			.AsNoTracking()
 			.Include(m => m.Translations)
+			.Include(m => m.Tags)
+				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m => request.Ids.Contains(m.Id))
 			.ToListAsync(cancellationToken);
 

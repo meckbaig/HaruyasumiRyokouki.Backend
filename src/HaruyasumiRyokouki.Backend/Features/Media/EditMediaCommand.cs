@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Features.Translation;
@@ -8,13 +9,19 @@ using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record EditMediaCommand : IRequest<EditMediaResponse>
+public record EditMediaCommand : IRequest<EditMediaResponse>, ILocalizableRequest
 {
 	[FromBody]
 	public required BodyParameters Body { get; init; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public string? AcceptLanguage { get; set; }
 
 	public record BodyParameters
 	{
@@ -104,7 +111,19 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			mediaToEdit.ForEach(m => UpdateTranslations(m.Translations, newTranslations));
 		}
 
+		await EnrichWithTags(request, mediaToEdit, cancellationToken);
 		return new EditMediaResponse { Items = mediaToEdit.ToEditDtos() };
+	}
+
+	private async Task EnrichWithTags(EditMediaCommand request, List<MediaFile> mediaToEdit, CancellationToken cancellationToken)
+	{
+		var newTags = await _context.MediaFileTags
+			.Include(mt => mt.Tag)
+				.ThenInclude(t => t.Translations.Where(tt => tt.LanguageCode == request.AcceptLanguage && tt.IsPrimary))
+			.Where(mt => mediaToEdit.Select(m => m.Id).Contains(mt.MediaId))
+			.ToListAsync(cancellationToken);
+
+		mediaToEdit.ForEach(m => m.Tags = newTags.Where(nt => nt.MediaId == m.Id).Select(mt => mt.Tag).ToList());
 	}
 
 	private static readonly ICollection<LanguagePriority> _priorities =

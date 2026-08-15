@@ -52,6 +52,8 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 		var pendingMedia = await _context.MediaFiles
 			.AsNoTracking()
 			.Include(m => m.Translations/*.Where(t => t.LanguageCode == request.AcceptLanguage)*/)
+			.Include(m => m.Tags)
+				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage!.LocalizedTags())
 			.Where(m => !m.IsApproved)
 			.OrderBy(m => m.Created)
 			.ToListAsync(cancellationToken);

@@ -5,6 +5,7 @@ using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
@@ -111,14 +112,17 @@ Rules:
 	private async Task<IEnumerable<TagDto>> FindExistingTagsAsync(GetTagCompletionCommand request, CancellationToken cancellationToken)
 	{
 		string likePattern = $"%{request.Body.Tag}%";
-		var existingTags = await _context.Tags.SearchAsync
-		(
-			likePattern,
-			t => t.Media.Count,
-			t => t.ToDto(),
-			cancellationToken: cancellationToken
-		);
-		return existingTags;
+
+		var existingTags = await _context.Tags
+			.Include(t => t.MediaTags)
+			.Include(d => d.Translations)
+			.Where(t => t.Translations.Any(l => EF.Functions.ILike(l.Text, likePattern)))
+			.OrderByDescending(t => t.MediaTags.Count)
+			.Select(t => new { Tag = t, Count = t.MediaTags.Count })
+			.Take(8)
+			.ToListAsync(cancellationToken);
+
+		return existingTags.Select(t => t.Tag.ToDto(t.Count));
 	}
 
 	private async Task<TagDto> GetAiSuggestionAsync(GetTagCompletionCommand request, string structurePrompt, CancellationToken cancellationToken)

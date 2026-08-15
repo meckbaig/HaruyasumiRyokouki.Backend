@@ -4,12 +4,13 @@ using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
-public record GetTagSuggestionQuery : IRequest<GetTagSuggestionResponse>, ILocalizableRequest
+public record GetTagSuggestionQuery : IRequest<GetTagSuggestionResponse>, ILocalizableRequest, IAuthentificatedRequest
 {
 	[FromQuery]
 	public required string Text { get; set; }
@@ -20,6 +21,10 @@ public record GetTagSuggestionQuery : IRequest<GetTagSuggestionResponse>, ILocal
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public bool IsAuthenticated { get; set; }
 }
 
 public class GetTagSuggestionResponse
@@ -40,14 +45,14 @@ internal class GetTagSuggestionQueryHandler : IRequestHandler<GetTagSuggestionQu
 	{
 		string likePattern = $"%{request.Text}%";
 
-		var tags = await _context.Tags.SearchAsync
-		(
-			likePattern,
-			t => t.Media.Count,
-			t => t.ToSuggestionDto(request.AcceptLanguage),
-			request.Take,
-			cancellationToken
-		);
+		var tags = await _context.Tags
+			.Include(t => t.MediaTags.Where(mt => request.IsAuthenticated || (mt.Media.IsApproved && !mt.Media.Private)))
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedTags())
+			.Where(t => t.Translations.Any(l => EF.Functions.ILike(l.Text, likePattern)))
+			.OrderByDescending(t => t.MediaTags.Count)
+			.Select(t => t.ToSuggestionDto(request.AcceptLanguage))
+			.Take(request.Take)
+			.ToListAsync(cancellationToken);
 
 		return new GetTagSuggestionResponse
 		{

@@ -23,6 +23,9 @@ public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisp
 	[FromQuery]
 	public int? TagId { get; init; }
 
+	[FromQuery]
+	public string? Tag { get; init; }
+
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string? AcceptLanguage { get; set; }
@@ -45,7 +48,7 @@ internal class SearchQueryValidator : AbstractValidator<SearchQuery>
 {
 	public SearchQueryValidator()
 	{
-		RuleFor(x => x).Must(x => !string.IsNullOrWhiteSpace(x.Text) || x.TagId.HasValue);
+		RuleFor(x => x).Must(x => !string.IsNullOrWhiteSpace(x.Text) || !string.IsNullOrWhiteSpace(x.Tag) || x.TagId.HasValue);
 	}
 }
 
@@ -62,9 +65,9 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 	public async Task<SearchResponse> Handle(SearchQuery request, CancellationToken cancellationToken)
 	{
-		var searchFunction = request.TagId.HasValue 
-			? SearchByTagAsync(request, cancellationToken)
-			: SearchByTextAsync(request, cancellationToken);
+		var searchFunction = request.Text != null 
+			? SearchByTextAsync(request, cancellationToken)
+			: SearchByTagAsync(request, cancellationToken);
 
 		List<Day> searchResults = await searchFunction;
 
@@ -79,9 +82,19 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 	private async Task<List<Day>> SearchByTagAsync(SearchQuery request, CancellationToken cancellationToken)
 	{
-		Expression<Func<MediaFile, bool>> mediaFilter = m =>
-			(request.IsAuthenticated || (m.IsApproved && !m.Private)) &&
-			m.Tags.Any(t => t.Id == request.TagId!.Value);
+		Expression<Func<MediaFile, bool>> mediaFilter = null;
+		if (request.TagId.HasValue)
+		{
+			mediaFilter = m => (request.IsAuthenticated || (m.IsApproved && !m.Private))
+								&&	m.Tags.Any(t => t.Id == request.TagId!.Value);
+		}
+		if (request.Tag != null)
+		{
+			mediaFilter = m => (request.IsAuthenticated || (m.IsApproved && !m.Private))
+								&& m.Tags.Any(t => EF.Functions.ILike(t.Slug, request.Tag));
+		}
+		if (mediaFilter == null)
+			throw new ArgumentNullException("Media filter is null.");
 
 		var searchResults = await _context.Days
 			.AsNoTracking()
@@ -107,7 +120,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 				EF.Functions.ILike(mt.Title, likePattern) ||
 				EF.Functions.ILike(mt.Description, likePattern)) ||
 			m.Tags.Any(t => t.Translations.Any(l =>
-					l.Text == request.Text));
+					EF.Functions.ILike(l.Text, request.Text)));
 
 		var searchResults = await _context.Days
 			.AsNoTracking()

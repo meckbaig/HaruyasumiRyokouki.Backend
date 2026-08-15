@@ -18,10 +18,12 @@ public class GetTagsResponse
 internal class GetTagsQueryHandler : IRequestHandler<GetTagsQuery, GetTagsResponse>
 {
 	private readonly IAppDbContext _context;
+	private readonly ILogger<GetTagsQueryHandler> _logger;
 
-	public GetTagsQueryHandler(IAppDbContext context)
+	public GetTagsQueryHandler(IAppDbContext context, ILogger<GetTagsQueryHandler> logger)
 	{
 		_context = context;
+		_logger = logger;
 	}
 
 	public async Task<GetTagsResponse> Handle(GetTagsQuery request, CancellationToken cancellationToken)
@@ -29,13 +31,17 @@ internal class GetTagsQueryHandler : IRequestHandler<GetTagsQuery, GetTagsRespon
 		var tags = await _context.Tags
 			.AsNoTracking()
 			.Include(t => t.Translations)
-			.OrderByDescending(t => t.Media.Count)
-			.Select(t => t.ToDto())
+			.Select(t => new { Tag = t, Count = t.MediaTags.Count })
 			.ToListAsync(cancellationToken);
+
+		var tagDtos = tags
+			.Select(t => t.Tag.ToDto(t.Count))
+			.OrderByDescending(t => t.UsageCount)
+			.ToList();
 
 		return new GetTagsResponse
 		{
-			Items = tags
+			Items = tagDtos
 		};
 	}
 }

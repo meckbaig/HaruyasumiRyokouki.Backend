@@ -55,7 +55,8 @@ internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQu
 		var mediaFiles = await _context.MediaFiles
 			.AsNoTracking()
 			.IncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedMedia())
-			.Include(m => m.Tags).ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
+			.Include(m => m.Tags)
+				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m => (request.IsAuthenticated || !m.Private) && m.Favorite)
 			.OrderBy(_ => EF.Functions.Random())
 			.Take(_mediaFormatOptions.FavoritesReturnCount)

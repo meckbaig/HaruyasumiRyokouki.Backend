@@ -16,7 +16,7 @@ public record MediaFileEditDto : IPreviewDto
 	public bool Favorite { get; set; }
 
 	public ICollection<MediaTranslationEditDto> Translations { get; set; } = [];
-	public ICollection<TagDto> Tags { get; set; } = [];
+	public ICollection<TagPublicDto> Tags { get; set; } = [];
 	public ImageUrlsDto? ImageUrls { get; set; } = null;
 	public VideoUrlsDto? VideoUrls { get; set; } = null;
 }

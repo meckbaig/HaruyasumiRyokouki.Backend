@@ -135,7 +135,7 @@ internal static class MappingExtensions
 			Longitude = source.Longitude,
 			Miniature = source.Miniature,
 			Translations = source.Translations.ToEditDtos().ToList(),
-			Tags = source.Tags.ToDtos().ToList(),
+			Tags = source.Tags.ToPublicDtos().ToList(),
 			Private = source.Private,
 			Favorite = source.Favorite
 		};
@@ -279,7 +279,7 @@ internal static class MappingExtensions
 
 	#region Tags
 
-	public static TagDto ToDto(this Tag source)
+	public static TagDto ToDto(this Tag source, int? usageCount = null)
 	{
 		return new TagDto
 		{
@@ -287,13 +287,13 @@ internal static class MappingExtensions
 			Slug = source.Slug,
 			Translations = source.Translations.Primary().ToDtos().ToList(),
 			Aliases = source.Translations.Aliases().ToDtos().ToList(),
-			UsageCount = source.Media.Count
+			UsageCount = usageCount ?? source.MediaTags.Count
 		};
 	}
 
 	public static IEnumerable<TagDto> ToDtos(this IEnumerable<Tag> source)
 	{
-		return source.Select(ToDto);
+		return source.Select(x => x.ToDto());
 	}
 
 	public static TagTranslationDto ToDto(this TagTranslation source)
@@ -314,13 +314,13 @@ internal static class MappingExtensions
 	{
 		return new TagSuggestionDto
 		{
-			Id = source.Id,
+			Slug = source.Slug,
 			Value = source.Translations
 				.Primary(acceptLanguage)
 				.Select(l => l.Text)
 				.FirstOrDefault()
 			?? source.Slug,
-			UsageCount = source.Media.Count(m => !m.Private)
+			UsageCount = source.MediaTags.Count
 		};
 	}
 
@@ -328,7 +328,7 @@ internal static class MappingExtensions
 	{
 		return new TagPublicDto
 		{
-			Id = source.Id,
+			Slug = source.Slug,
 			Value = source.Translations
 				.Primary(acceptLanguage)
 				.Select(l => l.Text)
