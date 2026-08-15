@@ -60,8 +60,11 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 	{
 		var searchResults = await _context.Days
 			.AsNoTracking()
-			.Include(d => d.Media.Where(m => request.IsAuthenticated || !m.Private).OrderBy(d => d.Created))
-			.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.Include(d => d.Media.Where(m => request.IsAuthenticated || (!m.Private && m.IsApproved)).OrderBy(d => d.Created))
+				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.Include(d => d.Media.Where(m => request.IsAuthenticated || (!m.Private && m.IsApproved)).OrderBy(d => d.Created))
+				.ThenInclude(m => m.Tags)
+					.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage!.LocalizedTags())
 			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
 			.FirstOrDefaultAsync(d => d.Date == request.Date, cancellationToken);
 
@@ -69,7 +72,7 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 			throw new EntityNotFoundException($"Day {request.Date:yyyy-MM-dd} doesn't exist");
 
 		var searchResultsDtos = searchResults.ToDto(request.IsAuthenticated);
-		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
+		var result = searchResultsDtos.AddUrls(searchResults, _previewService, request.ClientDisplay);
 
 		return new GetDayResponse
 		{

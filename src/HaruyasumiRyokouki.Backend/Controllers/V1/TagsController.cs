@@ -35,7 +35,7 @@ public class TagsController : ControllerBase
 
 	[Authorize]
 	[HttpGet]
-	public async Task<ActionResult<GetTagsResponse>> GetTags(GetTagsQuery query, CancellationToken cancellationToken)
+	public async Task<ActionResult<GetTagsResponse>> GetTags([FromQuery] GetTagsQuery query, CancellationToken cancellationToken)
 	{
 		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();

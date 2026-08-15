@@ -52,17 +52,16 @@ internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQu
 
 	public async Task<GetFavoriteMediaResponse> Handle(GetFavoriteMediaQuery request, CancellationToken cancellationToken)
 	{
-		var mediaFileDtos = await _context.MediaFiles
+		var mediaFiles = await _context.MediaFiles
 			.AsNoTracking()
 			.IncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedMedia())
 			.Include(m => m.Tags).ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m => (request.IsAuthenticated || !m.Private) && m.Favorite)
 			.OrderBy(_ => EF.Functions.Random())
 			.Take(_mediaFormatOptions.FavoritesReturnCount)
-			.Select(m => m.ToDto(IncludeFavorites, request.IsAuthenticated))
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
+		var results = mediaFiles.Select(m => m.ToDto(IncludeFavorites, request.IsAuthenticated).AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
 
 		return new GetFavoriteMediaResponse
 		{

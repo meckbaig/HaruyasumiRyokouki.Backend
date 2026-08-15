@@ -3,6 +3,7 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Extensions.TypeExtensions;
+using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
@@ -64,19 +65,19 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 		var fromDate = request.From.ToLocalDateTime(TimeOnly.MinValue);
 		var toDate = request.To.ToLocalDateTime(TimeOnly.MaxValue);
 
-		var mediaFileLocationDtos = await _context.MediaFiles
+		var mediaFiles = await _context.MediaFiles
 			.AsNoTracking()
+			.IncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
 			.Where(m =>
-				(request.IsAuthenticated || !m.Private) &&
+				(request.IsAuthenticated || (m.IsApproved && !m.Private)) &&
 				m.Created >= fromDate &&
 				m.Created <= toDate &&
 				m.Latitude != null &&
 				m.Longitude != null)
 			.OrderBy(m => m.Created)
-			.Select(m => ToLocationDto(m, request.AcceptLanguage))
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFileLocationDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
+		var results = mediaFiles.Select(m => ToLocationDto(m).AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
 
 		return new GetMediaLocationsResponse
 		{
@@ -84,7 +85,7 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 		};
 	}
 
-	private static MediaFileLocationDto ToLocationDto(Models.Db.MediaFile source, string languageCode)
+	private static MediaFileLocationDto ToLocationDto(MediaFile source)
 	{
 		return new MediaFileLocationDto
 		{
@@ -96,11 +97,8 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 			Longitude = source.Longitude ?? 0,
 			Miniature = source.Miniature,
 			Type = source.Type.ToString(),
-			LanguageCode = languageCode,
-			Title = source.Translations
-							.Where(t => t.LanguageCode == languageCode)
-							.Select(t => t.Title)
-							.FirstOrDefault()
+			LanguageCode = source.Translations.Select(t => t.LanguageCode).FirstOrDefault(),
+			Title = source.Translations.Select(t => t.Title).FirstOrDefault()
 		};
 	}
 }

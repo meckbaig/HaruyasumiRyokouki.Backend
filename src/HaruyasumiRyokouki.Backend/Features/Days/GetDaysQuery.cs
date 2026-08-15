@@ -33,7 +33,7 @@ internal class GetDaysQueryHandler : IRequestHandler<GetDaysQuery, GetDaysRespon
 	{
 		var days = await _context.Days
 			.AsNoTracking()
-			.Include(d => d.Media.Where(m => request.IsAuthenticated || !m.Private))
+			.Include(d => d.Media.Where(m => request.IsAuthenticated || (m.IsApproved && !m.Private)))
 			.OrderBy(d => d.Date)
 			.Select(d => new DayShortDto { Date = d.Date, IsReady = d.IsReady, MediaCount = d.Media.Count })
 			.ToListAsync(cancellationToken);

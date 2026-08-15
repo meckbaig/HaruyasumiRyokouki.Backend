@@ -70,5 +70,5 @@ public class MediaController : ControllerBase
 	{
 		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
-	}	
+	}
 }

@@ -56,9 +56,11 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 			.OrderBy(m => m.Created)
 			.ToListAsync(cancellationToken);
 
+		var pendingMediaDtos = pendingMedia.Select(m => m.ToEditDto().AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
+
 		return new GetPendingResponse
 		{
-			Media = pendingMedia.ToEditDtos().Select(dto => dto.AddUrls(_previewService, request.ClientDisplay)).ToList(),
+			Media = pendingMediaDtos.ToList(),
 			Days = pendingDays.ToEditDtos().ToList(),
 		};
 	}

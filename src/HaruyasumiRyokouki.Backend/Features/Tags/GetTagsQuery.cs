@@ -28,8 +28,9 @@ internal class GetTagsQueryHandler : IRequestHandler<GetTagsQuery, GetTagsRespon
 	{
 		var tags = await _context.Tags
 			.AsNoTracking()
+			.Include(t => t.Translations)
+			.OrderByDescending(t => t.Media.Count)
 			.Select(t => t.ToDto())
-			.OrderByDescending(t => t.UsageCount)
 			.ToListAsync(cancellationToken);
 
 		return new GetTagsResponse

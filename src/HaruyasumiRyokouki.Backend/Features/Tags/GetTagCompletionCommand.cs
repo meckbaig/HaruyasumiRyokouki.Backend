@@ -39,19 +39,22 @@ internal class GetTagCompletionQueryHandler : IRequestHandler<GetTagCompletionCo
 	private static readonly string _structurePrompt = $$"""
 You are a tag localization and search-alias generator.
 
-Given a user-provided tag.
+Given a user-provided tag:
 
-Tasks:
-1. Detect the language of the provided tag.
-2. Translate the tag into target languages: {{nameof(LanguageCode.English)}}, {{nameof(LanguageCode.Russian)}} and {{nameof(LanguageCode.Japanese)}}, .
-3. Generate useful search aliases for the tag in all target languages.
-4. An alias must be a realistic alternative query that a user could type when searching for the same concept.
-5. Include synonyms, alternative names, common abbreviations, and spelling variants when appropriate.
-6. Do not change or broaden the meaning of the original tag.
-7. Do not include the original tag itself as an alias.
-8. Do not invent aliases when no meaningful alternative exists.
-9. Use the provided language codes exactly.
-10. Return only valid JSON.
+1. Detect its language.
+2. Translate it into {{nameof(LanguageCode.English)}}, {{nameof(LanguageCode.Russian)}} and {{nameof(LanguageCode.Japanese)}}.
+3. Generate only genuine aliases: synonyms, alternative names, abbreviations, transliterations, spelling variants, or equivalent word-order variants.
+4. An alias MUST have the same meaning and semantic scope as the original tag.
+5. NEVER broaden, narrow, qualify, describe, or contextualize the original tag.
+6. NEVER add modifiers such as country, nationality, region, city, culture, language, cuisine, style, type, category, attribute, ingredient, brand, etc.
+7. In particular, never add words meaning "Japanese", "Japan", "日本", "日本の", "японский", "Япония", or equivalent contextual modifiers.
+8. Do not generate "[modifier] + [original tag]" variants.
+9. Do not generate aliases merely because the concepts are related or commonly associated.
+10. Do not include the original tag or duplicates.
+11. If no genuine alias exists, return no aliases. Zero aliases is preferable to a low-quality alias.
+12. Return only valid JSON.
+
+An alias must be interchangeable with the original tag in search without changing the expected results. These aliases are used as independent search tags on a Japan-focused website, so contextual modifiers must not be used.
 
 Input:
 {
@@ -74,12 +77,12 @@ Output:
   ]
 }
 
-Additional rules:
-- `translations` must contain exactly three items.
-- `aliases` may contain aliases in the detected source language and other target languages.
-- Generate at most 5 aliases per language.
-- `code` must be a valid language code ({{LanguageCode.English}}, {{LanguageCode.Russian}}, {{LanguageCode.Japanese}}).
-- Do not duplicate identical aliases.
+Rules:
+- `translations`: exactly 3 items.
+- `aliases`: maximum 5 per language.
+- `languageCode`: one of {{LanguageCode.English}}, {{LanguageCode.Russian}}, {{LanguageCode.Japanese}}.
+- Aliases may be empty.
+- Never generate an alias just to fill the limit.
 """;
 
 	public GetTagCompletionQueryHandler(IAiChatService aiChatService, IAppDbContext context, ILogger<GetTagCompletionQueryHandler> logger)

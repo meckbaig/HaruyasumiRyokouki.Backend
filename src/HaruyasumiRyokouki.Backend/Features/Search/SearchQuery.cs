@@ -69,7 +69,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 		List<Day> searchResults = await searchFunction;
 
 		var searchResultsDtos = searchResults.ToDtos(request.IsAuthenticated);
-		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
+		var result = searchResultsDtos.AddUrls(searchResults, _previewService, request.ClientDisplay);
 
 		return new SearchResponse
 		{
@@ -80,7 +80,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 	private async Task<List<Day>> SearchByTagAsync(SearchQuery request, CancellationToken cancellationToken)
 	{
 		Expression<Func<MediaFile, bool>> mediaFilter = m =>
-			m.IsApproved &&
+			(request.IsAuthenticated || (m.IsApproved && !m.Private)) &&
 			m.Tags.Any(t => t.Id == request.TagId!.Value);
 
 		var searchResults = await _context.Days
@@ -102,13 +102,12 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 		string likePattern = $"%{request.Text}%";
 
 		Expression<Func<MediaFile, bool>> mediaFilter = m =>
-			//m.IsApproved &&
-			(request.IsAuthenticated || !m.Private) &&
+			(request.IsAuthenticated || (m.IsApproved && !m.Private)) &&
 			m.Translations.Any(mt =>
 				EF.Functions.ILike(mt.Title, likePattern) ||
 				EF.Functions.ILike(mt.Description, likePattern)) ||
 			m.Tags.Any(t => t.Translations.Any(l =>
-					EF.Functions.ILike(l.Text, likePattern)));
+					l.Text == request.Text));
 
 		var searchResults = await _context.Days
 			.AsNoTracking()
@@ -119,6 +118,9 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
 			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
 				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
+				.ThenInclude(m => m.Tags)
+					.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedTags())
 			.OrderByDescending(d => d.Date)
 			.ToListAsync(cancellationToken);
 		return searchResults;

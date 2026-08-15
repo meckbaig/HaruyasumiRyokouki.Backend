@@ -49,14 +49,13 @@ internal class GetEditMediaQueryHandler : IRequestHandler<GetEditMediaQuery, Get
 
 	public async Task<GetEditMediaResponse> Handle(GetEditMediaQuery request, CancellationToken cancellationToken)
 	{
-		var mediaFileDtos = await _context.MediaFiles
+		var mediaFiles = await _context.MediaFiles
 			.AsNoTracking()
 			.Include(m => m.Translations)
 			.Where(m => request.Ids.Contains(m.Id))
-			.Select(m => m.ToEditDto())
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
+		var results = mediaFiles.Select(m => m.ToEditDto().AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
 
 		return new GetEditMediaResponse 
 		{
