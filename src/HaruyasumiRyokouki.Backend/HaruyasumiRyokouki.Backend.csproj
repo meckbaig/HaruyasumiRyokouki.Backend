@@ -51,6 +51,7 @@
 		<PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.1" />
+		<PackageReference Include="System.Numerics.Tensors" Version="10.0.11" />
 		<PackageReference Include="WebDav.Client" Version="2.9.0" />
 	</ItemGroup>
 

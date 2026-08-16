@@ -142,7 +142,7 @@ Rules:
 		{
 			Slug = slug,
 			Translations = responseDto.Translations.DistinctBy(t => t.LanguageCode).ToList(),
-			Aliases = responseDto.Aliases
+			Aliases = responseDto.Aliases.Where(a => !responseDto.Translations.Any(t => t.Text == a.Text)).ToList()
 		};
 		return result;
 	}

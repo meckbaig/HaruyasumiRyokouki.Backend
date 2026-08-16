@@ -27,7 +27,7 @@ public class TagsController : ControllerBase
 	}
 
 	[HttpGet("suggestion")]
-	public async Task<ActionResult<GetTagSuggestionResponse>> GetEditTags(GetTagSuggestionQuery query, CancellationToken cancellationToken)
+	public async Task<ActionResult<GetTagSuggestionResponse>> GetTagSuggestion(GetTagSuggestionQuery query, CancellationToken cancellationToken)
 	{
 		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();
@@ -43,7 +43,7 @@ public class TagsController : ControllerBase
 
 	[Authorize]
 	[HttpPost("completion")]
-	public async Task<ActionResult<GetTagCompletionResponse>> GetTags(GetTagCompletionCommand command, CancellationToken cancellationToken)
+	public async Task<ActionResult<GetTagCompletionResponse>> CompleteTag(GetTagCompletionCommand command, CancellationToken cancellationToken)
 	{
 		var result = await _mediator.Send(command, cancellationToken);
 		return result.ToJsonResponse();
@@ -60,6 +60,22 @@ public class TagsController : ControllerBase
 	[Authorize]
 	[HttpPatch("{id}")]
 	public async Task<ActionResult<EditTagResponse>> EditTag(EditTagCommand command, CancellationToken cancellationToken)
+	{
+		var result = await _mediator.Send(command, cancellationToken);
+		return result.ToJsonResponse();
+	}
+
+	[Authorize]
+	[HttpGet("{id}/suggest")]
+	public async Task<ActionResult<SuggestMediaForTagResponse>> GetSimilarTags(SuggestMediaForTagQuery query, CancellationToken cancellationToken)
+	{
+		var result = await _mediator.Send(query, cancellationToken);
+		return result.ToJsonResponse();
+	}
+
+	[Authorize]
+	[HttpPost("{id}/media")]
+	public async Task<ActionResult<AddTagToMediaResponse>> GetSimilarTags(AddTagToMediaCommand command, CancellationToken cancellationToken)
 	{
 		var result = await _mediator.Send(command, cancellationToken);
 		return result.ToJsonResponse();

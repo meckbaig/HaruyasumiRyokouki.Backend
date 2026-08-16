@@ -34,6 +34,9 @@ internal class AppDbContext : DbContext, IAppDbContext
 	public DbSet<TagTranslation> TagTranslations => Set<TagTranslation>();
 
 	/// <inheritdoc/>
+	public DbSet<MediaEmbedding> MediaEmbeddings => Set<MediaEmbedding>();
+
+	/// <inheritdoc/>
 	public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
 	{
 		return await base.SaveChangesAsync(cancellationToken);
@@ -153,6 +156,19 @@ internal class AppDbContext : DbContext, IAppDbContext
 			entity.HasOne(l => l.Tag)
 				  .WithMany(t => t.Translations)
 				  .HasForeignKey(l => l.TagId)
+				  .OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<MediaEmbedding>(entity =>
+		{
+			entity.HasKey(e => e.MediaFileId);
+
+			entity.Property(e => e.Vector)
+				  .HasColumnType("real[]");
+
+			entity.HasOne(e => e.MediaFile)
+				  .WithOne()
+				  .HasForeignKey<MediaEmbedding>(e => e.MediaFileId)
 				  .OnDelete(DeleteBehavior.Cascade);
 		});
 

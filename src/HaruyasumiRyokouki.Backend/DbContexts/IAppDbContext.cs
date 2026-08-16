@@ -9,6 +9,7 @@ internal interface IAppDbContext
 	DbSet<MediaFile> MediaFiles { get; }
 	DbSet<MediaFileTag> MediaFileTags { get; }
 	DbSet<Tag> Tags { get; }
+	DbSet<MediaEmbedding> MediaEmbeddings { get; }
 
 	Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

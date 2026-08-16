@@ -12,7 +12,6 @@ public record EditTagDto : IEditDto
 	public Optional<ICollection<TagTranslationDto>> Aliases { get; set; }
 
 	public static Type GetOriginType() => typeof(Tag);
-
 	public static Type GetValidatorType() => typeof(Validator);
 
 	internal class Validator : AbstractValidator<EditTagDto>
@@ -51,5 +50,4 @@ public record EditTagDto : IEditDto
 			return !dto.Aliases.Value.Any(alias => translations.Contains(alias.Text));
 		}
 	}
-
 }

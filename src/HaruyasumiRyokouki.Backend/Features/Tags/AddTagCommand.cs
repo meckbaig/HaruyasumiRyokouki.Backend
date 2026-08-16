@@ -1,8 +1,10 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using static HaruyasumiRyokouki.Backend.Features.Tags.AddTagCommand;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
@@ -14,6 +16,26 @@ public record AddTagCommand : IRequest<AddTagResponse>
 	public record BodyParameters
 	{
 		public required CreateTagDto Tag { get; init; }
+	}
+}
+
+internal class AddTagValidator : AbstractValidator<AddTagCommand>
+{
+	public AddTagValidator()
+	{
+		RuleFor(x => x.Body)
+			.NotNull()
+			.SetValidator(new BodyParametersValidator());
+	}
+
+	internal class BodyParametersValidator : AbstractValidator<BodyParameters>
+	{
+		public BodyParametersValidator()
+		{
+			RuleFor(x => x.Tag)
+				.NotNull()
+				.SetValidator(new CreateTagDto.Validator());
+		}
 	}
 }
 
