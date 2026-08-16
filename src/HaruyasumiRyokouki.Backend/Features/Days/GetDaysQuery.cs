@@ -1,12 +1,18 @@
+using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
-public record GetDaysQuery : IRequest<GetDaysResponse>
+public record GetDaysQuery : IRequest<GetDaysResponse>, IAuthentificatedRequest
 {
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public bool IsAuthenticated { get; set; }
 }
 
 public class GetDaysResponse
@@ -28,7 +34,12 @@ internal class GetDaysQueryHandler : IRequestHandler<GetDaysQuery, GetDaysRespon
 		var days = await _context.Days
 			.AsNoTracking()
 			.OrderBy(d => d.Date)
-			.Select(d => new DayShortDto { Date = d.Date, IsReady = d.IsReady, MediaCount = d.Media.Count })
+			.Select(d => new DayShortDto
+			{
+				Date = d.Date,
+				IsReady = d.IsReady,
+				MediaCount = d.Media.Where(m => request.IsAuthenticated || (m.IsApproved && !m.Private)).Count()
+			})
 			.ToListAsync(cancellationToken);
 
 		return new GetDaysResponse

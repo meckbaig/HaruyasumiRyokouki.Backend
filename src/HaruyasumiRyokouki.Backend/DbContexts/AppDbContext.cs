@@ -25,6 +25,18 @@ internal class AppDbContext : DbContext, IAppDbContext
 	public DbSet<MediaTranslation> MediaTranslations => Set<MediaTranslation>();
 
 	/// <inheritdoc/>
+	public DbSet<Tag> Tags => Set<Tag>();
+
+	/// <inheritdoc/>
+	public DbSet<MediaFileTag> MediaFileTags => Set<MediaFileTag>();
+
+	/// <inheritdoc/>
+	public DbSet<TagTranslation> TagTranslations => Set<TagTranslation>();
+
+	/// <inheritdoc/>
+	public DbSet<MediaEmbedding> MediaEmbeddings => Set<MediaEmbedding>();
+
+	/// <inheritdoc/>
 	public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
 	{
 		return await base.SaveChangesAsync(cancellationToken);
@@ -75,8 +87,30 @@ internal class AppDbContext : DbContext, IAppDbContext
 
 			entity.Property(m => m.Created)
 				  .HasColumnType("timestamp without time zone");
+
+			entity.HasMany(m => m.Tags)
+				  .WithMany(t => t.Media)
+				  .UsingEntity<MediaFileTag>(
+					right => right
+						.HasOne(x => x.Tag)
+						.WithMany(x => x.MediaTags)
+						.HasForeignKey(x => x.TagId),
+
+					left => left
+						.HasOne(x => x.Media)
+						.WithMany(x => x.MediaTags)
+						.HasForeignKey(x => x.MediaId),
+
+					join =>
+					{
+						join.HasKey(x => new { x.MediaId, x.TagId });
+
+						join.ToTable("media_file_tag");
+					});
+
+			entity.Property(t => t.AdditionalFiles)
+				  .HasColumnType("text[]");
 		});
-			
 
 		modelBuilder.Entity<MediaTranslation>(entity =>
 		{
@@ -88,12 +122,6 @@ internal class AppDbContext : DbContext, IAppDbContext
 				  .HasMethod("gin")
 				  .HasOperators("gin_trgm_ops");
 
-			entity.Property(t => t.Tags)
-				  .HasColumnType("text[]");
-
-			entity.HasIndex(t => t.Tags)
-				  .HasMethod("gin");
-
 			entity.HasIndex(t => new { t.MediaFileId, t.LanguageCode })
 				  .IsUnique();
 
@@ -102,7 +130,47 @@ internal class AppDbContext : DbContext, IAppDbContext
 				  .HasForeignKey(mt => mt.MediaFileId)
 				  .OnDelete(DeleteBehavior.Cascade);
 		});
-			
+
+
+		modelBuilder.Entity<Tag>(entity =>
+		{
+			entity.HasIndex(t => t.Slug)
+				  .IsUnique();
+		});
+
+
+		modelBuilder.Entity<TagTranslation>(entity =>
+		{
+			entity.HasIndex(l => new { l.TagId, l.LanguageCode })
+				  .IsUnique()
+				  .HasFilter("is_primary")
+				  .HasDatabaseName("ux_tag_labels_primary_per_language");
+
+			entity.HasIndex(l => new { l.TagId, l.Text })
+				  .IsUnique();
+
+			entity.HasIndex(l => l.Text)
+				  .HasMethod("gin")
+				  .HasOperators("gin_trgm_ops");
+
+			entity.HasOne(l => l.Tag)
+				  .WithMany(t => t.Translations)
+				  .HasForeignKey(l => l.TagId)
+				  .OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<MediaEmbedding>(entity =>
+		{
+			entity.HasKey(e => e.MediaFileId);
+
+			entity.Property(e => e.Vector)
+				  .HasColumnType("real[]");
+
+			entity.HasOne(e => e.MediaFile)
+				  .WithOne()
+				  .HasForeignKey<MediaEmbedding>(e => e.MediaFileId)
+				  .OnDelete(DeleteBehavior.Cascade);
+		});
 
 		base.OnModelCreating(modelBuilder);
 	}

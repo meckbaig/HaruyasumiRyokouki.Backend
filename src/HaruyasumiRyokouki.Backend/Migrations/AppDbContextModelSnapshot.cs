@@ -89,6 +89,28 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                     b.ToTable("day_translations", (string)null);
                 });
 
+            modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaEmbedding", b =>
+                {
+                    b.Property<int>("MediaFileId")
+                        .HasColumnType("integer")
+                        .HasColumnName("media_file_id");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("model");
+
+                    b.PrimitiveCollection<float[]>("Vector")
+                        .IsRequired()
+                        .HasColumnType("real[]")
+                        .HasColumnName("vector");
+
+                    b.HasKey("MediaFileId")
+                        .HasName("pk_media_embeddings");
+
+                    b.ToTable("media_embeddings", (string)null);
+                });
+
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaFile", b =>
                 {
                     b.Property<int>("Id")
@@ -97,6 +119,11 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.PrimitiveCollection<string[]>("AdditionalFiles")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("additional_files");
 
                     b.Property<float>("AspectRatio")
                         .HasColumnType("real")
@@ -137,6 +164,10 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("miniature");
 
+                    b.Property<bool>("Private")
+                        .HasColumnType("boolean")
+                        .HasColumnName("private");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text")
@@ -149,6 +180,25 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasDatabaseName("ix_media_files_day_id");
 
                     b.ToTable("media_files", (string)null);
+                });
+
+            modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaFileTag", b =>
+                {
+                    b.Property<int>("MediaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("media_id");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tag_id");
+
+                    b.HasKey("MediaId", "TagId")
+                        .HasName("pk_media_file_tag");
+
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_media_file_tag_tag_id");
+
+                    b.ToTable("media_file_tag", (string)null);
                 });
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaTranslation", b =>
@@ -173,11 +223,6 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("media_file_id");
 
-                    b.PrimitiveCollection<string[]>("Tags")
-                        .IsRequired()
-                        .HasColumnType("text[]")
-                        .HasColumnName("tags");
-
                     b.Property<string>("Title")
                         .HasColumnType("text")
                         .HasColumnName("title");
@@ -190,11 +235,6 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Description"), "gin");
                     NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Description"), new[] { "gin_trgm_ops" });
-
-                    b.HasIndex("Tags")
-                        .HasDatabaseName("ix_media_translations_tags");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Tags"), "gin");
 
                     b.HasIndex("Title")
                         .HasDatabaseName("ix_media_translations_title");
@@ -209,6 +249,78 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                     b.ToTable("media_translations", (string)null);
                 });
 
+            modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tags");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tags_slug");
+
+                    b.ToTable("tags", (string)null);
+                });
+
+            modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.TagTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_primary");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("language_code");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tag_id");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tag_translations");
+
+                    b.HasIndex("Text")
+                        .HasDatabaseName("ix_tag_translations_text");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Text"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Text"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("TagId", "LanguageCode")
+                        .IsUnique()
+                        .HasDatabaseName("ux_tag_labels_primary_per_language")
+                        .HasFilter("is_primary");
+
+                    b.HasIndex("TagId", "Text")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tag_translations_tag_id_text");
+
+                    b.ToTable("tag_translations", (string)null);
+                });
+
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.DayTranslation", b =>
                 {
                     b.HasOne("HaruyasumiRyokouki.Backend.Models.Db.Day", "Day")
@@ -219,6 +331,18 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                         .HasConstraintName("fk_day_translations_days_day_id");
 
                     b.Navigation("Day");
+                });
+
+            modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaEmbedding", b =>
+                {
+                    b.HasOne("HaruyasumiRyokouki.Backend.Models.Db.MediaFile", "MediaFile")
+                        .WithOne()
+                        .HasForeignKey("HaruyasumiRyokouki.Backend.Models.Db.MediaEmbedding", "MediaFileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_media_embeddings_media_files_media_file_id");
+
+                    b.Navigation("MediaFile");
                 });
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaFile", b =>
@@ -233,6 +357,27 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                     b.Navigation("Day");
                 });
 
+            modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaFileTag", b =>
+                {
+                    b.HasOne("HaruyasumiRyokouki.Backend.Models.Db.MediaFile", "Media")
+                        .WithMany("MediaTags")
+                        .HasForeignKey("MediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_media_file_tag_media_files_media_id");
+
+                    b.HasOne("HaruyasumiRyokouki.Backend.Models.Db.Tag", "Tag")
+                        .WithMany("MediaTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_media_file_tag_tags_tag_id");
+
+                    b.Navigation("Media");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaTranslation", b =>
                 {
                     b.HasOne("HaruyasumiRyokouki.Backend.Models.Db.MediaFile", "MediaFile")
@@ -245,6 +390,18 @@ namespace HaruyasumiRyokouki.Backend.Migrations
                     b.Navigation("MediaFile");
                 });
 
+            modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.TagTranslation", b =>
+                {
+                    b.HasOne("HaruyasumiRyokouki.Backend.Models.Db.Tag", "Tag")
+                        .WithMany("Translations")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tag_translations_tags_tag_id");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.Day", b =>
                 {
                     b.Navigation("Media");
@@ -254,6 +411,15 @@ namespace HaruyasumiRyokouki.Backend.Migrations
 
             modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.MediaFile", b =>
                 {
+                    b.Navigation("MediaTags");
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("HaruyasumiRyokouki.Backend.Models.Db.Tag", b =>
+                {
+                    b.Navigation("MediaTags");
+
                     b.Navigation("Translations");
                 });
 #pragma warning restore 612, 618

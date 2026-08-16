@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace HaruyasumiRyokouki.Backend.Models.Dtos;
+namespace HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 
 public record MediaFileLocationDto : IPreviewDto
 {

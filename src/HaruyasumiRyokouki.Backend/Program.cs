@@ -1,6 +1,7 @@
 using HaruyasumiRyokouki.Backend.Common;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Services;
+using HaruyasumiRyokouki.Backend.Services.BackgroundServices;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -20,6 +21,8 @@ try
 	builder.Services.AddTransient<IMediaProcessorService, MediaProcessorService>();
 	builder.Services.AddSingleton<IFfmpegService, FfmpegService>();
 	builder.Services.AddSingleton<IMediaResolutionCalculationService, MediaResolutionCalculationService>();
+	builder.Services.AddSingleton<IMediaSimilarityIndexService, MediaSimilarityIndexService>();
+	builder.Services.AddHostedService<SimilarityWarmupBackgroundService>();
 	builder.Services.AddFileStorageProvider();
 	builder.Services.AddMediaPreviewProvider();
 	builder.Services.AddControllersWithJsonNamingPolicy();

@@ -4,7 +4,7 @@ using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Features.Translation;
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

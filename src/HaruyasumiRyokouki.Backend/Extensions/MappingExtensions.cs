@@ -1,6 +1,8 @@
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
@@ -9,6 +11,7 @@ namespace HaruyasumiRyokouki.Backend.Extensions;
 
 internal static class MappingExtensions
 {
+	#region Day
 	public static DayShortDto ToShortDto(this Day source)
 	{
 		return new DayShortDto
@@ -24,7 +27,7 @@ internal static class MappingExtensions
 		return source.Select(ToShortDto);
 	}
 
-	public static DayDto ToDto(this Day source, bool includeFavorites = false)
+	public static DayDto ToDto(this Day source, bool admin = false)
 	{
 		return new DayDto
 		{
@@ -32,13 +35,13 @@ internal static class MappingExtensions
 			IsReady = source.IsReady,
 			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
 			Note = source.Translations.FirstOrDefault()?.Note,
-			Media = source.Media.ToDtos(includeFavorites).ToList()
+			Media = source.Media.ToDtos(admin, admin).ToList()
 		};
 	}
 
-	public static IEnumerable<DayDto> ToDtos(this IEnumerable<Day> source, bool includeFavorites = false)
+	public static IEnumerable<DayDto> ToDtos(this IEnumerable<Day> source, bool admin = false)
 	{
-		return source.Select(x => x.ToDto(includeFavorites));
+		return source.Select(x => x.ToDto(admin));
 	}
 
 	public static DayEditDto ToEditDto(this Day source)
@@ -71,71 +74,6 @@ internal static class MappingExtensions
 		return source.Select(ToEditDto);
 	}
 
-	public static MediaFileDto ToDto(this MediaFile source, bool includeFavorite = false)
-	{
-		return new MediaFileDto
-		{
-			Id = source.Id,
-			Created = source.Created,
-			FileName = source.FileName,
-			AspectRatio = source.AspectRatio,
-			Type = source.Type.ToString(),
-			Latitude = source.Latitude,
-			Longitude = source.Longitude,
-			IsApproved = source.IsApproved,
-			Miniature = source.Miniature,
-			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
-			Title = source.Translations.FirstOrDefault()?.Title,
-			Description = source.Translations.FirstOrDefault()?.Description,
-			Tags = source.Translations.FirstOrDefault()?.Tags,
-			Favorite = includeFavorite ? source.Favorite : null
-		};
-	}
-
-	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source, bool includeFavorite = false)
-	{
-		return source.Select(x => x.ToDto(includeFavorite));
-	}
-
-	public static MediaFileEditDto ToEditDto(this MediaFile source)
-	{
-		return new MediaFileEditDto
-		{
-			Id = source.Id,
-			Created = source.Created,
-			FileName = source.FileName,
-			AspectRatio = source.AspectRatio,
-			Type = source.Type.ToString(),
-			Latitude = source.Latitude,
-			Longitude = source.Longitude,
-			Miniature = source.Miniature,
-			Translations = source.Translations.ToEditDtos().ToList(),
-			Favorite = source.Favorite
-		};
-	}
-
-	public static IEnumerable<MediaFileEditDto> ToEditDtos(this IEnumerable<MediaFile> source)
-	{
-		return source.Select(ToEditDto);
-	}
-
-	public static MediaTranslationEditDto ToEditDto(this MediaTranslation source)
-	{
-		return new MediaTranslationEditDto
-		{
-			Id = source.Id,
-			Description = source.Description,
-			LanguageCode = source.LanguageCode,
-			Title = source.Title,
-			Tags = source.Tags
-		};
-	}
-
-	public static IEnumerable<MediaTranslationEditDto> ToEditDtos(this IEnumerable<MediaTranslation> source)
-	{
-		return source.Select(ToEditDto);
-	}
-
 	public static Day FromEditDto(this Day source, DayEditDto dto)
 	{
 		source.IsReady = dto.IsReady;
@@ -153,6 +91,77 @@ internal static class MappingExtensions
 		};
 	}
 
+	#endregion
+
+	#region Media
+
+	public static MediaFileDto ToDto(this MediaFile source, bool includeFavorite = false, bool admin = false)
+	{
+		return new MediaFileDto
+		{
+			Id = source.Id,
+			Created = source.Created,
+			FileName = source.FileName,
+			AspectRatio = source.AspectRatio,
+			Type = source.Type.ToString(),
+			Latitude = source.Latitude,
+			Longitude = source.Longitude,
+			IsApproved = source.IsApproved,
+			Miniature = source.Miniature,
+			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
+			Title = source.Translations.FirstOrDefault()?.Title,
+			Description = source.Translations.FirstOrDefault()?.Description,
+			Tags = source.Tags.ToPublicDtos().ToList(),
+			Private = admin ? source.Private : null,
+			Favorite = includeFavorite ? source.Favorite : null
+		};
+	}
+
+	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source, bool includeFavorite = false, bool admin = false)
+	{
+		return source.Select(x => x.ToDto(includeFavorite, admin));
+	}
+
+	public static MediaFileEditDto ToEditDto(this MediaFile source)
+	{
+		return new MediaFileEditDto
+		{
+			Id = source.Id,
+			Created = source.Created,
+			FileName = source.FileName,
+			AspectRatio = source.AspectRatio,
+			Type = source.Type.ToString(),
+			Latitude = source.Latitude,
+			Longitude = source.Longitude,
+			Miniature = source.Miniature,
+			Translations = source.Translations.ToEditDtos().ToList(),
+			Tags = source.Tags.ToPublicDtos().ToList(),
+			Private = source.Private,
+			Favorite = source.Favorite
+		};
+	}
+
+	public static IEnumerable<MediaFileEditDto> ToEditDtos(this IEnumerable<MediaFile> source)
+	{
+		return source.Select(ToEditDto);
+	}
+
+	public static MediaTranslationEditDto ToEditDto(this MediaTranslation source)
+	{
+		return new MediaTranslationEditDto
+		{
+			Id = source.Id,
+			Description = source.Description,
+			LanguageCode = source.LanguageCode,
+			Title = source.Title
+		};
+	}
+
+	public static IEnumerable<MediaTranslationEditDto> ToEditDtos(this IEnumerable<MediaTranslation> source)
+	{
+		return source.Select(ToEditDto);
+	}
+
 	public static IEnumerable<DayTranslation> FromEditDtos(this IEnumerable<DayTranslationEditDto> source)
 	{
 		return source.Select(FromEditDto);
@@ -165,8 +174,7 @@ internal static class MappingExtensions
 			Id = source.Id, 
 			LanguageCode = source.LanguageCode,
 			Title = source.Title,
-			Description = source.Description,
-			Tags = source.Tags
+			Description = source.Description
 		};
 	}
 
@@ -175,21 +183,26 @@ internal static class MappingExtensions
 		return source.Select(FromEditDto);
 	}
 
-	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	#endregion
+
+	#region Urls
+
+	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, ICollection<Day> sources, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
-		return dayDtos.Select(d => d.AddUrls(previewService, clientDisplay));
+		return dayDtos.Select(d => d.AddUrls(sources.First(s => s.Date == d.Date), previewService, clientDisplay));
 	}
 
-	public static DayDto AddUrls(this DayDto dayDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static DayDto AddUrls(this DayDto dayDto, Day source, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
-		foreach (var media in dayDto.Media)
+		foreach (var mediaDto in dayDto.Media)
 		{
-			media.AddUrls(previewService, clientDisplay);
+			var media = source.Media.First(m => m.Id == mediaDto.Id);
+			mediaDto.AddUrls(media.AdditionalFiles, previewService, clientDisplay);
 		}
 		return dayDto;
 	}
 
-	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		switch (mediaDto.Type)
 		{
@@ -197,7 +210,7 @@ internal static class MappingExtensions
 				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService, clientDisplay);
 				break;
 			case nameof(MediaType.Video):
-				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService, clientDisplay);
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, additionalFiles, previewService, clientDisplay);
 				break;
 			default:
 				break;
@@ -205,7 +218,7 @@ internal static class MappingExtensions
 		return mediaDto;
 	}
 
-	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 		where TPreviewDto: IPreviewDto
 	{
 		switch (mediaDto.Type)
@@ -214,7 +227,7 @@ internal static class MappingExtensions
 				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService, clientDisplay);
 				break;
 			case nameof(MediaType.Video):
-				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, previewService, clientDisplay);
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, additionalFiles, previewService, clientDisplay);
 				break;
 			default:
 				break;
@@ -232,13 +245,13 @@ internal static class MappingExtensions
 		};
 	}
 
-	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		return new VideoUrlsDto
 		{
-			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, clientDisplay, media.AspectRatio),
-			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, clientDisplay, media.AspectRatio),
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay, media.AspectRatio)
+			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, additionalFiles, clientDisplay, media.AspectRatio),
+			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, additionalFiles, clientDisplay, media.AspectRatio),
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, additionalFiles, clientDisplay, media.AspectRatio)
 		};
 	}
 
@@ -246,15 +259,119 @@ internal static class MappingExtensions
 	{
 		return new ImageUrlsDto
 		{
+			Download = previewService.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay, media.AspectRatio),
+			FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay, media.AspectRatio),
 			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
 
-	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
 	{
 		return new VideoUrlsDto
 		{
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, clientDisplay, media.AspectRatio)
+			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, additionalFiles, clientDisplay, media.AspectRatio),
+			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, additionalFiles, clientDisplay, media.AspectRatio),
+			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, additionalFiles, clientDisplay, media.AspectRatio)
 		};
 	}
+
+	#endregion
+
+	#region Tags
+
+	public static TagDto ToDto(this Tag source, int? usageCount = null)
+	{
+		return new TagDto
+		{
+			Id = source.Id,
+			Slug = source.Slug,
+			Translations = source.Translations.Primary().ToDtos().ToList(),
+			Aliases = source.Translations.Aliases().ToDtos().ToList(),
+			UsageCount = usageCount ?? source.MediaTags.Count
+		};
+	}
+
+	public static IEnumerable<TagDto> ToDtos(this IEnumerable<Tag> source)
+	{
+		return source.Select(x => x.ToDto());
+	}
+
+	public static TagTranslationDto ToDto(this TagTranslation source)
+	{
+		return new TagTranslationDto
+		{
+			LanguageCode = source.LanguageCode,
+			Text = source.Text
+		};
+	}
+
+	public static IEnumerable<TagTranslationDto> ToDtos(this IEnumerable<TagTranslation> source)
+	{
+		return source.Select(ToDto);
+	}
+
+	public static TagSuggestionDto ToSuggestionDto(this Tag source, string? acceptLanguage = null)
+	{
+		return new TagSuggestionDto
+		{
+			Slug = source.Slug,
+			Value = source.Translations
+				.Primary(acceptLanguage)
+				.Select(l => l.Text)
+				.FirstOrDefault()
+			?? source.Slug,
+			UsageCount = source.MediaTags.Count
+		};
+	}
+
+	public static TagPublicDto ToPublicDto(this Tag source, string? acceptLanguage = null)
+	{
+		return new TagPublicDto
+		{
+			Slug = source.Slug,
+			Value = source.Translations
+				.Primary(acceptLanguage)
+				.Select(l => l.Text)
+				.FirstOrDefault()
+			?? source.Slug
+		};
+	}
+
+	public static IEnumerable<TagPublicDto> ToPublicDtos(this IEnumerable<Tag> source, string? acceptLanguage = null)
+	{
+		return source.Select(x => x.ToPublicDto(acceptLanguage));
+	}
+
+	public static string ToFlatTag(this Tag source, string? acceptLanguage = null)
+	{
+		return source.Translations.Primary(acceptLanguage).First().Text;
+	}
+
+	public static IEnumerable<string> ToFlatTags(this IEnumerable<Tag> source, string? acceptLanguage = null)
+	{
+		return source.Select(x => x.ToFlatTag(acceptLanguage));
+	}
+
+	public static Tag FromDto(this CreateTagDto source)
+	{
+		var translations = source.Translations.Select(x => new TagTranslation
+		{
+			LanguageCode = x.LanguageCode,
+			Text = x.Text,
+			IsPrimary = true
+		});
+		var aliases = source.Aliases.Select(x => new TagTranslation
+		{
+			LanguageCode = x.LanguageCode,
+			Text = x.Text,
+			IsPrimary = false
+		});
+		return new Tag
+		{
+			Slug = source.Slug,
+			Translations = translations.Concat(aliases).ToList()
+		};
+	}
+
+	#endregion
 }

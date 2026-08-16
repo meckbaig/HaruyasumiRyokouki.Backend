@@ -2,7 +2,7 @@ using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareRequest
+public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareRequest, ILocalizableRequest
 {
 	[FromQuery]
 	public required ICollection<int> Ids { get; init; }
@@ -21,6 +21,10 @@ public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareR
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public string? AcceptLanguage { get; set; }
 }
 
 public class GetEditMediaResponse
@@ -49,14 +53,15 @@ internal class GetEditMediaQueryHandler : IRequestHandler<GetEditMediaQuery, Get
 
 	public async Task<GetEditMediaResponse> Handle(GetEditMediaQuery request, CancellationToken cancellationToken)
 	{
-		var mediaFileDtos = await _context.MediaFiles
+		var mediaFiles = await _context.MediaFiles
 			.AsNoTracking()
 			.Include(m => m.Translations)
+			.Include(m => m.Tags)
+				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m => request.Ids.Contains(m.Id))
-			.Select(m => m.ToEditDto())
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFileDtos.Select(dto => dto.AddUrls(_previewService, request.ClientDisplay));
+		var results = mediaFiles.Select(m => m.ToEditDto().AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
 
 		return new GetEditMediaResponse 
 		{

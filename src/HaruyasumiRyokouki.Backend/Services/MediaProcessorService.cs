@@ -81,7 +81,6 @@ internal class MediaProcessorService : IMediaProcessorService
 		if (!IsAnImage(fileName))
 			return Result<ConvertionsResponseDto>.Failure("File is not an image");
 
-		await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
 		await using var workspace = new TempStorageService(MediaType.Image);
 
 		string resultImageFileName = fileName;
@@ -90,6 +89,7 @@ internal class MediaProcessorService : IMediaProcessorService
 		Directory.CreateDirectory(workspace.TempFolder);
 		await using (var file = File.Create(inputFile))
 		{
+			await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
 			await input.CopyToAsync(file, cancellationToken);
 		}
 
@@ -112,7 +112,7 @@ internal class MediaProcessorService : IMediaProcessorService
 		string miniature = await CreateMiniatureAsync(inputFile, workspace, cancellationToken);
 		float aspectRatio = await _ffmpegService.GetImageAspectRatioAsync(inputFile, cancellationToken);
 
-		return Result<ConvertionsResponseDto>.Success(new(resultImageFileName, miniature, aspectRatio));
+		return Result<ConvertionsResponseDto>.Success(new(resultImageFileName, miniature, aspectRatio, []));
 	}
 
 	public async Task<Result<ConvertionsResponseDto>> ConvertVideoAsync(string fileName, CancellationToken cancellationToken)
@@ -120,38 +120,41 @@ internal class MediaProcessorService : IMediaProcessorService
 		if (!IsAVideo(fileName))
 			return Result<ConvertionsResponseDto>.Failure("File is not a video");
 
-		await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
 		await using var workspace = new TempStorageService(MediaType.Video);
 
-		string resultVideoFileName = fileName;
+		var additionalFileNames = new List<string>();
 		var inputFile = Path.Combine(workspace.TempFolder, fileName);
 
 		Directory.CreateDirectory(workspace.TempFolder);
 		await using (var file = File.Create(inputFile))
 		{
+			await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
 			await input.CopyToAsync(file, cancellationToken);
 		}
 
 		if (await ShouldBeConverted(fileName, MediaType.Video))
 		{
-			resultVideoFileName = GetVideoWebName(fileName);
-			var outputFile = Path.Combine(workspace.TempFolder, resultVideoFileName);
+			string webVideoFileName = GetVideoWebName(fileName);
+			var outputFile = Path.Combine(workspace.TempFolder, webVideoFileName);
 
-			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
+			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, webVideoFileName);
 			await _ffmpegService.ConvertVideoAsync(inputFile, outputFile, cancellationToken);
-			_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultVideoFileName);
+			_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, webVideoFileName);
 			SetOriginalTimeInfo(inputFile, outputFile);
 
 			await using var result = File.OpenRead(outputFile);
-			await _fileStorage.SaveFileAsync(resultVideoFileName, result, cancellationToken);
-			_logger.LogInformation("File {NewFileName} was created", resultVideoFileName);
+			await _fileStorage.SaveFileAsync(webVideoFileName, result, cancellationToken);
+			additionalFileNames.Add(webVideoFileName);
+			_logger.LogInformation("File {NewFileName} was created", webVideoFileName);
 		}
 
 		string previewOutputFile = await CreateVideoPreviewAsync(inputFile, workspace, cancellationToken);
 		string miniature = await CreateMiniatureAsync(previewOutputFile, workspace, cancellationToken);
 		float aspectRatio = await _ffmpegService.GetImageAspectRatioAsync(previewOutputFile, cancellationToken);
 
-		return Result<ConvertionsResponseDto>.Success(new(resultVideoFileName, miniature, aspectRatio));
+		additionalFileNames.Add(Path.GetFileName(previewOutputFile));
+
+		return Result<ConvertionsResponseDto>.Success(new(fileName, miniature, aspectRatio, additionalFileNames));
 	}
 
 	public async Task<Result<string>> CreateMiniatureAsync(string fileName, CancellationToken cancellationToken)

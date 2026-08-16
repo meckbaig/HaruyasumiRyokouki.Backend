@@ -1,4 +1,4 @@
-namespace HaruyasumiRyokouki.Backend.Models.Dtos;
+namespace HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 
 internal interface IPreviewDto
 {

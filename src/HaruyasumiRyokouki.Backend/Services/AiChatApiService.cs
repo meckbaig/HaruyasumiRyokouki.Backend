@@ -33,11 +33,14 @@ internal class AiChatApiService : IAiChatService
 		};
 	}
 
-	public async Task<string> GetChatResponseAsync(string message, bool returnJson = false, CancellationToken cancellationToken = default)
+	public async Task<string> GetChatResponseAsync(string message, string? systemMessage = null, bool returnJson = false, CancellationToken cancellationToken = default)
 	{
+		ICollection<ChatMessage> messages = [new UserChatMessage(message)];
+		if (systemMessage != null)
+			messages.Add(new SystemChatMessage(systemMessage));
 		ChatCompletion response = await _chatClient.CompleteChatAsync
 		(
-			messages: [new UserChatMessage(message)],
+			messages: messages,
 			options: returnJson ? _jsonCompletionOptions : _completionOptions,
 			cancellationToken: cancellationToken
 		);

@@ -3,7 +3,7 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Models.Dtos;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using MediatR;
@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
-public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisplayAwareRequest
+public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
 {
 	[FromRoute]
 	public required DateOnly Date { get; set; }
@@ -26,6 +26,10 @@ public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisp
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
+
+	[SwaggerIgnore]
+	[JsonIgnore]
+	public bool IsAuthenticated { get; set; }
 }
 
 public class GetDayResponse
@@ -56,16 +60,19 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 	{
 		var searchResults = await _context.Days
 			.AsNoTracking()
-			.Include(d => d.Media.OrderBy(d => d.Created))
-			.ThenInclude(m => m.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
-			.Include(d => d.Translations.Where(t => t.LanguageCode == request.AcceptLanguage))
+			.Include(d => d.Media.Where(m => request.IsAuthenticated || (!m.Private && m.IsApproved)).OrderBy(d => d.Created))
+				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.Include(d => d.Media.Where(m => request.IsAuthenticated || (!m.Private && m.IsApproved)).OrderBy(d => d.Created))
+				.ThenInclude(m => m.Tags)
+					.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage!.LocalizedTags())
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
 			.FirstOrDefaultAsync(d => d.Date == request.Date, cancellationToken);
 
 		if (searchResults == null)
 			throw new EntityNotFoundException($"Day {request.Date:yyyy-MM-dd} doesn't exist");
 
-		var searchResultsDtos = searchResults.ToDto(includeFavorites: request.IsAuthenticated);
-		var result = searchResultsDtos.AddUrls(_previewService, request.ClientDisplay);
+		var searchResultsDtos = searchResults.ToDto(request.IsAuthenticated);
+		var result = searchResultsDtos.AddUrls(searchResults, _previewService, request.ClientDisplay);
 
 		return new GetDayResponse
 		{
