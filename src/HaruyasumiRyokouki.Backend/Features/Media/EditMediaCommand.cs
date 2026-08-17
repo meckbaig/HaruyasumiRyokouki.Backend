@@ -92,7 +92,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			foreach (var media in mediaToEdit)
 			{
 				var toAdd = tagChanges.Where(mt => !media.MediaTags.Any(m => m.TagId == mt));
-				media.MediaTags = media.MediaTags.Where(mt => !tagChanges.Contains(mt.TagId)).ToList();
+				media.MediaTags = media.MediaTags.Where(mt => tagChanges.Contains(mt.TagId)).ToList();
 				media.MediaTags = media.MediaTags.Concat(toAdd.Select(x => new MediaFileTag { TagId = x })).ToList();
 			}
 		}
