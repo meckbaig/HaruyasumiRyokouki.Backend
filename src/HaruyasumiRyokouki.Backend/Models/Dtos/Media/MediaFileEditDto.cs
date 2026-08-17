@@ -14,6 +14,7 @@ public record MediaFileEditDto : IPreviewDto
 	public string Miniature { get; set; }
 	public bool Private { get; set; }
 	public bool Favorite { get; set; }
+	public bool IsApproved { get; set; }
 
 	public ICollection<MediaTranslationEditDto> Translations { get; set; } = [];
 	public ICollection<TagPublicDto> Tags { get; set; } = [];

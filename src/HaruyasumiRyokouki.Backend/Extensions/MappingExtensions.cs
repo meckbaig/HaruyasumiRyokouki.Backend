@@ -137,7 +137,8 @@ internal static class MappingExtensions
 			Translations = source.Translations.ToEditDtos().ToList(),
 			Tags = source.Tags.ToPublicDtos().ToList(),
 			Private = source.Private,
-			Favorite = source.Favorite
+			Favorite = source.Favorite,
+			IsApproved = source.IsApproved
 		};
 	}
 
