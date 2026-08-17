@@ -21,11 +21,6 @@ sealed class MediaPreviewOptionsValidator : IValidateOptions<MediaPreviewOptions
 			failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
 				$"{nameof(MediaPreviewOptions.Provider)}' is not valid. Available options: {string.Join(", ", Enum.GetNames(typeof(MediaPreviewProvider)))}");
 		}
-		if (string.IsNullOrWhiteSpace(options.OriginStorageBase))
-		{
-			failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaPreviewOptions.OriginStorageBase)}' cannot be null or empty.");
-		}
 		switch (options.Provider)
 		{
 			case MediaPreviewProvider.Nextcloud:
@@ -39,28 +34,79 @@ sealed class MediaPreviewOptionsValidator : IValidateOptions<MediaPreviewOptions
 			default:
 				break;
 		}
+		if (!ValidateOriginStorageOptions(options.OriginStorage, out string originErrors))
+			failures.AppendLine(originErrors);
 
 		return failures.Length > 0
 			? ValidateOptionsResult.Fail(failures.ToString())
 			: ValidateOptionsResult.Success;
 	}
 
-	private bool ValidateNextcloudOptions(NextcloudOptions options, out string errors)
+	private bool ValidateOriginStorageOptions(OriginStorageOptions options, out string errors)
 	{
 		var failures = new StringBuilder();
-		if (string.IsNullOrWhiteSpace(options.PublicPreviewBase))
+		if (string.IsNullOrWhiteSpace(options.Endpoint))
 		{
 			failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
-				$"{nameof(MediaPreviewOptions.Nextcloud)}." +
-				$"{nameof(NextcloudOptions.PublicPreviewBase)}' cannot be null or empty.");
+				$"{nameof(MediaPreviewOptions.OriginStorage)}." +
+				$"{nameof(OriginStorageOptions.Endpoint)}' cannot be null or empty.");
+		}
+		if (string.IsNullOrWhiteSpace(options.PayloadStringBase))
+		{
+			failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaPreviewOptions.OriginStorage)}." +
+				$"{nameof(OriginStorageOptions.PayloadStringBase)}' cannot be null or empty.");
 		}
 		else
 		{
-			var builder = new NextcloudPreviewUrlBuilder(options.PublicPreviewBase);
+			var builder = new OriginStorageUrlBuilder
+			(
+				options.Endpoint,
+				options.CdnEndpoint,
+				options.PayloadStringBase,
+				options.UseCdnForDownloads
+			);
 			if (!builder.Validate(out var missingTokens))
+			{
+				failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
+					$"{nameof(MediaPreviewOptions.OriginStorage)}." +
+					$"{nameof(OriginStorageOptions.PayloadStringBase)}' is missing tokens: {string.Join(',', missingTokens)}.");
+			}
+		}
+		errors = failures.ToString();
+		return string.IsNullOrEmpty(errors);
+	}
+
+	private bool ValidateNextcloudOptions(NextcloudOptions options, out string errors)
+	{
+		var failures = new StringBuilder();
+		if (string.IsNullOrWhiteSpace(options.Endpoint))
+		{
+			failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaPreviewOptions.Nextcloud)}." +
+				$"{nameof(NextcloudOptions.Endpoint)}' cannot be null or empty.");
+		}
+		if (string.IsNullOrWhiteSpace(options.PayloadStringBase))
+		{
+			failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaPreviewOptions.Nextcloud)}." +
+				$"{nameof(NextcloudOptions.PayloadStringBase)}' cannot be null or empty.");
+		}
+		else
+		{
+			var builder = new NextcloudPreviewUrlBuilder
+			(
+				options.Endpoint,
+				options.CdnEndpoint,
+				options.PayloadStringBase,
+				options.UseCdnForDownloads
+			);
+			if (!builder.Validate(out var missingTokens))
+			{
 				failures.AppendLine($"'{MediaPreviewOptions.ConfigurationSectionName}:" +
 					$"{nameof(MediaPreviewOptions.Nextcloud)}." +
-					$"{nameof(NextcloudOptions.PublicPreviewBase)}' is missing tokens: {string.Join(',', missingTokens)}.");
+					$"{nameof(NextcloudOptions.PayloadStringBase)}' is missing tokens: {string.Join(',', missingTokens)}.");
+			}
 		}
 		errors = failures.ToString();
 		return string.IsNullOrEmpty(errors);

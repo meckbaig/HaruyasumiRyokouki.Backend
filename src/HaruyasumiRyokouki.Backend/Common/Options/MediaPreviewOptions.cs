@@ -6,7 +6,7 @@ sealed class MediaPreviewOptions
 
 	public required MediaPreviewProvider Provider { get; set; }
 
-	public string OriginStorageBase { get; set; }
+	public OriginStorageOptions OriginStorage { get; set; }
 
 	public ImgproxyOptions? Imgproxy { get; set; }
 
@@ -25,10 +25,24 @@ sealed class MediaPreviewOptions
 		public string? Key { get; set; }
 		public string? Salt { get; set; }
 		public bool Insecure { get; set; }
+
+		public string? CdnEndpoint { get; set; }
+		public bool UseCdnForDownloads { get; set; }
 	}
 
 	public class NextcloudOptions
 	{
-		public string PublicPreviewBase { get; set; }
+		public string PayloadStringBase { get; set; }
+		public string Endpoint { get; set; }
+		public string? CdnEndpoint { get; set; }
+		public bool UseCdnForDownloads { get; set; }
+	}
+
+	public class OriginStorageOptions
+	{
+		public string PayloadStringBase { get; set; }
+		public string Endpoint { get; set; }
+		public string? CdnEndpoint { get; set; }
+		public bool UseCdnForDownloads { get; set; }
 	}
 }

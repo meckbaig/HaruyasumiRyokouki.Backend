@@ -17,8 +17,16 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 	private readonly IMediaResolutionCalculationService _resolutionCalculator;
 	private readonly OriginStorageUrlBuilder _originBuilder;
 
+	private string ImageCdnEndpoint => string.IsNullOrEmpty(_options.CdnEndpoint)
+		? _options.Endpoint 
+		: _options.CdnEndpoint;
+
 	private ImgProxyBuilder Builder => ImgProxyBuilder.New
-		.WithEndpoint(_options.Endpoint)
+		.WithEndpoint(ImageCdnEndpoint)
+		.WithCredentials(_options.Key, _options.Salt);
+
+	private ImgProxyBuilder DownloadBuilder => ImgProxyBuilder.New
+		.WithEndpoint(_options.UseCdnForDownloads ? ImageCdnEndpoint : _options.Endpoint)
 		.WithCredentials(_options.Key, _options.Salt);
 
 	public ImgproxyMediaPreviewService(ILogger<ImgproxyMediaPreviewService> logger, IOptions<MediaPreviewOptions> options, IMediaResolutionCalculationService resolutionCalculator, IMediaProcessorService mediaProcessor)
@@ -34,7 +42,13 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		_mediaProcessor = mediaProcessor;
 		_resolutionCalculator = resolutionCalculator;
 
-		_originBuilder = new OriginStorageUrlBuilder(options.Value.OriginStorageBase);
+		_originBuilder = new OriginStorageUrlBuilder
+		(
+			options.Value.OriginStorage.Endpoint,
+			options.Value.OriginStorage.CdnEndpoint,
+			options.Value.OriginStorage.PayloadStringBase,
+			options.Value.OriginStorage.UseCdnForDownloads
+		);
 		if (!_originBuilder.Validate(out var _))
 			throw new ArgumentException("Video storage base url is invalid", nameof(options));
 	}
@@ -62,12 +76,12 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		switch (linkType)
 		{
 			case VideoUrlType.Download:
-				return _originBuilder.Build(fileName);
+				return _originBuilder.BuildDownload(fileName);
 			case VideoUrlType.Stream:
 				string webFileName = _mediaProcessor.GetVideoWebName(fileName);
 				if (additionalFiles.Contains(webFileName))
-					return _originBuilder.Build(webFileName);
-				return _originBuilder.Build(fileName);
+					return _originBuilder.BuildMedia(webFileName);
+				return _originBuilder.BuildMedia(fileName);
 			case VideoUrlType.Preview:
 				string previewFileName = _mediaProcessor.GetVideoPreviewName(fileName);
 				if (!additionalFiles.Contains(previewFileName))
@@ -89,9 +103,9 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 
 	public string BuildImgproxyRawString(string fileName, bool download = false)
 	{
-		var builder = Builder.WithRaw();
-		if (download)
-			builder.WithOptions(new AttachmentOption(download));
+		var builder = download
+			? DownloadBuilder.WithRaw().WithOptions(new AttachmentOption(download))
+			: Builder.WithRaw();
 		return builder.Build(CreateFilePath(fileName));
 	}
 

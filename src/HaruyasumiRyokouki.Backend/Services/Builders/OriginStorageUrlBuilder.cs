@@ -1,3 +1,4 @@
+
 namespace HaruyasumiRyokouki.Backend.Services.Builders;
 
 public class OriginStorageUrlBuilder : AbstractUrlBuilder
@@ -7,12 +8,25 @@ public class OriginStorageUrlBuilder : AbstractUrlBuilder
 		"fileName"
 	];
 
-	public OriginStorageUrlBuilder(string template) : base(template)
+	public OriginStorageUrlBuilder(string endpoint, string? cdnEndpoint, string payloadStringBase, bool useCdnForDownloads = false)
+		: base(endpoint, cdnEndpoint, payloadStringBase, useCdnForDownloads)
 	{
+
 	}
 
-	public string Build(string fileName)
+	public override bool Validate(out IReadOnlyCollection<string> missingTokens)
 	{
-		return _template.Replace("{fileName}", Uri.EscapeDataString(fileName));
+		return base.Validate(out missingTokens);
+	}
+
+	public string BuildMedia(string fileName)
+		=> Build(MediaBase, fileName);
+
+	public string BuildDownload(string fileName)
+		=> Build(DownloadBase, fileName);
+
+	private string Build(string urlBase, string fileName)
+	{
+		return urlBase.Replace("{fileName}", Uri.EscapeDataString(fileName));
 	}
 }
