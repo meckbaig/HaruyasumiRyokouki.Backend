@@ -7,6 +7,7 @@ using System.ClientModel;
 
 namespace HaruyasumiRyokouki.Backend.Services;
 
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 internal class AiChatApiService : IAiChatService
 {
 	private readonly AiApiOptions _aiApiOptions;
@@ -24,11 +25,13 @@ internal class AiChatApiService : IAiChatService
 		_completionOptions = new ChatCompletionOptions()
 		{
 			Temperature = _aiApiOptions.Temperature,
+			ReasoningEffortLevel = new ChatReasoningEffortLevel(_aiApiOptions.ReasoningLevel)
 		};
 
 		_jsonCompletionOptions = new ChatCompletionOptions()
 		{
 			Temperature = _aiApiOptions.Temperature,
+			ReasoningEffortLevel = new ChatReasoningEffortLevel(_aiApiOptions.ReasoningLevel),
 			ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
 		};
 	}

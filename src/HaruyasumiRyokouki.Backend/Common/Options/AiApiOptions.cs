@@ -7,5 +7,6 @@ sealed class AiApiOptions
 	public required string ApiKey { get; set; }
 	public required string Model { get; set; }
 	public float Temperature { get; set; }
+	public string ReasoningLevel { get; set; }
 	public required string ApiUrl { get; set; }
 }

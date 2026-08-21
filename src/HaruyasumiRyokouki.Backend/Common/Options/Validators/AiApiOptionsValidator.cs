@@ -35,6 +35,11 @@ sealed class AiApiOptionsValidator : IValidateOptions<AiApiOptions>
 			failures.AppendLine($"'{AiApiOptions.ConfigurationSectionName}:" +
 				$"{nameof(AiApiOptions.Temperature)}' cannot be greater than 1 (100%).");
 		}
+		if (string.IsNullOrWhiteSpace(options.ReasoningLevel))
+		{
+			failures.AppendLine($"'{AiApiOptions.ConfigurationSectionName}:" +
+				$"{nameof(AiApiOptions.ReasoningLevel)}' cannot be null or empty.");
+		}
 		if (string.IsNullOrWhiteSpace(options.ApiUrl))
 		{
 			failures.AppendLine($"'{AiApiOptions.ConfigurationSectionName}:" +
