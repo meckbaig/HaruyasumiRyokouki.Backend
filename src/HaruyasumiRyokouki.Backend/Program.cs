@@ -17,11 +17,11 @@ try
 	Log.Logger = builder.CreateCompleteLogger();
 	builder.Logging.ClearProviders().AddSerilog(Log.Logger);
 	builder.Services.AddDatabaseConnection();
-	builder.Services.AddTransient<IAiChatService, AiChatApiService>();
 	builder.Services.AddTransient<IMediaProcessorService, MediaProcessorService>();
 	builder.Services.AddSingleton<IFfmpegService, FfmpegService>();
 	builder.Services.AddSingleton<IMediaResolutionCalculationService, MediaResolutionCalculationService>();
 	builder.Services.AddSingleton<IMediaSimilarityIndexService, MediaSimilarityIndexService>();
+	builder.Services.AddTranslationServices();
 	builder.Services.AddHostedService<SimilarityWarmupBackgroundService>();
 	builder.Services.AddFileStorageProvider();
 	builder.Services.AddMediaPreviewProvider();

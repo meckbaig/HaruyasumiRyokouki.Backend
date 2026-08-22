@@ -18,8 +18,10 @@
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
 		<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+		<PackageReference Include="DeepL.net" Version="1.22.1" />
 		<PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+		<PackageReference Include="Google.GenAI" Version="1.19.0" />
 		<PackageReference Include="ImgProxy" Version="2.3.2" />
 		<PackageReference Include="Meckbaig.Cqrs" Version="1.0.2" />
 		<PackageReference Include="Meckbaig.Cqrs.Dto" Version="1.0.2" />

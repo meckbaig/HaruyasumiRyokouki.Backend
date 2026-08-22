@@ -5,13 +5,16 @@ using HaruyasumiRyokouki.Backend.Common.Conventions;
 using HaruyasumiRyokouki.Backend.Common.Handlers;
 using HaruyasumiRyokouki.Backend.Common.OptionalType.Supporting.Asp;
 using HaruyasumiRyokouki.Backend.Common.Options;
+using HaruyasumiRyokouki.Backend.Common.Options.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Options.Configurators.Swagger;
 using HaruyasumiRyokouki.Backend.Common.Options.Loggers;
+using HaruyasumiRyokouki.Backend.Common.Options.Parsers;
 using HaruyasumiRyokouki.Backend.Common.Options.Validators;
 using HaruyasumiRyokouki.Backend.Common.Options.Validators.Loggers;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Services;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -59,9 +62,6 @@ internal static class ServiceCollectionExtensions
 			.AddOptionsWithValidateOnStart<WebDavOptions>()
 			.BindConfiguration(WebDavOptions.ConfigurationSectionName);
 		services
-			.AddOptionsWithValidateOnStart<AiApiOptions>()
-			.BindConfiguration(AiApiOptions.ConfigurationSectionName);
-		services
 			.AddOptionsWithValidateOnStart<ApplicationOptions>()
 			.BindConfiguration(ApplicationOptions.ConfigurationSectionName);
 		services
@@ -80,7 +80,26 @@ internal static class ServiceCollectionExtensions
 			.AddOptionsWithValidateOnStart<FileLogOptions>()
 			.BindConfiguration(FileLogOptions.ConfigurationSectionName);
 
+		services.AddTranslationProviderOptions();
+
 		return services;
+	}
+
+	private static void AddTranslationProviderOptions(this IServiceCollection services)
+	{
+		services.AddSingleton<ITranslationOptionsParser, TranslationOptionsParser>();
+
+		services.AddOptions<TranslationProviderOptions>()
+			.Configure<IConfiguration, ITranslationOptionsParser>(
+				(options, configuration, parser) =>
+				{
+					var parsed = parser.Parse(
+						configuration.GetSection(TranslationProviderOptions.ConfigurationSectionName));
+
+					options.Providers = parsed.Providers;
+					options.Usage = parsed.Usage;
+				})
+			.ValidateOnStart();
 	}
 
 	internal static IServiceCollection AddAppOptionsValidators(this IServiceCollection services)
@@ -93,13 +112,13 @@ internal static class ServiceCollectionExtensions
 		services.AddSingleton<IValidateOptions<FfmpegPresetsOptions>, FfmpegPresetsOptionsValidator>();
 		services.AddSingleton<IValidateOptions<LocalStorageOptions>, LocalStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<WebDavOptions>, WebDavOptionsValidator>();
-		services.AddSingleton<IValidateOptions<AiApiOptions>, AiApiOptionsValidator>();
 		services.AddSingleton<IValidateOptions<ApplicationOptions>, ApplicationOptionsValidator>();
 		services.AddSingleton<IValidateOptions<ConnectionStringsOptions>, ConnectionStringsOptionsValidator>();
 		services.AddSingleton<IValidateOptions<SeqOptions>, SeqOptionsValidator>();
 		services.AddSingleton<IValidateOptions<ConsoleLogOptions>, ConsoleLogOptionsValidator>();
 		services.AddSingleton<IValidateOptions<DebugLogOptions>, DebugLogOptionsValidator>();
 		services.AddSingleton<IValidateOptions<FileLogOptions>, FileLogOptionsValidator>();
+		services.AddSingleton<IValidateOptions<TranslationProviderOptions>, TranslationProviderOptionsValidator>();
 
 		return services;
 	}
@@ -307,6 +326,15 @@ internal static class ServiceCollectionExtensions
 		services
 			.AddAuthentication("Basic")
 			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
+		return services;
+	}
+
+	internal static IServiceCollection AddTranslationServices(this IServiceCollection services)
+	{
+		services.AddSingleton<ITranslationOptionsParser, TranslationOptionsParser>();
+		services.AddSingleton<ITranslationServiceOptionsAccessor, TranslationServiceOptionsAccessor>();
+		services.AddSingleton<IContentTranslationServiceFactory, ContentTranslationServiceFactory>();
+
 		return services;
 	}
 

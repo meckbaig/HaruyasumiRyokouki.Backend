@@ -1,14 +1,17 @@
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Features.Translation;
 using HaruyasumiRyokouki.Backend.Models.Db;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using HaruyasumiRyokouki.Backend.Services.Translation;
+using HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json.Serialization;
 
@@ -60,12 +63,18 @@ public class EditMediaResponse : BaseResponse
 internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IMediator _mediator;
+	private readonly IContentTranslationService _translationService;
 
-	public EditMediaHandler(IAppDbContext context, IMediator mediator)
+	public EditMediaHandler
+	(
+		IAppDbContext context,
+		ITranslationServiceOptionsAccessor translationAccessor,
+		IContentTranslationServiceFactory factory,
+		IOptions<TranslationProviderOptions> translationOptions
+	)
 	{
 		_context = context;
-		_mediator = mediator;
+		_translationService = factory.CreateTranslationService(translationAccessor.GetTranslationServiceOptions(translationOptions.Value.Usage.Media));
 	}
 
 	public async Task<EditMediaResponse> Handle(EditMediaCommand request, CancellationToken cancellationToken)
@@ -126,57 +135,66 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 		mediaToEdit.ForEach(m => m.Tags = newTags.Where(nt => nt.MediaId == m.Id).Select(mt => mt.Tag).ToList());
 	}
 
-	private static readonly ICollection<LanguagePriority> _priorities =
-	[
-		new LanguagePriority(LanguageCode.English, nameof(LanguageCode.English), 1),
-		new LanguagePriority(LanguageCode.Russian, nameof(LanguageCode.Russian), 2),
-		new LanguagePriority(LanguageCode.Japanese, nameof(LanguageCode.Japanese), 3),
-	];
-
 	private async Task<ICollection<MediaTranslationEditDto>> TranslateMedia(ICollection<MediaTranslationEditDto> mediaTranslations, CancellationToken cancellationToken)
 	{
-		var existingTranslations = mediaTranslations
-			.Where(t => !string.IsNullOrWhiteSpace(t.Title))
-			.ToList();
+		var titleTargets = TranslationPlanner.Plan
+		(
+			mediaTranslations.ToDictionary(x => x.LanguageCode, x => x.Title),
+			out string titleSourceText,
+			out string titleSourceLanguageCode
+		);
+		var descriptionTargets = TranslationPlanner.Plan
+		(
+			mediaTranslations.ToDictionary(x => x.LanguageCode, x => x.Description),
+			out string descriptionSourceText,
+			out string descriptionSourceLanguageCode
+		);
 
-		var source = _priorities
-			.OrderBy(x => x.Priority)
-			.Join(
-				existingTranslations,
-				p => p.LanguageCode,
-				n => n.LanguageCode,
-				(p, n) => n)
-			.FirstOrDefault();
-
-		if (source == null)
-			return mediaTranslations;
-
-		var missingLanguages = _priorities
-			.Where(p => !existingTranslations.Any(t => t.LanguageCode == p.LanguageCode))
-			.ToList();
-
-		var translationTasks = missingLanguages.Select(async missingLanguage =>
-		{
-			var command = new GenerateMediaDescriptionTranslationCommand
+		var translationTasks = mediaTranslations
+			.Select(x => x.LanguageCode)
+			.Concat(titleTargets)
+			.Concat(descriptionTargets)
+			.Distinct()
+			.Select(async languageCode =>
 			{
-				Title = source.Title,
-				Description = source.Description,
-				TargetLanguage = missingLanguage.LanguageName
-			};
-			var translationResponse = await _mediator.Send(command, cancellationToken);
-			return new MediaTranslationEditDto
-			{
-				Title = translationResponse.Title,
-				Description = translationResponse.Description,
-				LanguageCode = missingLanguage.LanguageCode
-			};
-		});
+				var existing = mediaTranslations
+					.FirstOrDefault(x => x.LanguageCode == languageCode);
 
-		var translatedMedia = await Task.WhenAll(translationTasks);
-		return translatedMedia.ToList();
+				var title = existing?.Title;
+				var description = existing?.Description;
+
+				if (titleTargets.Contains(languageCode))
+				{
+					title = await _translationService.TranslateTextAsync
+					(
+						titleSourceText,
+						languageCode,
+						titleSourceLanguageCode,
+						cancellationToken
+					);
+				}
+
+				if (descriptionTargets.Contains(languageCode))
+				{
+					description = await _translationService.TranslateTextAsync
+					(
+						descriptionSourceText,
+						languageCode,
+						descriptionSourceLanguageCode,
+						cancellationToken
+					);
+				}
+
+				return new MediaTranslationEditDto
+				{
+					LanguageCode = languageCode,
+					Title = title,
+					Description = description
+				};
+			});
+
+		return (await Task.WhenAll(translationTasks)).ToList();
 	}
-
-	private record LanguagePriority(string LanguageCode, string LanguageName, int Priority);
 
 	private void UpdateTranslations(ICollection<MediaTranslation> source, ICollection<MediaTranslation> newTranslations)
 	{
