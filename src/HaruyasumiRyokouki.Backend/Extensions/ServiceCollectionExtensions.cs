@@ -13,6 +13,7 @@ using HaruyasumiRyokouki.Backend.Common.Options.Validators;
 using HaruyasumiRyokouki.Backend.Common.Options.Validators.Loggers;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Services;
+using HaruyasumiRyokouki.Backend.Services.BackgroundServices;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 using MediatR;
@@ -335,6 +336,13 @@ internal static class ServiceCollectionExtensions
 		services.AddSingleton<ITranslationServiceOptionsAccessor, TranslationServiceOptionsAccessor>();
 		services.AddSingleton<IContentTranslationServiceFactory, ContentTranslationServiceFactory>();
 
+		return services;
+	}
+
+	internal static IServiceCollection AddRemovalQueue(this IServiceCollection services)
+	{
+		services.AddSingleton<IRemovalQueueService, FileRemovalBackgroundService>();
+		services.AddHostedService(sp => (FileRemovalBackgroundService)sp.GetRequiredService<IRemovalQueueService>());
 		return services;
 	}
 

@@ -23,6 +23,7 @@ try
 	builder.Services.AddSingleton<IMediaSimilarityIndexService, MediaSimilarityIndexService>();
 	builder.Services.AddTranslationServices();
 	builder.Services.AddHostedService<SimilarityWarmupBackgroundService>();
+	builder.Services.AddRemovalQueue();
 	builder.Services.AddFileStorageProvider();
 	builder.Services.AddMediaPreviewProvider();
 	builder.Services.AddControllersWithJsonNamingPolicy();

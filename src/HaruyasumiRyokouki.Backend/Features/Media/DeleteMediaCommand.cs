@@ -1,6 +1,5 @@
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
@@ -22,35 +21,37 @@ public class DeleteMediaResponse : BaseResponse
 internal class DeleteMediaHandler : IRequestHandler<DeleteMediaCommand, DeleteMediaResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IFileStorage _fileStorage;
-	private readonly IMediaProcessorService _mediaProcessor;
+	private readonly IRemovalQueueService _removalQueue;
 
-	public DeleteMediaHandler(IAppDbContext context, IFileStorage fileStorage, IMediaProcessorService mediaProcessor)
+	public DeleteMediaHandler(IAppDbContext context, IRemovalQueueService removalQueue)
 	{
 		_context = context;
-		_fileStorage = fileStorage;
-		_mediaProcessor = mediaProcessor;
+		_removalQueue = removalQueue;
 	}
 
 	public async Task<DeleteMediaResponse> Handle(DeleteMediaCommand request, CancellationToken cancellationToken)
 	{
 		var mediaToDelete = await _context.MediaFiles
-			.FirstOrDefaultAsync(m => m.Id == request.MediaId, cancellationToken);
-
-		if (mediaToDelete == null)
-			throw new EntityNotFoundException($"Media file with Id {request.MediaId} not found.");
+			.FirstOrDefaultAsync(m => m.Id == request.MediaId, cancellationToken)
+				?? throw new EntityNotFoundException($"Media file with Id {request.MediaId} not found.");
 
 		_context.MediaFiles.Remove(mediaToDelete);
-
-		await _fileStorage.DeleteAsync(mediaToDelete.FileName, cancellationToken);
-		if (mediaToDelete.Type == MediaType.Video)
-		{
-			await _fileStorage.DeleteAsync(_mediaProcessor.GetVideoWebName(mediaToDelete.FileName), cancellationToken);
-			await _fileStorage.DeleteAsync(_mediaProcessor.GetVideoPreviewName(mediaToDelete.FileName), cancellationToken);
-		}
-
 		await _context.SaveChangesAsync(cancellationToken);
 
+		await CreateRemovalQueueAsync(mediaToDelete, cancellationToken);
+
 		return new DeleteMediaResponse();
+	}
+
+	private async Task CreateRemovalQueueAsync(Models.Db.MediaFile mediaToDelete, CancellationToken cancellationToken)
+	{
+		await _removalQueue.AddAsync(mediaToDelete.FileName);
+		if (mediaToDelete.AdditionalFiles.Count > 0)
+		{
+			foreach (string fileName in mediaToDelete.AdditionalFiles)
+			{
+				await _removalQueue.AddAsync(fileName);
+			}
+		}
 	}
 }
