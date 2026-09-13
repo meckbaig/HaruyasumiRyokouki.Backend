@@ -86,7 +86,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 		if (request.TagId.HasValue)
 		{
 			mediaFilter = m => (request.IsAuthenticated || (m.IsApproved && !m.Private))
-								&&	m.Tags.Any(t => t.Id == request.TagId!.Value);
+								&&	m.MediaTags.Any(t => t.TagId == request.TagId!.Value);
 		}
 		if (request.Tag != null)
 		{
@@ -100,9 +100,9 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			.AsNoTracking()
 			.Where(d => d.Media.AsQueryable().Any(mediaFilter))
 			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
-			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter).OrderBy(m => m.Created))
 				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
-			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter).OrderBy(m => m.Created))
 				.ThenInclude(m => m.Tags)
 					.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedTags())
 			.OrderByDescending(d => d.Date)
@@ -129,9 +129,9 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 				d.Media.AsQueryable().Any(mediaFilter)
 			)
 			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
-			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter).OrderBy(m => m.Created))
 				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
-			.Include(d => d.Media.AsQueryable().Where(mediaFilter))
+			.Include(d => d.Media.AsQueryable().Where(mediaFilter).OrderBy(m => m.Created))
 				.ThenInclude(m => m.Tags)
 					.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedTags())
 			.OrderByDescending(d => d.Date)

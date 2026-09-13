@@ -1,14 +1,17 @@
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
+using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Features.Translation;
 using HaruyasumiRyokouki.Backend.Models.Db;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using HaruyasumiRyokouki.Backend.Services.Translation;
+using HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
@@ -56,12 +59,18 @@ public class EditDayResponse : BaseResponse
 internal class EditDayHandler : IRequestHandler<EditDayCommand, EditDayResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IMediator _mediator;
+	private readonly IContentTranslationService _translationService;
 
-	public EditDayHandler(IAppDbContext context, IMediator mediator)
+	public EditDayHandler
+	(
+		IAppDbContext context,
+		ITranslationServiceOptionsAccessor translationAccessor,
+		IContentTranslationServiceFactory factory,
+		IOptions<TranslationProviderOptions> translationOptions
+	)
 	{
 		_context = context;
-		_mediator = mediator;
+		_translationService = factory.CreateTranslationService(translationAccessor.GetTranslationServiceOptions(translationOptions.Value.Usage.Days));
 	}
 
 	public async Task<EditDayResponse> Handle(EditDayCommand request, CancellationToken cancellationToken)
@@ -81,52 +90,36 @@ internal class EditDayHandler : IRequestHandler<EditDayCommand, EditDayResponse>
 		return new EditDayResponse { Day = day.ToEditDto() };
 	}
 
-	private static readonly ICollection<LanguagePriority> _priorities =
-	[
-		new LanguagePriority(LanguageCode.English, nameof(LanguageCode.English), 1),
-		new LanguagePriority(LanguageCode.Russian, nameof(LanguageCode.Russian), 2),
-		new LanguagePriority(LanguageCode.Japanese, nameof(LanguageCode.Japanese), 3),
-	];
-
 	private async Task<ICollection<DayTranslation>> TranslateNoteAsync(Day day, CancellationToken cancellationToken)
 	{
-		var existingTranslations = day.Translations
-			.Where(x => !string.IsNullOrWhiteSpace(x.Note))
-			.ToList();
+		var translationTargets = TranslationPlanner.Plan
+		(
+			day.Translations.ToDictionary(x => x.LanguageCode, x => x.Note),
+			out string sourceText,
+			out string sourceLanguageCode
+		);
 
-		var source = _priorities
-			.OrderBy(x => x.Priority)
-			.Join(
-				existingTranslations,
-				p => p.LanguageCode,
-				n => n.LanguageCode,
-				(p, n) => n)
-			.FirstOrDefault();
-
-		if (source == null)
-			return day.Translations;
-
-		var missingLanguages = _priorities
-			.Where(p => !existingTranslations.Any(t => t.LanguageCode == p.LanguageCode))
-			.ToList();
-
-		var translationTasks = missingLanguages.Select(async missingLanguage =>
+		var translationTasks = translationTargets.Select(async languageCode =>
 		{
-			var command = new GenerateTextTranslationCommand
-			{
-				InputText = source.Note,
-				TargetLanguage = missingLanguage.LanguageName
-			};
-			var translationResponse = await _mediator.Send(command, cancellationToken);
+			var translation = await _translationService.TranslateTextAsync
+			(
+				sourceText,
+				languageCode,
+				sourceLanguageCode,
+				cancellationToken
+			);
 			return new DayTranslation
 			{
-				Note = translationResponse.Result,
-				LanguageCode = missingLanguage.LanguageCode
+				Note = translation,
+				LanguageCode = languageCode
 			};
 		});
 
 		var translatedNotes = await Task.WhenAll(translationTasks);
-		return existingTranslations.Concat(translatedNotes).ToList();
+		return day.Translations
+			.Where(x => !translationTargets.Contains(x.LanguageCode))
+			.Concat(translatedNotes)
+			.ToList();
 	}
 
 	private record LanguagePriority(string LanguageCode, string LanguageName, int Priority);
