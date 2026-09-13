@@ -136,6 +136,9 @@ internal class AppDbContext : DbContext, IAppDbContext
 		{
 			entity.HasIndex(t => t.Slug)
 				  .IsUnique();
+
+			entity.HasIndex(t => t.Id)
+				.IncludeProperties(t => t.Slug);
 		});
 
 
@@ -144,6 +147,7 @@ internal class AppDbContext : DbContext, IAppDbContext
 			entity.HasIndex(l => new { l.TagId, l.LanguageCode })
 				  .IsUnique()
 				  .HasFilter("is_primary")
+				  .IncludeProperties(t => new { t.Id, t.Text })
 				  .HasDatabaseName("ux_tag_labels_primary_per_language");
 
 			entity.HasIndex(l => new { l.TagId, l.Text })
