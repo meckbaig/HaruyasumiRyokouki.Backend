@@ -29,8 +29,8 @@ public class AiTranslationService : IContentTranslationService
 		return $"You are a translator. You will receive text{inputLanguagePromptSubstring}, translate the content to {TranslationPlanner.LanguageByCode(outputLanguageCode)}. "
 			+ PromtCore
 			+ (outputLanguageCode == LanguageCode.Japanese
-				? "IMPORTANT: If present in original text, convert ALL romaji (Japanese words written in Latin alphabet) to proper Japanese script (kanji/kana)."
-				: "IMPORTANT: If the target language is NOT Japanese, leave romaji words unchanged.");
+				? "IMPORTANT: If present in original text, convert ALL romaji (Japanese words written in Latin alphabet) to proper Japanese script (kanji/kana). The original text in the original language must also be translated."
+				: "");
 	}
 
 	public async Task<string> TranslateTextAsync(string text, string outputLanguage, string? inputLanguage = null, CancellationToken cancellationToken = default)

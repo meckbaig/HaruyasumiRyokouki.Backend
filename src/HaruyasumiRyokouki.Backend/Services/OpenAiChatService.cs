@@ -16,7 +16,7 @@ internal class OpenAiChatService : IAiChatService
 	public OpenAiChatService(OpenAiTranslationServiceOptions options)
 	{
 		var aiClientOptions = new OpenAIClientOptions(); 
-		if (string.IsNullOrWhiteSpace(options.ApiUrl))
+		if (!string.IsNullOrWhiteSpace(options.ApiUrl))
 		{
 			aiClientOptions.Endpoint = new Uri(options.ApiUrl);
 		}
