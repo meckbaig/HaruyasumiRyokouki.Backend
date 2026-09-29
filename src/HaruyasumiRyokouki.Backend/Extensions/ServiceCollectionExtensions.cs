@@ -57,6 +57,9 @@ internal static class ServiceCollectionExtensions
 			.AddOptionsWithValidateOnStart<FfmpegPresetsOptions>()
 			.BindConfiguration(FfmpegPresetsOptions.ConfigurationSectionName);
 		services
+			.AddOptionsWithValidateOnStart<YoutubeOptions>()
+			.BindConfiguration(YoutubeOptions.ConfigurationSectionName);
+		services
 			.AddOptionsWithValidateOnStart<LocalStorageOptions>()
 			.BindConfiguration(LocalStorageOptions.ConfigurationSectionName);
 		services
@@ -111,6 +114,7 @@ internal static class ServiceCollectionExtensions
 		services.AddSingleton<IValidateOptions<MediaSizesOptions>, MediaSizesOptionsValidator>();
 		services.AddSingleton<IValidateOptions<MediaFormatOptions>, MediaFormatOptionsValidator>();
 		services.AddSingleton<IValidateOptions<FfmpegPresetsOptions>, FfmpegPresetsOptionsValidator>();
+		services.AddSingleton<IValidateOptions<YoutubeOptions>, YoutubeOptionsValidator>();
 		services.AddSingleton<IValidateOptions<LocalStorageOptions>, LocalStorageOptionsValidator>();
 		services.AddSingleton<IValidateOptions<WebDavOptions>, WebDavOptionsValidator>();
 		services.AddSingleton<IValidateOptions<ApplicationOptions>, ApplicationOptionsValidator>();

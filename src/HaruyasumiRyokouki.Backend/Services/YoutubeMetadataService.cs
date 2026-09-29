@@ -1,6 +1,8 @@
+using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Common.ResultType;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
@@ -13,11 +15,13 @@ internal class YoutubeMetadataService : IYoutubeMetadataService
 	private const string YtDlpExecutable = "yt-dlp";
 
 	private readonly ILogger<YoutubeMetadataService> _logger;
+	private readonly YoutubeOptions _options;
 	private readonly JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
 
-	public YoutubeMetadataService(ILogger<YoutubeMetadataService> logger)
+	public YoutubeMetadataService(ILogger<YoutubeMetadataService> logger, IOptions<YoutubeOptions> options)
 	{
 		_logger = logger;
+		_options = options.Value;
 	}
 
 	public async Task<Result<YoutubeMediaMetadata>> GetMetadataAsync(string videoId, CancellationToken cancellationToken)
@@ -96,6 +100,14 @@ internal class YoutubeMetadataService : IYoutubeMetadataService
 		process.StartInfo.ArgumentList.Add("--dump-single-json");
 		process.StartInfo.ArgumentList.Add("--no-warnings");
 		process.StartInfo.ArgumentList.Add("--no-playlist");
+		process.StartInfo.ArgumentList.Add("--ignore-no-formats-error");
+
+		if ((_options.Proxy?.Enabled ?? false) && !string.IsNullOrWhiteSpace(_options.Proxy.Address))
+		{
+			process.StartInfo.ArgumentList.Add("--proxy");
+			process.StartInfo.ArgumentList.Add(_options.Proxy.Address);
+		}
+
 		process.StartInfo.ArgumentList.Add(url);
 		process.StartInfo.RedirectStandardOutput = true;
 		process.StartInfo.RedirectStandardError = true;
