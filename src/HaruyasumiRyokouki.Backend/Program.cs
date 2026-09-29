@@ -20,6 +20,7 @@ try
 	builder.Services.AddTransient<IMediaProcessorService, MediaProcessorService>();
 	builder.Services.AddSingleton<IFfmpegService, FfmpegService>();
 	builder.Services.AddSingleton<IMediaDateResolver, MediaDateResolver>();
+	builder.Services.AddSingleton<IYoutubeMetadataService, YoutubeMetadataService>();
 	builder.Services.AddSingleton<IMediaResolutionCalculationService, MediaResolutionCalculationService>();
 	builder.Services.AddSingleton<IMediaSimilarityIndexService, MediaSimilarityIndexService>();
 	builder.Services.AddTranslationServices();
