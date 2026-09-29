@@ -55,7 +55,6 @@
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.1" />
 		<PackageReference Include="System.Numerics.Tensors" Version="10.0.11" />
 		<PackageReference Include="WebDav.Client" Version="2.9.0" />
-		<PackageReference Include="YoutubeExplode" Version="6.6.2" />
 	</ItemGroup>
 
 	<ItemGroup>
