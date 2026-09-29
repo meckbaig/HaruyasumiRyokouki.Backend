@@ -15,4 +15,13 @@ sealed class MediaFormatOptions
 	public required int MiniatureSize { get; set; }
 
 	public required int FavoritesReturnCount { get; set; }
+
+	public IReadOnlyCollection<TravelDateOffset> TravelDateOffsets { get; set; } = [];
+
+	public sealed class TravelDateOffset
+	{
+		public DateTime? From { get; set; }
+		public DateTime? To { get; set; }
+		public double Offset { get; set; }
+	}
 }

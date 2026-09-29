@@ -7,7 +7,6 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
@@ -24,13 +23,15 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	private readonly IAppDbContext _context;
 	private readonly IFileStorage _fileStorage;
 	private readonly IMediaProcessorService _mediaProcessorService;
+	private readonly IMediaDateResolver _mediaDateResolver;
 	private readonly ILogger<SyncMediaCommand> _logger;
 
-	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, IMediaProcessorService mediaProcessorService, ILogger<SyncMediaCommand> logger)
+	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, IMediaProcessorService mediaProcessorService, IMediaDateResolver mediaDateResolver, ILogger<SyncMediaCommand> logger)
 	{
 		_context = context;
 		_fileStorage = fileStorage;
 		_mediaProcessorService = mediaProcessorService;
+		_mediaDateResolver = mediaDateResolver;
 		_logger = logger;
 	}
 
@@ -71,8 +72,14 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		{
 			try
 			{
-				var localCreationDate = GetMediaDateTime(fileToCreate.FileName, fileToCreate.Created);
-				await CreateMediaFileAsync(fileToCreate.FileName, localCreationDate, datesFromDb, cancellationToken);
+				var creationDate = ResolveCreationDate(fileToCreate.FileName, fileToCreate.Created);
+				if (creationDate.IsFailure)
+				{
+					_logger.LogError("Error resolving date for {FileName}: {Error}", fileToCreate.FileName, creationDate.Error);
+					_logger.LogWarning("File skipped: {FileName}", fileToCreate.FileName);
+					continue;
+				}
+				await CreateMediaFileAsync(fileToCreate.FileName, creationDate.Value, datesFromDb, cancellationToken);
 			}
 			catch (Exception ex)
 			{
@@ -215,56 +222,13 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		return MediaType.Unknown;
 	}
 
-	private static readonly TimeZoneInfo JapanTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
-		OperatingSystem.IsWindows()
-			? "Tokyo Standard Time"
-			: "Asia/Tokyo");
-
-	protected static DateTime GetMediaDateTime(string fileName, DateTime lastModifiedDate)
+	private Result<DateTime> ResolveCreationDate(string fileName, DateTime lastModifiedDate)
 	{
-		var dateTime = TryParseMediaDateTime(fileName)
-			?? TimeZoneInfo.ConvertTime(lastModifiedDate, JapanTimeZone);
-		return DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
-	}
+		var fromName = _mediaDateResolver.TryExtractLocalFromName(fileName);
+		if (fromName.HasValue)
+			return Result<DateTime>.Success(fromName.Value);
 
-	private static DateTime? TryParseMediaDateTime(string fileName)
-	{
-		var name = Path.GetFileNameWithoutExtension(fileName);
-
-		// PXL_20260409_080520000
-		if (name.StartsWith("PXL_") && name.Length >= 22)
-		{
-			var value = name.Substring(4, 8) + name.Substring(13, 6);
-
-			if (DateTime.TryParseExact(
-					value,
-					"yyyyMMddHHmmss",
-					CultureInfo.InvariantCulture,
-					DateTimeStyles.None,
-					out var date))
-			{
-				return date;
-			}
-		}
-
-		// 20260409_080520
-		// 20260409_080520_HDR
-		if (name.Length >= 15)
-		{
-			var value = name[..8] + name[9..15];
-
-			if (DateTime.TryParseExact(
-					value,
-					"yyyyMMddHHmmss",
-					CultureInfo.InvariantCulture,
-					DateTimeStyles.None,
-					out var date))
-			{
-				return date;
-			}
-		}
-
-		return null;
+		return _mediaDateResolver.ResolveFromUtc(lastModifiedDate);
 	}
 
 	private record MediaForMiniatureCheck(int Id, string FileName, bool HasMiniature, ICollection<string> AdditionalFiles);
