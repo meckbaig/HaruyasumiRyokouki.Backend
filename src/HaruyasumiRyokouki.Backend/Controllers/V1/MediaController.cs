@@ -51,6 +51,14 @@ public class MediaController : ControllerBase
 	}
 
 	[Authorize]
+	[HttpPost("youtube")]
+	public async Task<ActionResult<ImportYoutubeMediaResponse>> ImportYoutubeMedia(ImportYoutubeMediaCommand command, CancellationToken cancellationToken)
+	{
+		var result = await _mediator.Send(command, cancellationToken);
+		return result.ToJsonResponse();
+	}
+
+	[Authorize]
 	[HttpGet("edit")]
 	public async Task<ActionResult<GetEditMediaResponse>> GetEditMedia(GetEditMediaQuery query, CancellationToken cancellationToken)
 	{

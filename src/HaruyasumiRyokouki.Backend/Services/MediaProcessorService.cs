@@ -190,7 +190,8 @@ internal class MediaProcessorService : IMediaProcessorService
 		Directory.CreateDirectory(workspace.TempFolder);
 		await using (var file = File.Create(inputFile))
 		{
-			thumbnail.Position = 0;
+			if (thumbnail.CanSeek)
+				thumbnail.Position = 0;
 			await thumbnail.CopyToAsync(file, cancellationToken);
 		}
 

@@ -29,6 +29,7 @@ try
 	builder.Services.AddFileStorageProvider();
 	builder.Services.AddMediaPreviewProvider();
 	builder.Services.AddControllersWithJsonNamingPolicy();
+	builder.Services.AddHttpClient();
 	builder.Services.AddHttpContextAccessor();
 	builder.Services.AddMediatRFromAssembly();
 	builder.Services.AddAutoMapperFromAssembly();
