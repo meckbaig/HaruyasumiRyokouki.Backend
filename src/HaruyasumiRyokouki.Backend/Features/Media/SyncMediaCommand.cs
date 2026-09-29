@@ -3,11 +3,11 @@ using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
+using HaruyasumiRyokouki.Backend.Services;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
@@ -24,13 +24,15 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	private readonly IAppDbContext _context;
 	private readonly IFileStorage _fileStorage;
 	private readonly IMediaProcessorService _mediaProcessorService;
+	private readonly IMediaDateResolver _mediaDateResolver;
 	private readonly ILogger<SyncMediaCommand> _logger;
 
-	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, IMediaProcessorService mediaProcessorService, ILogger<SyncMediaCommand> logger)
+	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, IMediaProcessorService mediaProcessorService, IMediaDateResolver mediaDateResolver, ILogger<SyncMediaCommand> logger)
 	{
 		_context = context;
 		_fileStorage = fileStorage;
 		_mediaProcessorService = mediaProcessorService;
+		_mediaDateResolver = mediaDateResolver;
 		_logger = logger;
 	}
 
@@ -38,7 +40,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	{
 		var datesFromDb = await _context.Days.ToListAsync(cancellationToken);
 		var filesFromDb = await _context.MediaFiles
-			.Select(m => new MediaForMiniatureCheck(m.Id, m.FileName, !string.IsNullOrEmpty(m.Miniature), m.AdditionalFiles))
+			.Select(m => new MediaForMiniatureCheck(m.Id, m.FileName, !string.IsNullOrEmpty(m.Miniature), m.AdditionalFiles, m.Source))
 			.ToListAsync(cancellationToken);
 
 		await CheckForNewFiles(datesFromDb, filesFromDb, cancellationToken);
@@ -71,8 +73,14 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		{
 			try
 			{
-				var localCreationDate = GetMediaDateTime(fileToCreate.FileName, fileToCreate.Created);
-				await CreateMediaFileAsync(fileToCreate.FileName, localCreationDate, datesFromDb, cancellationToken);
+				var creationDate = ResolveCreationDate(fileToCreate.FileName, fileToCreate.Created);
+				if (creationDate.IsFailure)
+				{
+					_logger.LogError("Error resolving date for {FileName}: {Error}", fileToCreate.FileName, creationDate.Error);
+					_logger.LogWarning("File skipped: {FileName}", fileToCreate.FileName);
+					continue;
+				}
+				await CreateMediaFileAsync(fileToCreate.FileName, creationDate.Value, datesFromDb, cancellationToken);
 			}
 			catch (Exception ex)
 			{
@@ -86,8 +94,9 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 
 	private void CheckForMissingFiles(IEnumerable<MediaForMiniatureCheck> filesFromDb, IReadOnlyCollection<StorageFile> storageFiles)
 	{
-		List<string> expectedFileNames = filesFromDb.Select(x => x.FileName).ToList();
-		foreach (var file in filesFromDb.Where(f => f.AdditionalFiles.Count > 0))
+		var localFiles = filesFromDb.Where(f => f.Source == MediaSource.Local).ToList();
+		List<string> expectedFileNames = localFiles.Select(x => x.FileName).ToList();
+		foreach (var file in localFiles.Where(f => f.AdditionalFiles.Count > 0))
 		{
 			expectedFileNames.AddRange(file.AdditionalFiles);
 		}
@@ -106,7 +115,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	private async Task CheckForIncompleteFiles(IEnumerable<MediaForMiniatureCheck> filesFromDb, CancellationToken cancellationToken)
 	{
 		_logger.LogInformation("Incomplete files check started");
-		var incompleteFiles = filesFromDb.Where(f => !f.HasMiniature);
+		var incompleteFiles = filesFromDb.Where(f => f.Source == MediaSource.Local && !f.HasMiniature);
 		_logger.LogInformation("Incomplete files found: {Count}", incompleteFiles.Count());
 
 		foreach (var fileFromDb in incompleteFiles)
@@ -125,14 +134,9 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	private async Task CreateMediaFileAsync(string fileName, DateTime creationTime, List<Day> datesFromDb, CancellationToken cancellationToken)
 	{
 		DateOnly creationDate = DateOnly.FromDateTime(creationTime);
-		bool dayCreated = false;
-		if (datesFromDb.FirstOrDefault(d => d.Date == creationDate) is not Day creationDay)
-		{
-			creationDay = new Day { Date = creationDate };
-			datesFromDb.Add(creationDay);
+		var (creationDay, dayCreated) = DayResolver.GetOrCreate(datesFromDb, creationDate);
+		if (dayCreated)
 			_context.Days.Add(creationDay);
-			dayCreated = true;
-		}
 
 		var fileMediaType = GetMediaType(fileName);
 		Result<ConvertionsResponseDto> conversionResult;
@@ -215,57 +219,14 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		return MediaType.Unknown;
 	}
 
-	private static readonly TimeZoneInfo JapanTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
-		OperatingSystem.IsWindows()
-			? "Tokyo Standard Time"
-			: "Asia/Tokyo");
-
-	protected static DateTime GetMediaDateTime(string fileName, DateTime lastModifiedDate)
+	private Result<DateTime> ResolveCreationDate(string fileName, DateTime lastModifiedDate)
 	{
-		var dateTime = TryParseMediaDateTime(fileName)
-			?? TimeZoneInfo.ConvertTime(lastModifiedDate, JapanTimeZone);
-		return DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
+		var fromName = _mediaDateResolver.TryExtractLocalFromName(fileName);
+		if (fromName.HasValue)
+			return Result<DateTime>.Success(fromName.Value);
+
+		return _mediaDateResolver.ResolveFromUtc(lastModifiedDate);
 	}
 
-	private static DateTime? TryParseMediaDateTime(string fileName)
-	{
-		var name = Path.GetFileNameWithoutExtension(fileName);
-
-		// PXL_20260409_080520000
-		if (name.StartsWith("PXL_") && name.Length >= 22)
-		{
-			var value = name.Substring(4, 8) + name.Substring(13, 6);
-
-			if (DateTime.TryParseExact(
-					value,
-					"yyyyMMddHHmmss",
-					CultureInfo.InvariantCulture,
-					DateTimeStyles.None,
-					out var date))
-			{
-				return date;
-			}
-		}
-
-		// 20260409_080520
-		// 20260409_080520_HDR
-		if (name.Length >= 15)
-		{
-			var value = name[..8] + name[9..15];
-
-			if (DateTime.TryParseExact(
-					value,
-					"yyyyMMddHHmmss",
-					CultureInfo.InvariantCulture,
-					DateTimeStyles.None,
-					out var date))
-			{
-				return date;
-			}
-		}
-
-		return null;
-	}
-
-	private record MediaForMiniatureCheck(int Id, string FileName, bool HasMiniature, ICollection<string> AdditionalFiles);
+	private record MediaForMiniatureCheck(int Id, string FileName, bool HasMiniature, ICollection<string> AdditionalFiles, MediaSource Source);
 }

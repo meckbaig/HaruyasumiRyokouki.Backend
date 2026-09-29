@@ -37,13 +37,13 @@ internal class GetSimilarMediaHandler : IRequestHandler<GetSimilarMediaQuery, Ge
 {
 	private readonly IAppDbContext _context;
 	private readonly IMediaSimilarityIndexService _similarityService;
-	private readonly IMediaPreviewService _previewService;
+	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public GetSimilarMediaHandler(IAppDbContext context, IMediaSimilarityIndexService similarityService, IMediaPreviewService previewService)
+	public GetSimilarMediaHandler(IAppDbContext context, IMediaSimilarityIndexService similarityService, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
 		_similarityService = similarityService;
-		_previewService = previewService;
+		_urlsProvider = urlsProvider;
 	}
 
 	public async Task<GetSimilarMediaResponse> Handle(
@@ -72,12 +72,14 @@ internal class GetSimilarMediaHandler : IRequestHandler<GetSimilarMediaQuery, Ge
 
 		var items = hits
 			.Where(h => mediaById.ContainsKey(h.MediaFileId))
-			.Select(h => new SuggestedMediaDto
+			.Select(h =>
 			{
-				Media = mediaById[h.MediaFileId]
-					.ToEditDto()
-					.AddUrls(mediaById[h.MediaFileId].AdditionalFiles, _previewService, request.ClientDisplay),
-				Score = h.Score
+				var media = mediaById[h.MediaFileId];
+				return new SuggestedMediaDto
+				{
+					Media = media.ToEditDto().AddUrls(media, _urlsProvider, request.ClientDisplay),
+					Score = h.Score
+				};
 			})
 			.ToList();
 

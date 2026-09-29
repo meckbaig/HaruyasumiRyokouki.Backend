@@ -50,6 +50,36 @@ sealed class MediaFormatOptionsValidator : IValidateOptions<MediaFormatOptions>
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
 				$"{nameof(MediaFormatOptions.FavoritesReturnCount)}' must be greater than 0.");
 		}
+		if (options.TravelDateOffsets == null || options.TravelDateOffsets.Count == 0)
+		{
+			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaFormatOptions.TravelDateOffsets)}' must contain at least one range.");
+		}
+		else
+		{
+			var ordered = options.TravelDateOffsets.OrderBy(o => o.From).ToList();
+			for (int i = 0; i < ordered.Count; i++)
+			{
+				if (ordered[i].From.HasValue && ordered[i].To.HasValue && ordered[i].From > ordered[i].To)
+				{
+					failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
+						$"{nameof(MediaFormatOptions.TravelDateOffsets)}[{i}]' has From greater than To.");
+				}
+				if (i > 0)
+				{
+					if (!ordered[i - 1].To.HasValue)
+					{
+						failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
+							$"{nameof(MediaFormatOptions.TravelDateOffsets)}[{i - 1}]' is open-ended and overlaps with the following range.");
+					}
+					else if (ordered[i].From.HasValue && ordered[i].From <= ordered[i - 1].To)
+					{
+						failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
+							$"{nameof(MediaFormatOptions.TravelDateOffsets)}[{i}]' overlaps with the previous range.");
+					}
+				}
+			}
+		}
 
 		return failures.Length > 0
 			? ValidateOptionsResult.Fail(failures.ToString())

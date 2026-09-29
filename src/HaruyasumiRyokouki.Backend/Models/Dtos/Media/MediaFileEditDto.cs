@@ -9,6 +9,7 @@ public record MediaFileEditDto : IPreviewDto
 	public required string FileName { get; set; } = null!;
 	public float AspectRatio { get; set; }
 	public string Type { get; set; }
+	public string Source { get; set; }
 	public double? Latitude { get; set; }
 	public double? Longitude { get; set; }
 	public string Miniature { get; set; }

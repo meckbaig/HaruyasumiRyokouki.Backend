@@ -39,13 +39,13 @@ internal class SuggestMediaForTagQueryHandler : IRequestHandler<SuggestMediaForT
 {
 	private readonly IAppDbContext _context;
 	private readonly IMediaSimilarityIndexService _similarityService;
-	private readonly IMediaPreviewService _previewService;
+	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public SuggestMediaForTagQueryHandler(IAppDbContext context, IMediaSimilarityIndexService similarityService, IMediaPreviewService previewService)
+	public SuggestMediaForTagQueryHandler(IAppDbContext context, IMediaSimilarityIndexService similarityService, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
 		_similarityService = similarityService;
-		_previewService = previewService;
+		_urlsProvider = urlsProvider;
 	}
 
 	public async Task<SuggestMediaForTagResponse> Handle(SuggestMediaForTagQuery request, CancellationToken cancellationToken)
@@ -90,12 +90,14 @@ internal class SuggestMediaForTagQueryHandler : IRequestHandler<SuggestMediaForT
 		// This is the order in which the photos must be placed in the grid, otherwise the whole point of ranking is lost.
 		var items = hits
 			.Where(h => mediaById.ContainsKey(h.MediaFileId))
-			.Select(h => new SuggestedMediaDto
+			.Select(h =>
 			{
-				Media = mediaById[h.MediaFileId]
-					.ToEditDto()
-					.AddUrls(mediaById[h.MediaFileId].AdditionalFiles, _previewService, request.ClientDisplay),
-				Score = h.Score
+				var media = mediaById[h.MediaFileId];
+				return new SuggestedMediaDto
+				{
+					Media = media.ToEditDto().AddUrls(media, _urlsProvider, request.ClientDisplay),
+					Score = h.Score
+				};
 			})
 			.ToList();
 

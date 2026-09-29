@@ -33,12 +33,12 @@ public class GetPendingResponse
 internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IMediaPreviewService _previewService;
+	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public GetPendingHandler(IAppDbContext context, IMediaPreviewService previewService)
+	public GetPendingHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
-		_previewService = previewService;
+		_urlsProvider = urlsProvider;
 	}
 
 	public async Task<GetPendingResponse> Handle(GetPendingQuery request, CancellationToken cancellationToken)
@@ -58,7 +58,7 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 			.OrderBy(m => m.Created)
 			.ToListAsync(cancellationToken);
 
-		var pendingMediaDtos = pendingMedia.Select(m => m.ToEditDto().AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
+		var pendingMediaDtos = pendingMedia.Select(m => m.ToEditDto().AddUrls(m, _urlsProvider, request.ClientDisplay));
 
 		return new GetPendingResponse
 		{

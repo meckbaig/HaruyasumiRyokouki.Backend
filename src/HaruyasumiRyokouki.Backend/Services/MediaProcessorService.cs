@@ -179,6 +179,31 @@ internal class MediaProcessorService : IMediaProcessorService
 		return miniature;
 	}
 
+	public async Task<Result<string>> CreateYoutubePreviewAsync(string videoId, string sourceExtension, Stream thumbnail, CancellationToken cancellationToken)
+	{
+		await using var workspace = new TempStorageService(MediaType.Video);
+
+		string resultPreviewFileName = GetVideoPreviewName(videoId);
+		var inputFile = Path.Combine(workspace.TempFolder, videoId + sourceExtension);
+		var outputFile = Path.Combine(workspace.TempFolder, resultPreviewFileName);
+
+		Directory.CreateDirectory(workspace.TempFolder);
+		await using (var file = File.Create(inputFile))
+		{
+			if (thumbnail.CanSeek)
+				thumbnail.Position = 0;
+			await thumbnail.CopyToAsync(file, cancellationToken);
+		}
+
+		await _ffmpegService.ConvertImageAsync(inputFile, outputFile, cancellationToken);
+
+		await using var result = File.OpenRead(outputFile);
+		await _fileStorage.SaveFileAsync(resultPreviewFileName, result, cancellationToken);
+		_logger.LogInformation("YouTube preview {FileName} was created", resultPreviewFileName);
+
+		return Result<string>.Success(resultPreviewFileName);
+	}
+
 	private async Task<string> CreateMiniatureAsync(string fileName, TempStorageService workspace, CancellationToken cancellationToken)
 	{
 		var miniatureBytes = await _ffmpegService.GetImageMiniatureBytesAsync

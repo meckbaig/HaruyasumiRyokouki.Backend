@@ -6,10 +6,12 @@ public class MediaFile
 {
 	public int Id { get; set; }
 	public int DayId { get; set; }
-	public DateTime Created { get; set; }
+	public required DateTime Created { get; set; }
 	public required string FileName { get; set; } = null!;
-	public float AspectRatio { get; set; }
-	public MediaType Type { get; set; } = MediaType.Unknown;
+	public required float AspectRatio { get; set; }
+	public required MediaType Type { get; set; } = MediaType.Unknown;
+	public MediaSource Source { get; set; } = MediaSource.Local;
+	public string? ExternalUrl { get; set; }
 	public double? Latitude { get; set; }
 	public double? Longitude { get; set; }
 	public string? Miniature { get; set; }

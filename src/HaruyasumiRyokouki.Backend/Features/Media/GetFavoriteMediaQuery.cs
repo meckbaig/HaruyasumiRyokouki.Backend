@@ -39,14 +39,14 @@ public class GetFavoriteMediaResponse
 internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQuery, GetFavoriteMediaResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IMediaPreviewService _previewService;
+	private readonly IMediaUrlsProvider _urlsProvider;
 	private readonly MediaFormatOptions _mediaFormatOptions;
 	private const bool IncludeFavorites = true;
 
-	public GetFavoriteMediaQueryHandler(IAppDbContext context, IMediaPreviewService previewService, IOptions<MediaFormatOptions> mediaFormatOptions)
+	public GetFavoriteMediaQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider, IOptions<MediaFormatOptions> mediaFormatOptions)
 	{
 		_context = context;
-		_previewService = previewService;
+		_urlsProvider = urlsProvider;
 		_mediaFormatOptions = mediaFormatOptions.Value;
 	}
 
@@ -62,7 +62,7 @@ internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQu
 			.Take(_mediaFormatOptions.FavoritesReturnCount)
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFiles.Select(m => m.ToDto(IncludeFavorites, request.IsAuthenticated).AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
+		var results = mediaFiles.Select(m => m.ToDto(IncludeFavorites, request.IsAuthenticated).AddUrls(m, _urlsProvider, request.ClientDisplay));
 
 		return new GetFavoriteMediaResponse
 		{

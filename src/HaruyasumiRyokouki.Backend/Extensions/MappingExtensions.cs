@@ -104,6 +104,7 @@ internal static class MappingExtensions
 			FileName = source.FileName,
 			AspectRatio = source.AspectRatio,
 			Type = source.Type.ToString(),
+			Source = source.Source.ToString(),
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
 			IsApproved = source.IsApproved,
@@ -131,6 +132,7 @@ internal static class MappingExtensions
 			FileName = source.FileName,
 			AspectRatio = source.AspectRatio,
 			Type = source.Type.ToString(),
+			Source = source.Source.ToString(),
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
 			Miniature = source.Miniature,
@@ -188,30 +190,30 @@ internal static class MappingExtensions
 
 	#region Urls
 
-	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, ICollection<Day> sources, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static IEnumerable<DayDto> AddUrls(this IEnumerable<DayDto> dayDtos, ICollection<Day> sources, IMediaUrlsProvider urlsProvider, ClientDisplay? clientDisplay = default)
 	{
-		return dayDtos.Select(d => d.AddUrls(sources.First(s => s.Date == d.Date), previewService, clientDisplay));
+		return dayDtos.Select(d => d.AddUrls(sources.First(s => s.Date == d.Date), urlsProvider, clientDisplay));
 	}
 
-	public static DayDto AddUrls(this DayDto dayDto, Day source, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static DayDto AddUrls(this DayDto dayDto, Day source, IMediaUrlsProvider urlsProvider, ClientDisplay? clientDisplay = default)
 	{
 		foreach (var mediaDto in dayDto.Media)
 		{
 			var media = source.Media.First(m => m.Id == mediaDto.Id);
-			mediaDto.AddUrls(media.AdditionalFiles, previewService, clientDisplay);
+			mediaDto.AddUrls(media, urlsProvider, clientDisplay);
 		}
 		return dayDto;
 	}
 
-	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static MediaFileDto AddUrls(this MediaFileDto mediaDto, MediaFile source, IMediaUrlsProvider urlsProvider, ClientDisplay? clientDisplay = default)
 	{
 		switch (mediaDto.Type)
 		{
 			case nameof(MediaType.Image):
-				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService, clientDisplay);
+				mediaDto.ImageUrls = CreateImageUrls(mediaDto, urlsProvider, clientDisplay);
 				break;
 			case nameof(MediaType.Video):
-				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, additionalFiles, previewService, clientDisplay);
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, source, urlsProvider, clientDisplay);
 				break;
 			default:
 				break;
@@ -219,16 +221,16 @@ internal static class MappingExtensions
 		return mediaDto;
 	}
 
-	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	public static TPreviewDto AddUrls<TPreviewDto>(this TPreviewDto mediaDto, MediaFile source, IMediaUrlsProvider urlsProvider, ClientDisplay? clientDisplay = default)
 		where TPreviewDto: IPreviewDto
 	{
 		switch (mediaDto.Type)
 		{
 			case nameof(MediaType.Image):
-				mediaDto.ImageUrls = CreateImageUrls(mediaDto, previewService, clientDisplay);
+				mediaDto.ImageUrls = CreateImageUrls(mediaDto, urlsProvider, clientDisplay);
 				break;
 			case nameof(MediaType.Video):
-				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, additionalFiles, previewService, clientDisplay);
+				mediaDto.VideoUrls = CreateVideoUrls(mediaDto, source, urlsProvider, clientDisplay);
 				break;
 			default:
 				break;
@@ -236,44 +238,34 @@ internal static class MappingExtensions
 		return mediaDto;
 	}
 
-	private static ImageUrlsDto? CreateImageUrls(MediaFileDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	private static ImageUrlsDto? CreateImageUrls(MediaFileDto media, IMediaUrlsProvider urlsProvider, ClientDisplay? clientDisplay = default)
 	{
 		return new ImageUrlsDto
 		{
-			Download = previewService.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay, media.AspectRatio),
-			FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay, media.AspectRatio),
-			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay, media.AspectRatio)
+			Download = urlsProvider.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay, media.AspectRatio),
+			FullScreen = urlsProvider.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay, media.AspectRatio),
+			Preview = urlsProvider.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
 
-	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	private static VideoUrlsDto? CreateVideoUrls(MediaFileDto media, MediaFile source, IMediaUrlsProvider urlsProvider, ClientDisplay? clientDisplay = default)
 	{
-		return new VideoUrlsDto
-		{
-			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, additionalFiles, clientDisplay, media.AspectRatio),
-			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, additionalFiles, clientDisplay, media.AspectRatio),
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, additionalFiles, clientDisplay, media.AspectRatio)
-		};
+		return urlsProvider.GetVideoUrls(media.FileName, source.Source, source.ExternalUrl, source.AdditionalFiles, clientDisplay, media.AspectRatio);
 	}
 
-	private static ImageUrlsDto? CreateImageUrls(IPreviewDto media, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	private static ImageUrlsDto? CreateImageUrls(IPreviewDto media, IMediaUrlsProvider urlsProvider, ClientDisplay? clientDisplay = default)
 	{
 		return new ImageUrlsDto
 		{
-			Download = previewService.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay, media.AspectRatio),
-			FullScreen = previewService.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay, media.AspectRatio),
-			Preview = previewService.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay, media.AspectRatio)
+			Download = urlsProvider.GetImageUrl(media.FileName, ImageUrlType.Download, clientDisplay, media.AspectRatio),
+			FullScreen = urlsProvider.GetImageUrl(media.FileName, ImageUrlType.FullScreen, clientDisplay, media.AspectRatio),
+			Preview = urlsProvider.GetImageUrl(media.FileName, ImageUrlType.Preview, clientDisplay, media.AspectRatio)
 		};
 	}
 
-	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, ICollection<string> additionalFiles, IMediaPreviewService previewService, ClientDisplay? clientDisplay = default)
+	private static VideoUrlsDto? CreateVideoUrls(IPreviewDto media, MediaFile source, IMediaUrlsProvider urlsProvider, ClientDisplay? clientDisplay = default)
 	{
-		return new VideoUrlsDto
-		{
-			Download = previewService.GetVideoUrl(media.FileName, VideoUrlType.Download, additionalFiles, clientDisplay, media.AspectRatio),
-			Stream = previewService.GetVideoUrl(media.FileName, VideoUrlType.Stream, additionalFiles, clientDisplay, media.AspectRatio),
-			Preview = previewService.GetVideoUrl(media.FileName, VideoUrlType.Preview, additionalFiles, clientDisplay, media.AspectRatio)
-		};
+		return urlsProvider.GetVideoUrls(media.FileName, source.Source, source.ExternalUrl, source.AdditionalFiles, clientDisplay, media.AspectRatio);
 	}
 
 	#endregion
