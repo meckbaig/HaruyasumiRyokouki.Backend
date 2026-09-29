@@ -82,6 +82,9 @@ internal class AppDbContext : DbContext, IAppDbContext
 			entity.Property(m => m.Type)
 				  .HasConversion<string>();
 
+			entity.Property(m => m.Source)
+				  .HasConversion<string>();
+
 			entity.Property(m => m.IsApproved)
 				  .HasDefaultValue(false);
 
