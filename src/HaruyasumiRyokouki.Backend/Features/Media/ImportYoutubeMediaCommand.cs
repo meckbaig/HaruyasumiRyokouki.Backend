@@ -111,7 +111,7 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 		{
 			FileName = videoId,
 			Source = MediaSource.YouTube,
-			ExternalUrl = metadata.ExternalUrl,
+			ExternalUrl = GetEmbedUrl(videoId),
 			Type = MediaType.Video,
 			AspectRatio = metadata.AspectRatio,
 			Created = created,
@@ -156,5 +156,10 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 		{
 			throw new ValidationException($"Failed to download YouTube preview: {ex.Message}");
 		}
+	}
+
+	private string GetEmbedUrl(string videoId)
+	{
+		return $"https://www.youtube-nocookie.com/embed/{videoId}";
 	}
 }
