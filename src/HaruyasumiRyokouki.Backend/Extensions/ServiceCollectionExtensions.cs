@@ -291,6 +291,8 @@ internal static class ServiceCollectionExtensions
 					$"Unsupported media preview provider: {previewOptions.Provider}");
 		}
 
+		services.AddSingleton<IMediaUrlsProvider, MediaUrlsProvider>();
+
 		return services;
 	}
 

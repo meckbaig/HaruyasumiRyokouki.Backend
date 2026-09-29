@@ -52,12 +52,12 @@ public class GetMediaLocationsResponse
 internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocationsQuery, GetMediaLocationsResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IMediaPreviewService _previewService;
+	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public GetMediaLocationsQueryHandler(IAppDbContext context, IMediaPreviewService previewService)
+	public GetMediaLocationsQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
-		_previewService = previewService;
+		_urlsProvider = urlsProvider;
 	}
 
 	public async Task<GetMediaLocationsResponse> Handle(GetMediaLocationsQuery request, CancellationToken cancellationToken)
@@ -77,7 +77,7 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 			.OrderBy(m => m.Created)
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFiles.Select(m => ToLocationDto(m).AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
+		var results = mediaFiles.Select(m => ToLocationDto(m).AddUrls(m, _urlsProvider, request.ClientDisplay));
 
 		return new GetMediaLocationsResponse
 		{
@@ -93,6 +93,7 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 			Created = source.Created,
 			FileName = source.FileName,
 			AspectRatio = source.AspectRatio,
+			Source = source.Source.ToString(),
 			Latitude = source.Latitude ?? 0,
 			Longitude = source.Longitude ?? 0,
 			Miniature = source.Miniature,

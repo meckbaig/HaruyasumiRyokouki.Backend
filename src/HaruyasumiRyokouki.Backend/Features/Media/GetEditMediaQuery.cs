@@ -43,12 +43,12 @@ internal class GetEditMediaQueryValidator : AbstractValidator<GetEditMediaQuery>
 internal class GetEditMediaQueryHandler : IRequestHandler<GetEditMediaQuery, GetEditMediaResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IMediaPreviewService _previewService;
+	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public GetEditMediaQueryHandler(IAppDbContext context, IMediaPreviewService previewService)
+	public GetEditMediaQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
-		_previewService = previewService;
+		_urlsProvider = urlsProvider;
 	}
 
 	public async Task<GetEditMediaResponse> Handle(GetEditMediaQuery request, CancellationToken cancellationToken)
@@ -61,7 +61,7 @@ internal class GetEditMediaQueryHandler : IRequestHandler<GetEditMediaQuery, Get
 			.Where(m => request.Ids.Contains(m.Id))
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFiles.Select(m => m.ToEditDto().AddUrls(m.AdditionalFiles, _previewService, request.ClientDisplay));
+		var results = mediaFiles.Select(m => m.ToEditDto().AddUrls(m, _urlsProvider, request.ClientDisplay));
 
 		return new GetEditMediaResponse 
 		{

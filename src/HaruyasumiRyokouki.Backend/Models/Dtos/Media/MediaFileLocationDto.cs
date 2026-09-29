@@ -10,6 +10,7 @@ public record MediaFileLocationDto : IPreviewDto
 	public double Longitude { get; set; }
 	public string FileName { get; set; }
 	public float AspectRatio { get; set; }
+	public string Source { get; set; }
 	public string? Title { get; set; }
 	public string? LanguageCode { get; set; }
 	public string Miniature { get; set; }

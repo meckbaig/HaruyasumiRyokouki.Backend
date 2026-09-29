@@ -48,12 +48,12 @@ internal class GetDayQueryValidator : AbstractValidator<GetDayQuery>
 internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IMediaPreviewService _previewService;
+	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public GetDayQueryHandler(IAppDbContext context, IMediaPreviewService previewService)
+	public GetDayQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
-		_previewService = previewService;
+		_urlsProvider = urlsProvider;
 	}
 
 	public async Task<GetDayResponse> Handle(GetDayQuery request, CancellationToken cancellationToken)
@@ -72,7 +72,7 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 			throw new EntityNotFoundException($"Day {request.Date:yyyy-MM-dd} doesn't exist");
 
 		var searchResultsDtos = searchResults.ToDto(request.IsAuthenticated);
-		var result = searchResultsDtos.AddUrls(searchResults, _previewService, request.ClientDisplay);
+		var result = searchResultsDtos.AddUrls(searchResults, _urlsProvider, request.ClientDisplay);
 
 		return new GetDayResponse
 		{

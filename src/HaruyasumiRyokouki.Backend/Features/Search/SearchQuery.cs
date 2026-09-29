@@ -55,12 +55,12 @@ internal class SearchQueryValidator : AbstractValidator<SearchQuery>
 internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly IMediaPreviewService _previewService;
+	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public SearchQueryHandler(IAppDbContext context, IMediaPreviewService previewService)
+	public SearchQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
-		_previewService = previewService;
+		_urlsProvider = urlsProvider;
 	}
 
 	public async Task<SearchResponse> Handle(SearchQuery request, CancellationToken cancellationToken)
@@ -72,7 +72,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 		List<Day> searchResults = await searchFunction;
 
 		var searchResultsDtos = searchResults.ToDtos(request.IsAuthenticated);
-		var result = searchResultsDtos.AddUrls(searchResults, _previewService, request.ClientDisplay);
+		var result = searchResultsDtos.AddUrls(searchResults, _urlsProvider, request.ClientDisplay);
 
 		return new SearchResponse
 		{
