@@ -66,8 +66,8 @@ public class MediaController : ControllerBase
 		return result.ToJsonResponse();
 	}
 
-	[HttpGet("locations")]
-	public async Task<ActionResult<GetMediaLocationsResponse>> GetMediaLocations(GetMediaLocationsQuery query, CancellationToken cancellationToken)
+	[HttpGet]
+	public async Task<ActionResult<GetMediaResponse>> GetMedia(GetMediaQuery query, CancellationToken cancellationToken)
 	{
 		var result = await _mediator.Send(query, cancellationToken);
 		return result.ToJsonResponse();

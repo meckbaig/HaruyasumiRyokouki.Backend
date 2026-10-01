@@ -10,8 +10,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
@@ -41,7 +39,6 @@ internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQu
 	private readonly IAppDbContext _context;
 	private readonly IMediaUrlsProvider _urlsProvider;
 	private readonly MediaFormatOptions _mediaFormatOptions;
-	private const bool IncludeFavorites = true;
 
 	public GetFavoriteMediaQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider, IOptions<MediaFormatOptions> mediaFormatOptions)
 	{
@@ -62,7 +59,7 @@ internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQu
 			.Take(_mediaFormatOptions.FavoritesReturnCount)
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFiles.Select(m => m.ToDto(IncludeFavorites, request.IsAuthenticated).AddUrls(m, _urlsProvider, request.ClientDisplay));
+		var results = mediaFiles.Select(m => m.ToDto(request.IsAuthenticated).AddUrls(m, _urlsProvider, request.ClientDisplay));
 
 		return new GetFavoriteMediaResponse
 		{

@@ -3,7 +3,6 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Extensions.TypeExtensions;
-using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
@@ -15,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetMediaLocationsQuery : IRequest<GetMediaLocationsResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
+public record GetMediaQuery : IRequest<GetMediaResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
 {
 	[FromQuery]
 	public required DateOnly From { get; set; }
@@ -36,31 +35,31 @@ public record GetMediaLocationsQuery : IRequest<GetMediaLocationsResponse>, ILoc
 	public bool IsAuthenticated { get; set; }
 }
 
-internal class GetMediaLocationsQueryValidator : AbstractValidator<GetMediaLocationsQuery>
+internal class GetMediaQueryValidator : AbstractValidator<GetMediaQuery>
 {
-	public GetMediaLocationsQueryValidator()
+	public GetMediaQueryValidator()
 	{
 		/// TODO: must have valid AcceptLanguage
 	}
 }
 
-public class GetMediaLocationsResponse
+public class GetMediaResponse
 {
-	public required ICollection<MediaFileLocationDto> Items { get; init; }
+	public required ICollection<MediaFileDto> Items { get; init; }
 }
 
-internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocationsQuery, GetMediaLocationsResponse>
+internal class GetMediaQueryHandler : IRequestHandler<GetMediaQuery, GetMediaResponse>
 {
 	private readonly IAppDbContext _context;
 	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public GetMediaLocationsQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
+	public GetMediaQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
 		_urlsProvider = urlsProvider;
 	}
 
-	public async Task<GetMediaLocationsResponse> Handle(GetMediaLocationsQuery request, CancellationToken cancellationToken)
+	public async Task<GetMediaResponse> Handle(GetMediaQuery request, CancellationToken cancellationToken)
 	{
 		var fromDate = request.From.ToLocalDateTime(TimeOnly.MinValue);
 		var toDate = request.To.ToLocalDateTime(TimeOnly.MaxValue);
@@ -68,6 +67,8 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 		var mediaFiles = await _context.MediaFiles
 			.AsNoTracking()
 			.IncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.Include(m => m.Tags)
+				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m =>
 				(request.IsAuthenticated || (m.IsApproved && !m.Private)) &&
 				m.Created >= fromDate &&
@@ -77,29 +78,11 @@ internal class GetMediaLocationsQueryHandler : IRequestHandler<GetMediaLocations
 			.OrderBy(m => m.Created)
 			.ToListAsync(cancellationToken);
 
-		var results = mediaFiles.Select(m => ToLocationDto(m).AddUrls(m, _urlsProvider, request.ClientDisplay));
+		var results = mediaFiles.Select(m => m.ToDto(request.IsAuthenticated).AddUrls(m, _urlsProvider, request.ClientDisplay));
 
-		return new GetMediaLocationsResponse
+		return new GetMediaResponse
 		{
 			Items = results.ToList()
-		};
-	}
-
-	private static MediaFileLocationDto ToLocationDto(MediaFile source)
-	{
-		return new MediaFileLocationDto
-		{
-			Id = source.Id,
-			Created = source.Created,
-			FileName = source.FileName,
-			AspectRatio = source.AspectRatio,
-			Source = source.Source.ToString(),
-			Latitude = source.Latitude ?? 0,
-			Longitude = source.Longitude ?? 0,
-			Miniature = source.Miniature,
-			Type = source.Type.ToString(),
-			LanguageCode = source.Translations.Select(t => t.LanguageCode).FirstOrDefault(),
-			Title = source.Translations.Select(t => t.Title).FirstOrDefault()
 		};
 	}
 }

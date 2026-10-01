@@ -35,7 +35,7 @@ internal static class MappingExtensions
 			IsReady = source.IsReady,
 			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
 			Note = source.Translations.FirstOrDefault()?.Note,
-			Media = source.Media.ToDtos(admin, admin).ToList()
+			Media = source.Media.ToDtos(admin).ToList()
 		};
 	}
 
@@ -95,7 +95,7 @@ internal static class MappingExtensions
 
 	#region Media
 
-	public static MediaFileDto ToDto(this MediaFile source, bool includeFavorite = false, bool admin = false)
+	public static MediaFileDto ToDto(this MediaFile source, bool admin = false)
 	{
 		return new MediaFileDto
 		{
@@ -107,20 +107,20 @@ internal static class MappingExtensions
 			Source = source.Source.ToString(),
 			Latitude = source.Latitude,
 			Longitude = source.Longitude,
-			IsApproved = source.IsApproved,
 			Miniature = source.Miniature,
 			LanguageCode = source.Translations.FirstOrDefault()?.LanguageCode,
 			Title = source.Translations.FirstOrDefault()?.Title,
 			Description = source.Translations.FirstOrDefault()?.Description,
 			Tags = source.Tags.ToPublicDtos().ToList(),
+			IsApproved = admin ? source.IsApproved : null,
 			Private = admin ? source.Private : null,
-			Favorite = includeFavorite ? source.Favorite : null
+			Favorite = admin ? source.Favorite : null
 		};
 	}
 
-	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source, bool includeFavorite = false, bool admin = false)
+	public static IEnumerable<MediaFileDto> ToDtos(this IEnumerable<MediaFile> source, bool admin = false)
 	{
-		return source.Select(x => x.ToDto(includeFavorite, admin));
+		return source.Select(x => x.ToDto(admin));
 	}
 
 	public static MediaFileEditDto ToEditDto(this MediaFile source)

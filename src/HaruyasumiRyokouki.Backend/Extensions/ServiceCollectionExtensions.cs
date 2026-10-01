@@ -28,6 +28,7 @@ using OpenTelemetry.Trace;
 using System.Globalization;
 using System.Net;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using WebDav;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
