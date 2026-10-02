@@ -116,11 +116,13 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 		Expression<Func<MediaFile, bool>> mediaFilter = m =>
 			(request.IsAuthenticated || (m.IsApproved && !m.Private)) &&
-			m.Translations.Any(mt =>
-				EF.Functions.ILike(mt.Title, likePattern) ||
-				EF.Functions.ILike(mt.Description, likePattern)) ||
-			m.Tags.Any(t => t.Translations.Any(l =>
-					EF.Functions.ILike(l.Text, request.Text)));
+			(
+				m.Translations.Any(mt =>
+					EF.Functions.ILike(mt.Title, likePattern) ||
+					EF.Functions.ILike(mt.Description, likePattern)) ||
+				m.Tags.Any(t => t.Translations.Any(l =>
+						EF.Functions.ILike(l.Text, request.Text)))
+			);
 
 		var searchResults = await _context.Days
 			.AsNoTracking()
