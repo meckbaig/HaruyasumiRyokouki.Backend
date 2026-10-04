@@ -1,6 +1,6 @@
 using HaruyasumiRyokouki.Backend.Models.Db;
 
-namespace HaruyasumiRyokouki.Backend.Services;
+namespace HaruyasumiRyokouki.Backend.Common.Helpers;
 
 internal static class DayResolver
 {
