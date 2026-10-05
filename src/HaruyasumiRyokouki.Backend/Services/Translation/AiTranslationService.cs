@@ -21,16 +21,38 @@ public class AiTranslationService : IContentTranslationService
 		
 		""";
 
+	private const string RomajiConversionRule =
+		"IMPORTANT: If present in original text, convert ALL romaji (Japanese words written in Latin alphabet) to proper Japanese script (kanji/kana). The original text in the original language must also be translated.";
+
+	private const string DayEntryEmbedPlacementRule = """
+		ADDITIONAL RULES (personal travel journal day entries only):
+		If the text contains embedded elements (such as inline media placeholders, emojis, links, or other inline markup), keep each of them in the same position as in the original, attached to the nearest phrase by meaning. Do not relocate them to the beginning or the end of the text.
+		
+		""";
+
+	private const string DayEntryJapaneseRule = """
+		ADDITIONAL RULES (personal travel journal day entries translated to Japanese only):
+		Translate the first-person pronouns "I", "me", "my" (and their Russian equivalents "Я", "меня", "мне", "мой") as 私, using 私の for the possessive "my" where appropriate.
+		Translate the author's name written as "Рё" or "Ryo" as りょう.
+		
+		""";
+
 	private string GetSystemPromt(string outputLanguageCode, string? inputLanguageCode = default)
 	{
-		string inputLanguagePromptSubstring = string.IsNullOrWhiteSpace(inputLanguageCode) 
+		string inputLanguagePromptSubstring = string.IsNullOrWhiteSpace(inputLanguageCode)
 			? string.Empty
 			: $" in {TranslationPlanner.LanguageByCode(inputLanguageCode)}";
-		return $"You are a translator. You will receive text{inputLanguagePromptSubstring}, translate the content to {TranslationPlanner.LanguageByCode(outputLanguageCode)}. "
-			+ PromtCore
-			+ (outputLanguageCode == LanguageCode.Japanese
-				? "IMPORTANT: If present in original text, convert ALL romaji (Japanese words written in Latin alphabet) to proper Japanese script (kanji/kana). The original text in the original language must also be translated."
-				: "");
+		var prompt = $"You are a translator. You will receive text{inputLanguagePromptSubstring}, translate the content to {TranslationPlanner.LanguageByCode(outputLanguageCode)}. "
+			+ PromtCore;
+
+		if (outputLanguageCode == LanguageCode.Japanese)
+		{
+			prompt += RomajiConversionRule;
+			prompt += DayEntryJapaneseRule;
+		}
+		prompt += DayEntryEmbedPlacementRule;
+
+		return prompt;
 	}
 
 	public async Task<string> TranslateTextAsync(string text, string outputLanguage, string? inputLanguage = null, CancellationToken cancellationToken = default)
