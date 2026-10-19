@@ -64,6 +64,14 @@ catch (OptionsValidationException ex)
 
 	return ExitCode.NoConfiguration;
 }
+// Startup validation of several invalid options sections throws all failures at once.
+catch (AggregateException ex) when (ex.InnerExceptions.All(e => e is OptionsValidationException))
+{
+	foreach (var inner in ex.InnerExceptions)
+		Log.Error(inner.Message);
+
+	return ExitCode.NoConfiguration;
+}
 catch (Exception ex)
 {
 	Log.Fatal(ex, "Fatal termination of application.");
