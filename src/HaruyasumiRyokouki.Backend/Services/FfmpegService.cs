@@ -193,17 +193,20 @@ internal class FfmpegService : IFfmpegService
 		_logger.LogDebug("Run command: {Command}", $"{process.StartInfo.FileName} {loggedArguments ?? arguments}");
 		process.Start();
 
-		string output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
-		string error = await process.StandardError.ReadToEndAsync(cancellationToken);
+		// Both streams are read at the same time: reading them one after another hangs
+		// when the process fills the pipe buffer of the stream that is not being read.
+		var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+		var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
+		await Task.WhenAll(outputTask, errorTask);
 		await process.WaitForExitAsync(cancellationToken);
 
 		if (process.ExitCode != 0)
 		{
-			throw new Exception($"FFmpeg failed: {error}");
+			throw new Exception($"FFmpeg failed: {errorTask.Result}");
 		}
 
-		return output;
+		return outputTask.Result;
 	}
 
 	private sealed class FfprobeResponse
