@@ -11,8 +11,11 @@ namespace HaruyasumiRyokouki.Backend.Common.Handlers.Exceptions;
 internal class CustomExceptionHandler : IExceptionHandler
 {
 	private readonly Dictionary<Type, Func<HttpContext, Exception, Task>> _exceptionHandlers;
-	public CustomExceptionHandler()
+	private readonly ILogger<CustomExceptionHandler> _logger;
+
+	public CustomExceptionHandler(ILogger<CustomExceptionHandler> logger)
 	{
+		_logger = logger;
 		_exceptionHandlers = new()
 		{
 			{ typeof(ValidationException), HandleValidationException },
@@ -29,13 +32,20 @@ internal class CustomExceptionHandler : IExceptionHandler
 		CancellationToken cancellationToken
 	)
 	{
-		var exceptionType = ex.GetType();
+		var handler = _exceptionHandlers
+			.FirstOrDefault(h => h.Key.IsInstanceOfType(ex))
+			.Value;
 
-		if (_exceptionHandlers.TryGetValue(exceptionType, out var value))
+		if (handler != null)
 		{
-			await value.Invoke(httpContext, ex);
+			await handler.Invoke(httpContext, ex);
 			return true;
 		}
+
+		if (ex is OperationCanceledException && httpContext.RequestAborted.IsCancellationRequested)
+			_logger.LogInformation("Request {Method} {Path} was aborted by the client", httpContext.Request.Method, httpContext.Request.Path);
+		else
+			_logger.LogError(ex, "Unhandled exception for {Method} {Path}", httpContext.Request.Method, httpContext.Request.Path);
 
 		await HandleUnhandledException(httpContext, ex);
 		return false;
@@ -45,7 +55,10 @@ internal class CustomExceptionHandler : IExceptionHandler
 	{
 		context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-		await context.Response.WriteAsJsonAsync(GenerateInternalProblemDetails(ex.Message));
+		// The inner exception usually holds the meaningful message (e.g. the database error
+		// behind DbUpdateException), and it is shown on the client.
+		string detail = ex.InnerException?.Message ?? ex.Message;
+		await context.Response.WriteAsJsonAsync(GenerateInternalProblemDetails(detail));
 	}
 
 	private static async Task HandleValidationException(HttpContext context, Exception ex)

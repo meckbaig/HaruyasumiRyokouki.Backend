@@ -106,7 +106,7 @@ internal static class ApplicationBuilderExtensions
 
 	internal static IApplicationBuilder UseCustomExceptionHandler(this IApplicationBuilder app)
 	{
-		var exceptionMiddleware = new CustomExceptionHandler();
+		var exceptionMiddleware = ActivatorUtilities.CreateInstance<CustomExceptionHandler>(app.ApplicationServices);
 		return app.Use(async (context, next) =>
 		{
 			try
