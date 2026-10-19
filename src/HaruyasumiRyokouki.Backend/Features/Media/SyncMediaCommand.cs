@@ -1,5 +1,6 @@
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.Common.Helpers;
+using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Common.ResultType;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Models.Db;
@@ -10,6 +11,7 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
@@ -32,14 +34,16 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	private readonly IFileStorage _fileStorage;
 	private readonly IMediaProcessorService _mediaProcessorService;
 	private readonly IMediaDateResolver _mediaDateResolver;
+	private readonly MediaFormatOptions _mediaFormatOptions;
 	private readonly ILogger<SyncMediaCommand> _logger;
 
-	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, IMediaProcessorService mediaProcessorService, IMediaDateResolver mediaDateResolver, ILogger<SyncMediaCommand> logger)
+	public SyncMediaHandler(IAppDbContext context, IFileStorage fileStorage, IMediaProcessorService mediaProcessorService, IMediaDateResolver mediaDateResolver, IOptions<MediaFormatOptions> mediaFormatOptions, ILogger<SyncMediaCommand> logger)
 	{
 		_context = context;
 		_fileStorage = fileStorage;
 		_mediaProcessorService = mediaProcessorService;
 		_mediaDateResolver = mediaDateResolver;
+		_mediaFormatOptions = mediaFormatOptions.Value;
 		_logger = logger;
 	}
 
@@ -74,8 +78,8 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		var storageFiles = await _fileStorage.GetFilesAsync(cancellationToken);
 		foreach (var storageFile in storageFiles)
 		{
-			string webFileName = _mediaProcessorService.GetVideoWebName(storageFile.FileName);
-			string previewFileName = _mediaProcessorService.GetVideoPreviewName(storageFile.FileName);
+			string webFileName = MediaFileNaming.GetVideoWebName(storageFile.FileName);
+			string previewFileName = MediaFileNaming.GetVideoPreviewName(storageFile.FileName, _mediaFormatOptions.ImagePreset);
 			if (storageFile.FileName == webFileName || storageFile.FileName == previewFileName)
 				continue;
 
@@ -155,7 +159,7 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 		if (dayCreated)
 			_context.Days.Add(creationDay);
 
-		var fileMediaType = GetMediaType(fileName);
+		var fileMediaType = MediaFileNaming.GetMediaType(fileName);
 		Result<ConvertionsResponseDto> conversionResult;
 		switch (fileMediaType)
 		{
@@ -197,10 +201,10 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 	private async Task CreateMiniatureAsync(int id, string fileName, CancellationToken cancellationToken)
 	{
 		string actualFileName;
-		if (_mediaProcessorService.IsAnImage(fileName))
+		if (MediaFileNaming.IsImage(fileName))
 			actualFileName = fileName;
-		else if (_mediaProcessorService.IsAVideo(fileName))
-			actualFileName = _mediaProcessorService.GetVideoPreviewName(fileName);
+		else if (MediaFileNaming.IsVideo(fileName))
+			actualFileName = MediaFileNaming.GetVideoPreviewName(fileName, _mediaFormatOptions.ImagePreset);
 		else
 			throw new NotImplementedException($"File {fileName} is not an image or a video");
 
@@ -218,22 +222,6 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 				cancellationToken
 			);
 		_logger.LogInformation("Miniature for {FileName} was updated", fileName);
-	}
-
-	private MediaType GetMediaType(string fileName)
-	{
-		var extension = Path.GetExtension(fileName);
-
-		if (string.IsNullOrEmpty(extension))
-			return MediaType.Unknown;
-
-		if (_mediaProcessorService.IsAnImage(fileName))
-			return MediaType.Image;
-
-		if (_mediaProcessorService.IsAVideo(fileName))
-			return MediaType.Video;
-
-		return MediaType.Unknown;
 	}
 
 	private Result<DateTime> ResolveCreationDate(string fileName, DateTime lastModifiedDate)

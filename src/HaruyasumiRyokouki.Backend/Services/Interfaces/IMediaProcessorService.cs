@@ -9,9 +9,5 @@ namespace HaruyasumiRyokouki.Backend.Services.Interfaces
 		Task<Result<ConvertionsResponseDto>> ConvertVideoAsync(string fileName, CancellationToken cancellationToken);
 		Task<Result<string>> CreateMiniatureAsync(string fileName, CancellationToken cancellationToken);
 		Task<Result<string>> CreateYoutubePreviewAsync(string videoId, string sourceExtension, Stream thumbnail, CancellationToken cancellationToken);
-		string GetVideoPreviewName(string fileName);
-		string GetVideoWebName(string fileName);
-		bool IsAnImage(string fileName);
-		bool IsAVideo(string fileName);
 	}
 }

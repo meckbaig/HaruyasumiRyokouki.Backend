@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos.Enums;
@@ -10,15 +11,15 @@ namespace HaruyasumiRyokouki.Backend.Services;
 internal class NextcloudMediaPreviewService : IMediaPreviewService
 {
 	private readonly ILogger<NextcloudMediaPreviewService> _logger;
-	private readonly IMediaProcessorService _mediaProcessor;
+	private readonly MediaFormatOptions _mediaFormatOptions;
 	private readonly IMediaResolutionCalculationService _resolutionCalculator;
 	private readonly NextcloudPreviewUrlBuilder _builder;
 	private readonly OriginStorageUrlBuilder _originBuilder;
 
-	public NextcloudMediaPreviewService(ILogger<NextcloudMediaPreviewService> logger, IOptions<MediaPreviewOptions> options, IMediaResolutionCalculationService resolutionCalculator, IMediaProcessorService mediaProcessor)
+	public NextcloudMediaPreviewService(ILogger<NextcloudMediaPreviewService> logger, IOptions<MediaPreviewOptions> options, IMediaResolutionCalculationService resolutionCalculator, IOptions<MediaFormatOptions> mediaFormatOptions)
 	{
 		_logger = logger;
-		_mediaProcessor = mediaProcessor;
+		_mediaFormatOptions = mediaFormatOptions.Value;
 		_resolutionCalculator = resolutionCalculator;
 		_builder = new NextcloudPreviewUrlBuilder
 		(
@@ -63,16 +64,16 @@ internal class NextcloudMediaPreviewService : IMediaPreviewService
 			case VideoUrlType.Download:
 				return _originBuilder.BuildDownload(fileName);
 			case VideoUrlType.Stream:
-				string webFileName = _mediaProcessor.GetVideoWebName(fileName);
+				string webFileName = MediaFileNaming.GetVideoWebName(fileName);
 				if (additionalFiles.Contains(webFileName))
 					return _originBuilder.BuildMedia(webFileName);
 				return _originBuilder.BuildMedia(fileName);
 			case VideoUrlType.Preview:
-				string previewFileName = _mediaProcessor.GetVideoPreviewName(fileName);
+				string previewFileName = MediaFileNaming.GetVideoPreviewName(fileName, _mediaFormatOptions.ImagePreset);
 				if (!additionalFiles.Contains(previewFileName))
 					_logger.LogWarning("{PreviewFileName} does not exist in DB!", previewFileName);
 				int imageSize = _resolutionCalculator.GetResolution(ImageUrlType.Preview, clientDisplay?.Dpr, clientDisplay?.MinSide, aspectRatio);
-				return _builder.BuildMedia(_mediaProcessor.GetVideoPreviewName(fileName), imageSize, imageSize);
+				return _builder.BuildMedia(previewFileName, imageSize, imageSize);
 			default:
 				throw new NotImplementedException();
 		}

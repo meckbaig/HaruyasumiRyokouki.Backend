@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Common.ResultType;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
@@ -14,49 +15,12 @@ internal class MediaProcessorService : IMediaProcessorService
 	private readonly IFfmpegService _ffmpegService;
 	private readonly MediaFormatOptions _mediaFormatOptions;
 
-	private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
-	{
-		".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff", ".heic", ".heif", ".avif"
-	};
-
-	private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
-	{
-		".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg"
-	};
-
-	private const string VideoWebSuffix = "_web";
-	private const string VideoPreviewSuffix = "_preview";
-
 	public MediaProcessorService(ILogger<MediaProcessorService> logger, IFileStorage fileStorage, IFfmpegService ffmpegService, IOptions<MediaFormatOptions> mediaFormatOptions)
 	{
 		_logger = logger;
 		_fileStorage = fileStorage;
 		_ffmpegService = ffmpegService;
 		_mediaFormatOptions = mediaFormatOptions.Value;
-	}
-
-	public string GetVideoWebName(string fileName)
-	{
-		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(VideoWebSuffix))
-			return fileName;
-		return Path.GetFileNameWithoutExtension(fileName) + VideoWebSuffix + Path.GetExtension(fileName);
-	}
-
-	public string GetVideoPreviewName(string fileName)
-	{
-		if (Path.GetFileNameWithoutExtension(fileName).EndsWith(VideoPreviewSuffix))
-			return fileName;
-		return Path.GetFileNameWithoutExtension(fileName) + VideoPreviewSuffix + "." + _mediaFormatOptions.ImagePreset.ToString().ToLower();
-	}
-
-	public bool IsAnImage(string fileName)
-	{
-		return ImageExtensions.Contains(Path.GetExtension(fileName));
-	}
-
-	public bool IsAVideo(string fileName)
-	{
-		return VideoExtensions.Contains(Path.GetExtension(fileName));
 	}
 
 	private async Task<bool> ShouldBeConverted(string fileName, MediaType mediaType)
@@ -78,7 +42,7 @@ internal class MediaProcessorService : IMediaProcessorService
 
 	public async Task<Result<ConvertionsResponseDto>> ConvertImageAsync(string fileName, CancellationToken cancellationToken)
 	{
-		if (!IsAnImage(fileName))
+		if (!MediaFileNaming.IsImage(fileName))
 			return Result<ConvertionsResponseDto>.Failure("File is not an image");
 
 		await using var workspace = new TempStorageService(MediaType.Image);
@@ -117,7 +81,7 @@ internal class MediaProcessorService : IMediaProcessorService
 
 	public async Task<Result<ConvertionsResponseDto>> ConvertVideoAsync(string fileName, CancellationToken cancellationToken)
 	{
-		if (!IsAVideo(fileName))
+		if (!MediaFileNaming.IsVideo(fileName))
 			return Result<ConvertionsResponseDto>.Failure("File is not a video");
 
 		await using var workspace = new TempStorageService(MediaType.Video);
@@ -134,7 +98,7 @@ internal class MediaProcessorService : IMediaProcessorService
 
 		if (await ShouldBeConverted(fileName, MediaType.Video))
 		{
-			string webVideoFileName = GetVideoWebName(fileName);
+			string webVideoFileName = MediaFileNaming.GetVideoWebName(fileName);
 			var outputFile = Path.Combine(workspace.TempFolder, webVideoFileName);
 
 			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, webVideoFileName);
@@ -159,7 +123,7 @@ internal class MediaProcessorService : IMediaProcessorService
 
 	public async Task<Result<string>> CreateMiniatureAsync(string fileName, CancellationToken cancellationToken)
 	{
-		if (!IsAnImage(fileName))
+		if (!MediaFileNaming.IsImage(fileName))
 			return Result<string>.Failure("File is not an image");
 
 		await using var input = await _fileStorage.OpenReadAsync(fileName, cancellationToken);
@@ -183,7 +147,7 @@ internal class MediaProcessorService : IMediaProcessorService
 	{
 		await using var workspace = new TempStorageService(MediaType.Video);
 
-		string resultPreviewFileName = GetVideoPreviewName(videoId);
+		string resultPreviewFileName = MediaFileNaming.GetVideoPreviewName(videoId, _mediaFormatOptions.ImagePreset);
 		var inputFile = Path.Combine(workspace.TempFolder, videoId + sourceExtension);
 		var outputFile = Path.Combine(workspace.TempFolder, resultPreviewFileName);
 
@@ -216,7 +180,7 @@ internal class MediaProcessorService : IMediaProcessorService
 
 	private async Task<string> CreateVideoPreviewAsync(string fileName, TempStorageService workspace, CancellationToken cancellationToken)
 	{
-		string resultVideoPreviewFileName = GetVideoPreviewName(fileName);
+		string resultVideoPreviewFileName = MediaFileNaming.GetVideoPreviewName(fileName, _mediaFormatOptions.ImagePreset);
 		var inputFile = Path.Combine(workspace.TempFolder, fileName);
 		var outputFile = Path.Combine(workspace.TempFolder, resultVideoPreviewFileName);
 
