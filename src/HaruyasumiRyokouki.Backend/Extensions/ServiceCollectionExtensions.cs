@@ -194,11 +194,6 @@ internal static class ServiceCollectionExtensions
 		});
 	}
 
-	internal static IServiceCollection AddAutoMapperFromAssembly(this IServiceCollection services)
-	{
-		return services.AddAutoMapper(Assembly.GetExecutingAssembly());
-	}
-
 	internal static IServiceCollection AddValidatorsFromAssembly(this IServiceCollection services)
 	{
 		ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("en");

@@ -32,7 +32,6 @@ try
 	builder.Services.AddHttpClient();
 	builder.Services.AddHttpContextAccessor();
 	builder.Services.AddMediatRFromAssembly();
-	builder.Services.AddAutoMapperFromAssembly();
 	builder.Services.AddValidatorsFromAssembly();
 	builder.Services.AddSwaggerSupport();
 	builder.Services.AddAppHealthChecks();
