@@ -22,6 +22,7 @@ internal class CustomExceptionHandler : IExceptionHandler
 			{ typeof(EntityNotFoundException), HandleNotFoundException },
 			{ typeof(ForbiddenAccessException), HandleForbiddenAccessException },
 			{ typeof(UnauthorizedException), HandleUnauthorizedException },
+			{ typeof(ConflictException), HandleConflictException },
 		};
 	}
 
@@ -119,6 +120,18 @@ internal class CustomExceptionHandler : IExceptionHandler
 			Type = "https://datatracker.ietf.org/doc/html/rfc9110#name-401-unauthorized",
 			Status = context.Response.StatusCode,
 			Title = "Unauthorized",
+			Detail = ex.Message
+		});
+	}
+
+	private static async Task HandleConflictException(HttpContext context, Exception ex)
+	{
+		context.Response.StatusCode = StatusCodes.Status409Conflict;
+		await context.Response.WriteAsJsonAsync(new ProblemDetails
+		{
+			Type = "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
+			Status = context.Response.StatusCode,
+			Title = "Conflict",
 			Detail = ex.Message
 		});
 	}

@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.ResultType;
 using HaruyasumiRyokouki.Backend.DbContexts;
@@ -22,6 +23,11 @@ public class SyncMediaResponse : BaseResponse
 
 internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaResponse>
 {
+	/// <summary>
+	/// Allows only one sync at a time: parallel runs would convert and import the same files twice.
+	/// </summary>
+	private static readonly SemaphoreSlim SyncLock = new(1, 1);
+
 	private readonly IAppDbContext _context;
 	private readonly IFileStorage _fileStorage;
 	private readonly IMediaProcessorService _mediaProcessorService;
@@ -39,16 +45,26 @@ internal class SyncMediaHandler : IRequestHandler<SyncMediaCommand, SyncMediaRes
 
 	public async Task<SyncMediaResponse> Handle(SyncMediaCommand request, CancellationToken cancellationToken)
 	{
-		var datesFromDb = await _context.Days.ToListAsync(cancellationToken);
-		var filesFromDb = await _context.MediaFiles
-			.Select(m => new MediaForMiniatureCheck(m.Id, m.FileName, !string.IsNullOrEmpty(m.Miniature), m.AdditionalFiles, m.Source))
-			.ToListAsync(cancellationToken);
+		if (!await SyncLock.WaitAsync(0, cancellationToken))
+			throw new ConflictException("Media sync is already running.");
 
-		await CheckForNewFiles(datesFromDb, filesFromDb, cancellationToken);
+		try
+		{
+			var datesFromDb = await _context.Days.ToListAsync(cancellationToken);
+			var filesFromDb = await _context.MediaFiles
+				.Select(m => new MediaForMiniatureCheck(m.Id, m.FileName, !string.IsNullOrEmpty(m.Miniature), m.AdditionalFiles, m.Source))
+				.ToListAsync(cancellationToken);
 
-		await CheckForIncompleteFiles(filesFromDb, cancellationToken);
+			await CheckForNewFiles(datesFromDb, filesFromDb, cancellationToken);
 
-		return new SyncMediaResponse();
+			await CheckForIncompleteFiles(filesFromDb, cancellationToken);
+
+			return new SyncMediaResponse();
+		}
+		finally
+		{
+			SyncLock.Release();
+		}
 	}
 
 	private async Task CheckForNewFiles(List<Day> datesFromDb, IEnumerable<MediaForMiniatureCheck> filesFromDb, CancellationToken cancellationToken)
