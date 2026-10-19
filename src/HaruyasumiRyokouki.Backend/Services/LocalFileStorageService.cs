@@ -68,7 +68,7 @@ internal class LocalFileStorageService : IFileStorage
 				return new StorageFile
 				{
 					FileName = info.Name,
-					Created = DateTime.SpecifyKind(info.LastWriteTime, DateTimeKind.Unspecified)
+					Created = DateTime.SpecifyKind(info.LastWriteTimeUtc, DateTimeKind.Utc)
 				};
 			})
 			.ToList();

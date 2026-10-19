@@ -21,6 +21,6 @@ internal interface IFileStorage
 	/// Returns all the files from file storage provider and their local creation dates.
 	/// </summary>
 	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Collection of files and their local creation dates.</returns>
+	/// <returns>Collection of files and their modification time in UTC.</returns>
 	Task<IReadOnlyCollection<StorageFile>> GetFilesAsync(CancellationToken cancellationToken = default);
 }
