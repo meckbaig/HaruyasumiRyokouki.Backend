@@ -1,17 +1,25 @@
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using System.Collections.Concurrent;
+using System.Threading.Channels;
 
 namespace HaruyasumiRyokouki.Backend.Services.BackgroundServices;
 
+/// <summary>
+/// Background queue that deletes files from the file storage one by one.
+/// </summary>
 public class FileRemovalBackgroundService : BackgroundService, IRemovalQueueService
 {
 	private readonly ILogger<FileRemovalBackgroundService> _logger;
 	private readonly IServiceProvider _services;
 
-	private CancellationToken _appStoppingToken;
-	private readonly ConcurrentQueue<string> _filesRemovalQueue = new();
-	private readonly SemaphoreSlim _removalLock = new(1, 1);
+	/// <summary>
+	/// Unbounded queue with many writers (request handlers) and a single reader (<see cref="ExecuteAsync"/>).
+	/// </summary>
+	private readonly Channel<string> _queue = Channel.CreateUnbounded<string>(
+		new UnboundedChannelOptions { SingleReader = true });
 
+	/// <summary>
+	/// Constructor with parameters for DI.
+	/// </summary>
 	public FileRemovalBackgroundService
 	(
 		ILogger<FileRemovalBackgroundService> logger,
@@ -22,40 +30,34 @@ public class FileRemovalBackgroundService : BackgroundService, IRemovalQueueServ
 		_services = services;
 	}
 
-	protected override Task ExecuteAsync(CancellationToken stoppingToken)
+	/// <inheritdoc/>
+	public Task AddAsync(string fileName)
 	{
-		_appStoppingToken = stoppingToken;
+		// Writing to an unbounded channel always succeeds immediately.
+		_queue.Writer.TryWrite(fileName);
 		return Task.CompletedTask;
 	}
 
-	public async Task AddAsync(string fileName)
+	/// <summary>
+	/// Waits for queued files and deletes them until the application stops.
+	/// </summary>
+	/// <param name="stoppingToken">Triggered when the application is stopping.</param>
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-		_filesRemovalQueue.Enqueue(fileName);
-		_ = ProcessQueueAsync();
-	}
+		using var scope = _services.CreateScope();
+		var fileStorage = scope.ServiceProvider.GetRequiredService<IFileStorage>();
 
-	private async Task ProcessQueueAsync()
-	{
-		if (!await _removalLock.WaitAsync(0, _appStoppingToken))
-			return;
-
-		try
+		await foreach (var fileName in _queue.Reader.ReadAllAsync(stoppingToken))
 		{
-			using var scope = _services.CreateScope();
-			var fileStorage = scope.ServiceProvider.GetRequiredService<IFileStorage>();
-
-			while (_filesRemovalQueue.TryDequeue(out var fileName))
+			try
 			{
-				await fileStorage.DeleteAsync(fileName, _appStoppingToken);
+				await fileStorage.DeleteAsync(fileName, stoppingToken);
 			}
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError("An unhandled exception occurred while deleting the file: {Error}", ex.Message);
-		}
-		finally
-		{
-			_removalLock.Release();
+			catch (Exception ex) when (ex is not OperationCanceledException)
+			{
+				// A failure on one file must not stop deletion of the others.
+				_logger.LogError(ex, "Failed to delete {FileName}", fileName);
+			}
 		}
 	}
 }
