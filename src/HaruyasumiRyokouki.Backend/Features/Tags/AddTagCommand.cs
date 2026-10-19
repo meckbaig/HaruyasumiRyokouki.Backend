@@ -4,6 +4,7 @@ using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using static HaruyasumiRyokouki.Backend.Features.Tags.AddTagCommand;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
@@ -21,11 +22,15 @@ public record AddTagCommand : IRequest<AddTagResponse>
 
 internal class AddTagValidator : AbstractValidator<AddTagCommand>
 {
-	public AddTagValidator()
+	public AddTagValidator(IAppDbContext context)
 	{
 		RuleFor(x => x.Body)
 			.NotNull()
 			.SetValidator(new BodyParametersValidator());
+		RuleFor(x => x.Body.Tag.Slug)
+			.MustAsync(async (slug, cancellationToken) => !await context.Tags.AnyAsync(t => t.Slug == slug, cancellationToken))
+			.WithMessage("Tag with this slug already exists.")
+			.When(x => !string.IsNullOrWhiteSpace(x.Body?.Tag?.Slug));
 	}
 
 	internal class BodyParametersValidator : AbstractValidator<BodyParameters>

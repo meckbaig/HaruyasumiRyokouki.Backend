@@ -27,13 +27,19 @@ public record EditTagCommand : IRequest<EditTagResponse>
 
 internal class EditTagValidator : AbstractValidator<EditTagCommand>
 {
-	public EditTagValidator()
+	public EditTagValidator(IAppDbContext context)
 	{
 		RuleFor(x => x.Id)
 			.GreaterThan(0);
 		RuleFor(x => x.Body)
 			.NotNull()
 			.SetValidator(new BodyParametersValidator());
+		RuleFor(x => x.Body.Tag.Slug.Value)
+			.MustAsync(async (command, slug, cancellationToken) =>
+				!await context.Tags.AnyAsync(t => t.Slug == slug && t.Id != command.Id, cancellationToken))
+			.WithMessage("Tag with this slug already exists.")
+			.OverridePropertyName("Body.Tag.Slug")
+			.When(x => x.Body?.Tag != null && x.Body.Tag.Slug.HasValue && !string.IsNullOrWhiteSpace(x.Body.Tag.Slug.Value));
 	}
 
 	internal class BodyParametersValidator : AbstractValidator<BodyParameters>

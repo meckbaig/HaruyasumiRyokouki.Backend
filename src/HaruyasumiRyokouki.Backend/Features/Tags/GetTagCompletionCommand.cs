@@ -147,13 +147,17 @@ Output rules:
 		var responseDto = JsonSerializer.Deserialize<TagsSuggestionResponse>(responseString, _options)
 			?? throw new Exception($"Failed to deserialize response from AI: {responseString}");
 
-		string slug = (responseDto.Translations.FirstOrDefault(t => t.LanguageCode == LanguageCode.English)?.Text ?? string.Empty).Replace(' ', '_');
+		// The model may omit lists or return them as null.
+		var translations = responseDto.Translations ?? [];
+		var aliases = responseDto.Aliases ?? [];
+
+		string slug = (translations.FirstOrDefault(t => t.LanguageCode == LanguageCode.English)?.Text ?? string.Empty).Replace(' ', '_');
 
 		var result = new TagDto
 		{
 			Slug = slug,
-			Translations = responseDto.Translations.DistinctBy(t => t.LanguageCode).ToList(),
-			Aliases = responseDto.Aliases.Where(a => !responseDto.Translations.Any(t => t.Text == a.Text)).ToList()
+			Translations = translations.DistinctBy(t => t.LanguageCode).ToList(),
+			Aliases = aliases.Where(a => !translations.Any(t => t.Text == a.Text)).ToList()
 		};
 		return result;
 	}
