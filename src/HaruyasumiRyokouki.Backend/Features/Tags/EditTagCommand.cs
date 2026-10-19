@@ -40,6 +40,42 @@ internal class EditTagValidator : AbstractValidator<EditTagCommand>
 			.WithMessage("Tag with this slug already exists.")
 			.OverridePropertyName("Body.Tag.Slug")
 			.When(x => x.Body?.Tag != null && x.Body.Tag.Slug.HasValue && !string.IsNullOrWhiteSpace(x.Body.Tag.Slug.Value));
+		RuleFor(x => x)
+			.CustomAsync(async (command, validationContext, cancellationToken) =>
+			{
+				var duplicates = await FindDuplicateTextsAsync(context, command, cancellationToken);
+				if (duplicates.Count > 0)
+					validationContext.AddFailure("Body.Tag", $"Texts must be unique within a tag, duplicated: {string.Join(", ", duplicates)}.");
+			})
+			.When(x => x.Body?.Tag != null && (x.Body.Tag.Translations.HasValue || x.Body.Tag.Aliases.HasValue));
+	}
+
+	/// <summary>
+	/// Texts used more than once among the tag translations and aliases after the edit
+	/// (unique per tag in the database, regardless of language). A list that is not edited is taken from the database.
+	/// </summary>
+	private static async Task<List<string>> FindDuplicateTextsAsync(IAppDbContext context, EditTagCommand command, CancellationToken cancellationToken)
+	{
+		var tag = command.Body.Tag;
+		var existing = await context.Tags
+			.AsNoTracking()
+			.Where(t => t.Id == command.Id)
+			.SelectMany(t => t.Translations)
+			.Select(t => new { t.Text, t.IsPrimary })
+			.ToListAsync(cancellationToken);
+
+		var translations = tag.Translations.HasValue
+			? (tag.Translations.Value ?? []).Select(t => t.Text)
+			: existing.Where(t => t.IsPrimary).Select(t => t.Text);
+		var aliases = tag.Aliases.HasValue
+			? (tag.Aliases.Value ?? []).Select(t => t.Text)
+			: existing.Where(t => !t.IsPrimary).Select(t => t.Text);
+
+		return translations.Concat(aliases)
+			.GroupBy(t => t)
+			.Where(g => g.Count() > 1)
+			.Select(g => g.Key)
+			.ToList();
 	}
 
 	internal class BodyParametersValidator : AbstractValidator<BodyParameters>

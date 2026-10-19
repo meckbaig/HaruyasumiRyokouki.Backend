@@ -25,6 +25,20 @@ public record CreateTagDto : IEditDto
 			RuleFor(x => x)
 				.Must(NoAliasDuplicatesWithTranslations)
 				.WithMessage("Aliases must not duplicate Translations.");
+			RuleFor(x => x)
+				.Must(x => !FindDuplicateTexts(x).Any())
+				.WithMessage(x => $"Texts must be unique within a tag, duplicated: {string.Join(", ", FindDuplicateTexts(x))}.");
+		}
+
+		/// <summary>
+		/// Texts used more than once among all translations and aliases (unique per tag in the database, regardless of language).
+		/// </summary>
+		private static IEnumerable<string> FindDuplicateTexts(CreateTagDto dto)
+		{
+			return (dto.Translations ?? []).Concat(dto.Aliases ?? [])
+				.GroupBy(t => t.Text)
+				.Where(g => g.Count() > 1)
+				.Select(g => g.Key);
 		}
 
 		private bool BeDistinct(ICollection<TagTranslationDto> collection)
