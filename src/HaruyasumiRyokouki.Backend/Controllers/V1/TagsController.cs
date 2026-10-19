@@ -75,7 +75,7 @@ public class TagsController : ControllerBase
 
 	[Authorize]
 	[HttpPost("{id}/media")]
-	public async Task<ActionResult<AddTagToMediaResponse>> GetSimilarTags(AddTagToMediaCommand command, CancellationToken cancellationToken)
+	public async Task<ActionResult<AddTagToMediaResponse>> AddTagToMedia(AddTagToMediaCommand command, CancellationToken cancellationToken)
 	{
 		var result = await _mediator.Send(command, cancellationToken);
 		return result.ToJsonResponse();
