@@ -14,6 +14,12 @@ sealed class SwaggerAuthOptionsValidator : IValidateOptions<SwaggerAuthOptions>
 			return ValidateOptionsResult.Fail($"'{SwaggerAuthOptions.ConfigurationSectionName}' must not be null.");
 		}
 
+		// Credentials are only used when Swagger requires a login.
+		if (!options.RequireLogin)
+		{
+			return ValidateOptionsResult.Success;
+		}
+
 		if (string.IsNullOrWhiteSpace(options.Username))
 		{
 			failures.AppendLine($"'{SwaggerAuthOptions.ConfigurationSectionName}:" +

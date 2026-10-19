@@ -25,6 +25,16 @@ sealed class ApplicationOptionsValidator : IValidateOptions<ApplicationOptions>
 			failures.AppendLine($"'{ApplicationOptions.ConfigurationSectionName}:" +
 				$"{nameof(ApplicationOptions.CheckDbRetryDelay)}' must be greater than 0.");
 		}
+		if (string.IsNullOrWhiteSpace(options.AdminLogin))
+		{
+			failures.AppendLine($"'{ApplicationOptions.ConfigurationSectionName}:" +
+				$"{nameof(ApplicationOptions.AdminLogin)}' cannot be null or empty.");
+		}
+		if (string.IsNullOrWhiteSpace(options.AdminPassword))
+		{
+			failures.AppendLine($"'{ApplicationOptions.ConfigurationSectionName}:" +
+				$"{nameof(ApplicationOptions.AdminPassword)}' cannot be null or empty.");
+		}
 		if (options.MaxFailedLoginAttempts <= 0)
 		{
 			failures.AppendLine($"'{ApplicationOptions.ConfigurationSectionName}:" +

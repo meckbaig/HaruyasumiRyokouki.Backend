@@ -19,10 +19,14 @@ sealed class ApplicationOptions
 	/// </summary>
 	public string[] KnownProxies { get; set; } = [];
 
-	/// TODO: add checks on startup
+	/// <summary>
+	/// Login of the single administrator (Basic authentication).
+	/// </summary>
 	public string AdminLogin { get; set; } = null!;
 
-	/// TODO: add checks on startup
+	/// <summary>
+	/// Password of the single administrator (Basic authentication).
+	/// </summary>
 	public string AdminPassword { get; set; } = null!;
 
 	/// <summary>
