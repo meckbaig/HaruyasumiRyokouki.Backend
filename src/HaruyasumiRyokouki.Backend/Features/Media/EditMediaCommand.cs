@@ -1,3 +1,4 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
@@ -40,26 +41,54 @@ public class EditMediaResponse : BaseResponse
 	public required IEnumerable<MediaFileEditDto> Items { get; init; }
 }
 
-/// TODO
-//internal class EditMediaValidator : AbstractValidator<EditMediaCommand>
-//{
-//	public EditMediaValidator()
-//	{
-//		RuleFor(x => x.Body)
-//			.NotNull()
-//			.SetValidator(new BodyParametersValidator());
-//	}
+internal class EditMediaValidator : AbstractValidator<EditMediaCommand>
+{
+	public EditMediaValidator()
+	{
+		RuleFor(x => x.Body)
+			.NotNull()
+			.SetValidator(new BodyParametersValidator());
+	}
 
-//	internal class BodyParametersValidator : AbstractValidator<BodyParameters>
-//	{
-//		public BodyParametersValidator()
-//		{
-//			RuleFor(x => x.MediaFile)
-//				.NotNull()
-//				.SetValidator(new DayEditDto.Validator());
-//		}
-//	}
-//}
+	internal class BodyParametersValidator : AbstractValidator<EditMediaCommand.BodyParameters>
+	{
+		public BodyParametersValidator()
+		{
+			RuleFor(x => x.Ids)
+				.NotEmpty();
+			RuleFor(x => x.Changes)
+				.NotNull()
+				.SetValidator(new EditMediaChangesValidator());
+		}
+	}
+
+	internal class EditMediaChangesValidator : AbstractValidator<EditMediaChanges>
+	{
+		public EditMediaChangesValidator()
+		{
+			RuleFor(x => x.Latitude.Value)
+				.InclusiveBetween(-90, 90)
+				.OverridePropertyName(nameof(EditMediaChanges.Latitude))
+				.When(x => x.Latitude.HasValue && x.Latitude.Value.HasValue);
+			RuleFor(x => x.Longitude.Value)
+				.InclusiveBetween(-180, 180)
+				.OverridePropertyName(nameof(EditMediaChanges.Longitude))
+				.When(x => x.Longitude.HasValue && x.Longitude.Value.HasValue);
+			RuleFor(x => x.TagIds.Value)
+				.NotNull()
+				.OverridePropertyName(nameof(EditMediaChanges.TagIds))
+				.When(x => x.TagIds.HasValue);
+			RuleFor(x => x.Translations.Value)
+				.NotNull()
+				.Must(t => t!.DistinctBy(x => x.LanguageCode).Count() == t!.Count)
+				.WithMessage("Translations must have at most one variation for each language.")
+				.Must(t => t!.All(x => LanguageCode.IsSupported(x.LanguageCode)))
+				.WithMessage($"Language code must be one of: {string.Join(", ", LanguageCode.Supported)}.")
+				.OverridePropertyName(nameof(EditMediaChanges.Translations))
+				.When(x => x.Translations.HasValue);
+		}
+	}
+}
 
 internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaResponse>
 {
