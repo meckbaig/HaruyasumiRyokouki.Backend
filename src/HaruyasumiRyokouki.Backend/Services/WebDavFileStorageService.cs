@@ -36,30 +36,16 @@ internal class WebDavFileStorageService : IFileStorage
 
 	public async Task<Stream> OpenReadAsync(string fileName, CancellationToken cancellationToken = default)
 	{
-		var temp = Path.GetTempFileName();
-
 		var response = await _client.GetRawFile(fileName);
 
 		if (!response.IsSuccessful)
 		{
+			response.Dispose();
 			_logger.LogError("Failed to download {FileName}", fileName);
 			throw new Exception($"Download failed: {response.StatusCode}");
 		}
 
 		return new WebDavStream(response);
-
-		await using (var local = File.Create(temp))
-		{
-			await response.Stream.CopyToAsync(local, cancellationToken);
-		}
-
-		return new FileStream(
-			temp,
-			FileMode.Open,
-			FileAccess.Read,
-			FileShare.Read,
-			81920,
-			FileOptions.DeleteOnClose);
 	}
 
 	public async Task SaveFileAsync(string fileName, Stream content, CancellationToken cancellationToken = default)
