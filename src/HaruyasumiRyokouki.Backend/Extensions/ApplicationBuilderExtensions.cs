@@ -10,6 +10,7 @@ using HaruyasumiRyokouki.Backend.Common.Handlers.Exceptions;
 using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.HealthChecks;
 using HaruyasumiRyokouki.Backend.Common.Options;
+using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 namespace HaruyasumiRyokouki.Backend.Extensions;
 
@@ -25,18 +26,32 @@ internal static class ApplicationBuilderExtensions
 		var options = builder.ApplicationServices
 			.GetRequiredService<IOptions<SwaggerAuthOptions>>()
 			.Value;
+		var loginAttemptLimiter = builder.ApplicationServices.GetRequiredService<ILoginAttemptLimiter>();
 		return options.RequireLogin
 			? builder
 			.UseWhen(context => context.Request.Path.StartsWithSegments("/swagger"), appBuilder =>
 			{
 				appBuilder.Use(async (context, next) =>
 				{
+					string clientKey = "swagger:" + context.Connection.RemoteIpAddress;
+					if (loginAttemptLimiter.IsBlocked(clientKey))
+					{
+						context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+						return;
+					}
+
+					bool hasHeader = context.Request.Headers.ContainsKey("Authorization");
 					if (BasicCredentials.TryParse(context.Request.Headers.Authorization, out var username, out var password)
 						&& BasicCredentials.AreEqual(username, password, options.Username, options.Password))
 					{
+						loginAttemptLimiter.Reset(clientKey);
 						await next.Invoke();
 						return;
 					}
+
+					// A request without the header is the browser asking for credentials, not a failed attempt.
+					if (hasHeader)
+						loginAttemptLimiter.RegisterFailure(clientKey);
 
 					context.Response.Headers["WWW-Authenticate"] = "Basic";
 					context.Response.StatusCode = 401;

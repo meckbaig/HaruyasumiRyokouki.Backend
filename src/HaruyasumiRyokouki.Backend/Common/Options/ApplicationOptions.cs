@@ -24,4 +24,16 @@ sealed class ApplicationOptions
 
 	/// TODO: add checks on startup
 	public string AdminPassword { get; set; } = null!;
+
+	/// <summary>
+	/// Number of failed Basic authentication attempts from one IP address after which
+	/// further attempts from it are rejected until <see cref="FailedLoginLockoutMinutes"/> pass.
+	/// </summary>
+	public int MaxFailedLoginAttempts { get; set; } = 10;
+
+	/// <summary>
+	/// Time window (in minutes), counted from the first failed attempt, during which failed attempts
+	/// are counted; it is also the lockout duration once <see cref="MaxFailedLoginAttempts"/> is reached.
+	/// </summary>
+	public int FailedLoginLockoutMinutes { get; set; } = 15;
 }

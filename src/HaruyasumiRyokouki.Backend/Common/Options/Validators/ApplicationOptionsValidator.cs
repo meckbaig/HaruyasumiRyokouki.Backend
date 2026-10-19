@@ -25,6 +25,16 @@ sealed class ApplicationOptionsValidator : IValidateOptions<ApplicationOptions>
 			failures.AppendLine($"'{ApplicationOptions.ConfigurationSectionName}:" +
 				$"{nameof(ApplicationOptions.CheckDbRetryDelay)}' must be greater than 0.");
 		}
+		if (options.MaxFailedLoginAttempts <= 0)
+		{
+			failures.AppendLine($"'{ApplicationOptions.ConfigurationSectionName}:" +
+				$"{nameof(ApplicationOptions.MaxFailedLoginAttempts)}' must be greater than 0.");
+		}
+		if (options.FailedLoginLockoutMinutes <= 0)
+		{
+			failures.AppendLine($"'{ApplicationOptions.ConfigurationSectionName}:" +
+				$"{nameof(ApplicationOptions.FailedLoginLockoutMinutes)}' must be greater than 0.");
+		}
 		if (options.KnownProxies == null)
 		{
 			failures.AppendLine($"'{ApplicationOptions.ConfigurationSectionName}:" +

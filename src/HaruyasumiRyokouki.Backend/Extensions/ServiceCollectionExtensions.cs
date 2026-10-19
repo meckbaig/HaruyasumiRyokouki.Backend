@@ -331,6 +331,8 @@ internal static class ServiceCollectionExtensions
 
 	internal static IServiceCollection AddBasicAuthentication(this IServiceCollection services)
 	{
+		services.AddMemoryCache();
+		services.AddSingleton<ILoginAttemptLimiter, LoginAttemptLimiter>();
 		services
 			.AddAuthentication("Basic")
 			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
