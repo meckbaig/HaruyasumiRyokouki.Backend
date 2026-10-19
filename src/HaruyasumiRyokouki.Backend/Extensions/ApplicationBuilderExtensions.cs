@@ -46,11 +46,13 @@ internal static class ApplicationBuilderExtensions
 	}
 
 	/// <summary>
-	/// Adds and configures Swagger documentation in the application
+	/// Enables processing of X-Forwarded-For / X-Forwarded-Proto headers from known proxies,
+	/// so the client IP and scheme are correct when the service is behind a reverse proxy.
+	/// Must run before any middleware that uses the client IP or scheme.
 	/// </summary>
 	/// <param name="builder">The application configuration builder</param>
 	/// <returns>The configured application configuration builder</returns>
-	public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder builder)
+	public static IApplicationBuilder UseForwardedHeadersFromKnownProxies(this IApplicationBuilder builder)
 	{
 		var appOptions = builder.ApplicationServices.GetRequiredService<IOptions<ApplicationOptions>>().Value;
 		var forwardedHeadersOptions = new ForwardedHeadersOptions
@@ -62,9 +64,16 @@ internal static class ApplicationBuilderExtensions
 			.ToList()
 			.ForEach(forwardedHeadersOptions.KnownProxies.Add);
 
-		// Enable processing of HTTP headers if the service is behind a reverse proxy.
-		builder.UseForwardedHeaders(forwardedHeadersOptions);
+		return builder.UseForwardedHeaders(forwardedHeadersOptions);
+	}
 
+	/// <summary>
+	/// Adds and configures Swagger documentation in the application
+	/// </summary>
+	/// <param name="builder">The application configuration builder</param>
+	/// <returns>The configured application configuration builder</returns>
+	public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder builder)
+	{
 		// Configure Swagger URLs for correct operation behind a reverse proxy,
 		// using information from the HTTP request (scheme, host, base path)
 		builder.UseSwagger(options =>

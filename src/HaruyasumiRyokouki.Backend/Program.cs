@@ -43,6 +43,7 @@ try
 
 	var app = builder.Build();
 
+	app.UseForwardedHeadersFromKnownProxies();
 	app.RequireSwaggerAuthorization();
 	app.UseSwaggerDocumentation();
 	app.UseCustomExceptionHandler();
