@@ -1,9 +1,8 @@
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
 
 namespace HaruyasumiRyokouki.Backend.Common.Handlers;
@@ -21,49 +20,26 @@ internal class BasicAuthenticationHandler : AuthenticationHandler<Authentication
 		_appOptions = appOptions.Value;
 	}
 
-	protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+	protected override Task<AuthenticateResult> HandleAuthenticateAsync()
 	{
 		if (!Request.Headers.ContainsKey("Authorization"))
-			return AuthenticateResult.NoResult();
+			return Task.FromResult(AuthenticateResult.NoResult());
 
-		try
-		{
-			var authHeader = AuthenticationHeaderValue.Parse(Request.Headers.Authorization!);
+		if (!BasicCredentials.TryParse(Request.Headers.Authorization, out var username, out var password))
+			return Task.FromResult(AuthenticateResult.Fail("Invalid Basic Authentication header"));
 
-			if (!authHeader.Scheme.Equals("Basic", StringComparison.OrdinalIgnoreCase))
-				return AuthenticateResult.Fail("Not a Basic Authentication Scheme");
+		if (!BasicCredentials.AreEqual(username, password, _appOptions.AdminLogin, _appOptions.AdminPassword))
+			return Task.FromResult(AuthenticateResult.Fail("Invalid Username or Password"));
 
-			if (string.IsNullOrEmpty(authHeader.Parameter))
-				return AuthenticateResult.Fail("Invalid Basic Authentication Parameter");
+		var claims = new[] {
+			new Claim(ClaimTypes.NameIdentifier, username),
+			new Claim(ClaimTypes.Name, username),
+		};
 
-			var credentialBytes = Convert.FromBase64String(authHeader.Parameter);
-			var credentials = Encoding.UTF8.GetString(credentialBytes).Split(':', 2);
+		var identity = new ClaimsIdentity(claims, Scheme.Name);
+		var principal = new ClaimsPrincipal(identity);
+		var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
-			if (credentials.Length != 2)
-				return AuthenticateResult.Fail("Invalid Basic Authentication Format");
-
-			var username = credentials[0];
-			var password = credentials[1];
-
-			bool isValidUser = (username == _appOptions.AdminLogin && password == _appOptions.AdminPassword);
-
-			if (!isValidUser)
-				return AuthenticateResult.Fail("Invalid Username or Password");
-
-			var claims = new[] {
-				new Claim(ClaimTypes.NameIdentifier, username),
-				new Claim(ClaimTypes.Name, username),
-			};
-
-			var identity = new ClaimsIdentity(claims, Scheme.Name);
-			var principal = new ClaimsPrincipal(identity);
-			var ticket = new AuthenticationTicket(principal, Scheme.Name);
-
-			return AuthenticateResult.Success(ticket);
-		}
-		catch (Exception ex)
-		{
-			return AuthenticateResult.Fail($"Authentication failed: {ex.Message}");
-		}
+		return Task.FromResult(AuthenticateResult.Success(ticket));
 	}
 }

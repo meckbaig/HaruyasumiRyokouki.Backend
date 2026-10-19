@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using HaruyasumiRyokouki.Backend.Common.Handlers.Exceptions;
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.HealthChecks;
 using HaruyasumiRyokouki.Backend.Common.Options;
 
@@ -30,22 +31,11 @@ internal static class ApplicationBuilderExtensions
 			{
 				appBuilder.Use(async (context, next) =>
 				{
-					string authHeader = context.Request.Headers["Authorization"];
-
-					if (authHeader != null && authHeader.StartsWith("Basic "))
+					if (BasicCredentials.TryParse(context.Request.Headers.Authorization, out var username, out var password)
+						&& BasicCredentials.AreEqual(username, password, options.Username, options.Password))
 					{
-						var encodedUsernamePassword = authHeader.Substring("Basic ".Length).Trim();
-						var decodedUsernamePassword = Encoding.UTF8.GetString(Convert.FromBase64String(encodedUsernamePassword));
-
-						var parts = decodedUsernamePassword.Split(':');
-						var username = parts[0];
-						var password = parts[1];
-
-						if (username == options.Username && password == options.Password)
-						{
-							await next.Invoke();
-							return;
-						}
+						await next.Invoke();
+						return;
 					}
 
 					context.Response.Headers["WWW-Authenticate"] = "Basic";
