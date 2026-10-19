@@ -23,6 +23,7 @@ internal class CustomExceptionHandler : IExceptionHandler
 			{ typeof(ForbiddenAccessException), HandleForbiddenAccessException },
 			{ typeof(UnauthorizedException), HandleUnauthorizedException },
 			{ typeof(ConflictException), HandleConflictException },
+			{ typeof(ExternalServiceException), HandleExternalServiceException },
 		};
 	}
 
@@ -132,6 +133,20 @@ internal class CustomExceptionHandler : IExceptionHandler
 			Type = "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
 			Status = context.Response.StatusCode,
 			Title = "Conflict",
+			Detail = ex.Message
+		});
+	}
+
+	private async Task HandleExternalServiceException(HttpContext context, Exception ex)
+	{
+		_logger.LogWarning("External service failed for {Method} {Path}: {Message}", context.Request.Method, context.Request.Path, ex.Message);
+
+		context.Response.StatusCode = StatusCodes.Status502BadGateway;
+		await context.Response.WriteAsJsonAsync(new ProblemDetails
+		{
+			Type = "https://datatracker.ietf.org/doc/html/rfc9110#name-502-bad-gateway",
+			Status = context.Response.StatusCode,
+			Title = "External service error",
 			Detail = ex.Message
 		});
 	}

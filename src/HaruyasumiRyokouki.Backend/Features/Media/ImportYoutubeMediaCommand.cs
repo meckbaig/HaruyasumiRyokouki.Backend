@@ -1,5 +1,6 @@
 using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
@@ -55,6 +56,7 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 	private readonly IMediaDateResolver _mediaDateResolver;
 	private readonly IMediaUrlsProvider _urlsProvider;
 	private readonly IHttpClientFactory _httpClientFactory;
+	private readonly IRemovalQueueService _removalQueue;
 	private readonly ILogger<ImportYoutubeMediaCommand> _logger;
 
 	public ImportYoutubeMediaHandler
@@ -65,6 +67,7 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 		IMediaDateResolver mediaDateResolver,
 		IMediaUrlsProvider urlsProvider,
 		IHttpClientFactory httpClientFactory,
+		IRemovalQueueService removalQueue,
 		ILogger<ImportYoutubeMediaCommand> logger
 	)
 	{
@@ -74,6 +77,7 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 		_mediaDateResolver = mediaDateResolver;
 		_urlsProvider = urlsProvider;
 		_httpClientFactory = httpClientFactory;
+		_removalQueue = removalQueue;
 		_logger = logger;
 	}
 
@@ -89,7 +93,7 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 
 		var metadataResult = await _youtubeMetadataService.GetMetadataAsync(videoId, cancellationToken);
 		if (metadataResult.IsFailure)
-			throw new ValidationException(metadataResult.Error!.Message);
+			throw new ExternalServiceException(metadataResult.Error!.Message);
 		var metadata = metadataResult.Value!;
 
 		var createdResult = _mediaDateResolver.ResolveFromUtc(metadata.PublishedAtUtc);
@@ -104,25 +108,35 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 
 		string previewFileName = await CreatePreviewAsync(videoId, metadata.ThumbnailUrl, cancellationToken);
 
-		var miniatureResult = await _mediaProcessorService.CreateMiniatureAsync(previewFileName, cancellationToken);
-		if (miniatureResult.IsFailure)
-			throw new ValidationException(miniatureResult.Error!.Message);
-
-		var mediaFile = new MediaFile
+		MediaFile mediaFile;
+		try
 		{
-			FileName = videoId,
-			Source = MediaSource.YouTube,
-			ExternalUrl = GetEmbedUrl(videoId),
-			Type = MediaType.Video,
-			AspectRatio = metadata.AspectRatio,
-			Created = created,
-			Day = day,
-			Miniature = miniatureResult.Value,
-			AdditionalFiles = [previewFileName]
-		};
+			var miniatureResult = await _mediaProcessorService.CreateMiniatureAsync(previewFileName, cancellationToken);
+			if (miniatureResult.IsFailure)
+				throw new ExternalServiceException(miniatureResult.Error!.Message);
 
-		_context.MediaFiles.Add(mediaFile);
-		await _context.SaveChangesAsync(cancellationToken);
+			mediaFile = new MediaFile
+			{
+				FileName = videoId,
+				Source = MediaSource.YouTube,
+				ExternalUrl = GetEmbedUrl(videoId),
+				Type = MediaType.Video,
+				AspectRatio = metadata.AspectRatio,
+				Created = created,
+				Day = day,
+				Miniature = miniatureResult.Value,
+				AdditionalFiles = [previewFileName]
+			};
+
+			_context.MediaFiles.Add(mediaFile);
+			await _context.SaveChangesAsync(cancellationToken);
+		}
+		catch
+		{
+			// The preview is already in the file storage; without a media file it would stay there forever.
+			await _removalQueue.AddAsync(previewFileName);
+			throw;
+		}
 
 		_logger.LogInformation("YouTube media {VideoId} imported", videoId);
 
@@ -134,28 +148,27 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 
 	private async Task<string> CreatePreviewAsync(string videoId, string thumbnailUrl, CancellationToken cancellationToken)
 	{
-		var extension = Path.GetExtension(new Uri(thumbnailUrl).AbsolutePath);
+		if (!Uri.TryCreate(thumbnailUrl, UriKind.Absolute, out var thumbnailUri))
+			throw new ExternalServiceException($"YouTube metadata for '{videoId}' has no valid thumbnail URL.");
+
+		var extension = Path.GetExtension(thumbnailUri.AbsolutePath);
 		if (string.IsNullOrEmpty(extension))
 			extension = ".jpg";
 
 		try
 		{
 			using var httpClient = _httpClientFactory.CreateClient();
-			await using var thumbnailStream = await httpClient.GetStreamAsync(thumbnailUrl, cancellationToken);
+			await using var thumbnailStream = await httpClient.GetStreamAsync(thumbnailUri, cancellationToken);
 
 			var previewResult = await _mediaProcessorService.CreateYoutubePreviewAsync(videoId, extension, thumbnailStream, cancellationToken);
 			if (previewResult.IsFailure)
-				throw new ValidationException(previewResult.Error!.Message);
+				throw new ExternalServiceException(previewResult.Error!.Message);
 
 			return previewResult.Value!;
 		}
-		catch (ValidationException)
+		catch (Exception ex) when (ex is not ExternalServiceException and not OperationCanceledException)
 		{
-			throw;
-		}
-		catch (Exception ex)
-		{
-			throw new ValidationException($"Failed to download YouTube preview: {ex.Message}");
+			throw new ExternalServiceException($"Failed to download YouTube preview: {ex.Message}");
 		}
 	}
 
