@@ -87,7 +87,7 @@ public static class LinqExtensions
 	public static IEnumerable<TagTranslation> Aliases(this IEnumerable<TagTranslation> query, string? acceptLanguage = null)
 	{
 		if (acceptLanguage != null)
-			return query.Where(t => t.IsPrimary && t.LanguageCode == acceptLanguage);
+			return query.Where(t => !t.IsPrimary && t.LanguageCode == acceptLanguage);
 		return query.Where(t => !t.IsPrimary);
 	}
 }
