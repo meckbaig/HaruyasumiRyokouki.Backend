@@ -32,7 +32,7 @@ public class AiTranslationService : IContentTranslationService
 
 	private const string DayEntryJapaneseRule = """
 		ADDITIONAL RULES (personal travel journal day entries translated to Japanese only):
-		Translate the first-person pronouns "I", "me", "my" (and their Russian equivalents "Я", "меня", "мне", "мой") as 私, using 私の for the possessive "my" where appropriate.
+		First-person pronouns: When first-person references are needed, use 私 (and 私の for possessives). However, follow natural Japanese syntax: omit 私 whenever the subject is obvious from the context to prevent repetitive or unnatural phrasing. Never insert 私 in the middle or end of a clause (e.g., avoid "～を私は...").
 		Translate the author's name written as "Рё" or "Ryo" as りょう.
 		
 		""";
