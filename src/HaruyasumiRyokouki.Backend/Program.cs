@@ -18,6 +18,7 @@ try
 	builder.Logging.ClearProviders().AddSerilog(Log.Logger);
 	builder.Services.AddDatabaseConnection();
 	builder.Services.AddTransient<IMediaProcessorService, MediaProcessorService>();
+	builder.Services.AddScoped<IMediaSyncService, MediaSyncService>();
 	builder.Services.AddSingleton<IFfmpegService, FfmpegService>();
 	builder.Services.AddSingleton<IMediaDateResolver, MediaDateResolver>();
 	builder.Services.AddSingleton<IYoutubeMetadataService, YoutubeMetadataService>();
