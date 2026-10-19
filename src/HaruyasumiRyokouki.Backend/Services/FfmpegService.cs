@@ -74,12 +74,17 @@ internal class FfmpegService : IFfmpegService
 	public async Task<VideoFileInfo> GetVideoInfoAsync(MediaInput mediaInput, CancellationToken cancellationToken)
 	{
 		var arguments = new StringBuilder();
+		// Header values may contain credentials, so they are masked in the logged command.
+		var loggedArguments = new StringBuilder();
 		foreach (var header in mediaInput.Headers)
 		{
 			arguments.Append($"-headers \"{header.Key}: {header.Value}\" ");
+			loggedArguments.Append($"-headers \"{header.Key}: ***\" ");
 		}
-		arguments.Append($"-v quiet -print_format json -show_format -show_streams -i \"{mediaInput.Input}\"");
-		var jsonData = await RunFfprobeAsync(arguments.ToString(), cancellationToken);
+		string commonArguments = $"-v quiet -print_format json -show_format -show_streams -i \"{mediaInput.Input}\"";
+		arguments.Append(commonArguments);
+		loggedArguments.Append(commonArguments);
+		var jsonData = await RunFfprobeAsync(arguments.ToString(), cancellationToken, loggedArguments.ToString());
 
 		var result = JsonSerializer.Deserialize<FfprobeResponse>(jsonData, _serializerOptions);
 
@@ -175,7 +180,7 @@ internal class FfmpegService : IFfmpegService
 		return output.ToArray();
 	}
 
-	private async Task<string> RunFfprobeAsync(string arguments, CancellationToken cancellationToken = default)
+	private async Task<string> RunFfprobeAsync(string arguments, CancellationToken cancellationToken = default, string? loggedArguments = null)
 	{
 		using var process = new Process();
 
@@ -185,7 +190,7 @@ internal class FfmpegService : IFfmpegService
 		process.StartInfo.RedirectStandardError = true;
 		process.StartInfo.UseShellExecute = false;
 		process.StartInfo.CreateNoWindow = true;
-		_logger.LogDebug("Run command: {Command}", $"{process.StartInfo.FileName} {arguments}");
+		_logger.LogDebug("Run command: {Command}", $"{process.StartInfo.FileName} {loggedArguments ?? arguments}");
 		process.Start();
 
 		string output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
