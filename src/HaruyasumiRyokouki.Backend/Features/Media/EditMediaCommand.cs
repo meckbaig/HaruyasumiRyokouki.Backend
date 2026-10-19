@@ -1,5 +1,6 @@
 using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
@@ -114,6 +115,8 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			.Include(m => m.Translations)
 			.Where(m => request.Body.Ids.Contains(m.Id))
 			.ToListAsync(cancellationToken);
+
+		EntityNotFoundException.ThrowIfAnyMissing(request.Body.Ids, mediaToEdit.Select(m => m.Id), "Media file");
 
 		if (request.Body.Changes.Latitude.HasValue)
 			mediaToEdit.ForEach(m => m.Latitude = request.Body.Changes.Latitude);

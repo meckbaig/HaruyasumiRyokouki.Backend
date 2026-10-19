@@ -1,5 +1,6 @@
 using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
@@ -61,6 +62,8 @@ internal class GetEditMediaQueryHandler : IRequestHandler<GetEditMediaQuery, Get
 				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m => request.Ids.Contains(m.Id))
 			.ToListAsync(cancellationToken);
+
+		EntityNotFoundException.ThrowIfAnyMissing(request.Ids, mediaFiles.Select(m => m.Id), "Media file");
 
 		var results = mediaFiles.Select(m => m.ToEditDto().AddUrls(m, _urlsProvider, request.ClientDisplay));
 

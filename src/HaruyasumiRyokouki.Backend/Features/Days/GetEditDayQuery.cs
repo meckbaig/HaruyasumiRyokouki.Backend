@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
@@ -32,11 +33,12 @@ internal class GetEditDayQueryHandler : IRequestHandler<GetEditDayQuery, GetEdit
 		var result = await _context.Days
 			.AsNoTracking()
 			.Include(d => d.Translations)
-			.FirstOrDefaultAsync(d => d.Date == request.Date, cancellationToken);
+			.FirstOrDefaultAsync(d => d.Date == request.Date, cancellationToken)
+			?? throw new EntityNotFoundException($"Day {request.Date:yyyy-MM-dd} doesn't exist");
 
 		return new GetEditDayResponse
 		{
-			Day = result?.ToEditDto()
+			Day = result.ToEditDto()
 		};
 	}
 }

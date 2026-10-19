@@ -44,6 +44,8 @@ internal class AddTagToMediaHandler : IRequestHandler<AddTagToMediaCommand, AddT
 			.Where(m => request.Body.MediaFileIds.Contains(m.Id))
 			.ToListAsync(cancellationToken);
 
+		EntityNotFoundException.ThrowIfAnyMissing(request.Body.MediaFileIds, media.Select(m => m.Id), "Media file");
+
 		int affected = 0;
 		foreach (var file in media)
 		{

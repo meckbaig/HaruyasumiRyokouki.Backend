@@ -1,4 +1,5 @@
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
@@ -51,6 +52,9 @@ internal class SuggestMediaForTagQueryHandler : IRequestHandler<SuggestMediaForT
 
 	public async Task<SuggestMediaForTagResponse> Handle(SuggestMediaForTagQuery request, CancellationToken cancellationToken)
 	{
+		if (!await _context.Tags.AnyAsync(t => t.Id == request.Id, cancellationToken))
+			throw new EntityNotFoundException($"Tag with Id {request.Id} not found.");
+
 		var seedIds = await _context.MediaFiles
 			.AsNoTracking()
 			.Where(m => m.Tags.Any(t => t.Id == request.Id))

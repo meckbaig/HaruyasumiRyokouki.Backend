@@ -1,4 +1,5 @@
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
@@ -51,6 +52,8 @@ internal class GetSimilarMediaHandler : IRequestHandler<GetSimilarMediaQuery, Ge
 		GetSimilarMediaQuery request,
 		CancellationToken cancellationToken)
 	{
+		if (!await _context.MediaFiles.AnyAsync(m => m.Id == request.Id, cancellationToken))
+			throw new EntityNotFoundException($"Media file with Id {request.Id} not found.");
 
 		if (!_similarityService.IsLoaded)
 			await _similarityService.ReloadAsync(_context, cancellationToken);
