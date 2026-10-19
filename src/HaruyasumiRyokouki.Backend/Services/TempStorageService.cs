@@ -3,7 +3,7 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 namespace HaruyasumiRyokouki.Backend.Services;
 
-public class TempStorageService : ITempStorageService
+public class TempStorageService : IAsyncDisposable
 {
 	private const string TempWorkspace = "temp";
 	public string TempFolder { get; init; }

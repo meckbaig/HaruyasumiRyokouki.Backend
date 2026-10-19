@@ -1,6 +1,5 @@
 using HaruyasumiRyokouki.Backend.Models.Db;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 
 namespace HaruyasumiRyokouki.Backend.DbContexts;
 
@@ -35,12 +34,6 @@ internal class AppDbContext : DbContext, IAppDbContext
 
 	/// <inheritdoc/>
 	public DbSet<MediaEmbedding> MediaEmbeddings => Set<MediaEmbedding>();
-
-	/// <inheritdoc/>
-	public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-	{
-		return await base.SaveChangesAsync(cancellationToken);
-	}
 
 	/// <inheritdoc/>
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -187,11 +180,5 @@ internal class AppDbContext : DbContext, IAppDbContext
 	{
 		optionsBuilder.UseSnakeCaseNamingConvention();
 		base.OnConfiguring(optionsBuilder);
-	}
-
-	public static string ToSnakeCase(string input)
-	{
-		return Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1_$2")
-					.ToLower();
 	}
 }

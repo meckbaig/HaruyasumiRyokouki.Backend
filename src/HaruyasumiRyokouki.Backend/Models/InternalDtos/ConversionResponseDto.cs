@@ -1,8 +1,8 @@
 namespace HaruyasumiRyokouki.Backend.Models.InternalDtos;
 
-internal record ConvertionsResponseDto
+internal record ConversionResponseDto
 {
-	public ConvertionsResponseDto(string newFileName, string miniature, float aspectRatio, ICollection<string> additionalFileNames)
+	public ConversionResponseDto(string newFileName, string miniature, float aspectRatio, ICollection<string> additionalFileNames)
 	{
 		NewFileName = newFileName;
 		Miniature = miniature;

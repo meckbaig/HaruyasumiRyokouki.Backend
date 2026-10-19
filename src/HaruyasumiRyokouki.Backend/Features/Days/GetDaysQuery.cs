@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
-public record GetDaysQuery : IRequest<GetDaysResponse>, IAuthentificatedRequest
+public record GetDaysQuery : IRequest<GetDaysResponse>, IAuthenticatedRequest
 {
 	[SwaggerIgnore]
 	[JsonIgnore]

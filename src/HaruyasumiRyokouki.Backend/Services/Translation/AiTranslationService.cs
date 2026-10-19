@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
@@ -12,7 +13,7 @@ public class AiTranslationService : IContentTranslationService
 		_aiChatService = aiChatService;
 	}
 
-	private const string PromtCore = """
+	private const string PromptCore = """
 		
 		The text may be a personal travel journal entry, photo title, or short photo description.
 		Preserve the original meaning, tone, personal voice, and expressions as faithfully as possible. Keep the translation natural, but do not embellish, simplify, or make the text more literary than the original.
@@ -37,13 +38,13 @@ public class AiTranslationService : IContentTranslationService
 		
 		""";
 
-	private string GetSystemPromt(string outputLanguageCode, string? inputLanguageCode = default)
+	private string GetSystemPrompt(string outputLanguageCode, string? inputLanguageCode = default)
 	{
 		string inputLanguagePromptSubstring = string.IsNullOrWhiteSpace(inputLanguageCode)
 			? string.Empty
 			: $" in {TranslationPlanner.LanguageByCode(inputLanguageCode)}";
 		var prompt = $"You are a translator. You will receive text{inputLanguagePromptSubstring}, translate the content to {TranslationPlanner.LanguageByCode(outputLanguageCode)}. "
-			+ PromtCore;
+			+ PromptCore;
 
 		if (outputLanguageCode == LanguageCode.Japanese)
 		{
@@ -57,6 +58,6 @@ public class AiTranslationService : IContentTranslationService
 
 	public async Task<string> TranslateTextAsync(string text, string outputLanguage, string? inputLanguage = null, CancellationToken cancellationToken = default)
 	{
-		return await _aiChatService.GetChatResponseAsync(text, GetSystemPromt(outputLanguage, inputLanguage), returnJson: false, cancellationToken: cancellationToken);
+		return await _aiChatService.GetChatResponseAsync(text, GetSystemPrompt(outputLanguage, inputLanguage), returnJson: false, cancellationToken: cancellationToken);
 	}
 }

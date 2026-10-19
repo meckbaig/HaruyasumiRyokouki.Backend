@@ -1,13 +1,13 @@
 using FluentValidation;
 using MediatR;
 
-namespace HaruyasumiRyokouki.Backend.Common.Behaviours;
+namespace HaruyasumiRyokouki.Backend.Common.Behaviors;
 
-internal class UnhandledExceptionBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+internal class UnhandledExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
-	private readonly ILogger<UnhandledExceptionBehaviour<TRequest, TResponse>> _logger;
+	private readonly ILogger<UnhandledExceptionBehavior<TRequest, TResponse>> _logger;
 
-	public UnhandledExceptionBehaviour(ILogger<UnhandledExceptionBehaviour<TRequest, TResponse>> logger)
+	public UnhandledExceptionBehavior(ILogger<UnhandledExceptionBehavior<TRequest, TResponse>> logger)
 	{
 		_logger = logger;
 	}

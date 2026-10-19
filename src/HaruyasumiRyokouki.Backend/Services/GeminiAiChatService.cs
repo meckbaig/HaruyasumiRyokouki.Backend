@@ -27,10 +27,6 @@ public class GeminiAiChatService : IAiChatService
 		var config = new GenerateContentConfig
 		{
 			Temperature = Math.Round(_options.Temperature, 2),
-			//ThinkingConfig = new ThinkingConfig
-			//{
-			//	ThinkingBudget = GetThinkingBudget(_options.ReasoningLevel)
-			//}
 		};
 
 		if (!string.IsNullOrWhiteSpace(_options.ReasoningLevel) && _options.ReasoningLevel.ToLower() != "none")

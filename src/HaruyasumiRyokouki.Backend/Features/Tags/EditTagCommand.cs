@@ -58,11 +58,11 @@ public class EditTagResponse
 	public required TagDto Tag { get; set; }
 }
 
-internal class EditTagQueryHandler : IRequestHandler<EditTagCommand, EditTagResponse>
+internal class EditTagHandler : IRequestHandler<EditTagCommand, EditTagResponse>
 {
 	private readonly IAppDbContext _context;
 
-	public EditTagQueryHandler(IAppDbContext context)
+	public EditTagHandler(IAppDbContext context)
 	{
 		_context = context;
 	}

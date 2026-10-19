@@ -1,8 +1,8 @@
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 
-namespace HaruyasumiRyokouki.Backend.Services.Translation;
+namespace HaruyasumiRyokouki.Backend.Common.Helpers;
 
-internal sealed class TranslationPlanner
+internal static class TranslationPlanner
 {
 	private static readonly ICollection<LanguagePriority> _priorities =
 	[

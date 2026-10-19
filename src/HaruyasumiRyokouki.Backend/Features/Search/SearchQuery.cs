@@ -1,13 +1,13 @@
 using FluentValidation;
-using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Db;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +17,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Search;
 
-public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
+public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
 	[FromQuery]
 	public string? Text { get; init; }

@@ -2,11 +2,11 @@ using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -31,12 +31,12 @@ public class GetPendingResponse
 	public List<DayEditDto> Days { get; set; }
 }
 
-internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingResponse>
+internal class GetPendingQueryHandler : IRequestHandler<GetPendingQuery, GetPendingResponse>
 {
 	private readonly IAppDbContext _context;
 	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public GetPendingHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
+	public GetPendingQueryHandler(IAppDbContext context, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
 		_urlsProvider = urlsProvider;
@@ -46,13 +46,13 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 	{
 		var pendingDays = await _context.Days
 			.AsNoTracking()
-			.Include(d => d.Translations/*.Where(t => t.LanguageCode == request.AcceptLanguage)*/)
+			.Include(d => d.Translations)
 			.Where(d => !d.IsReady)
 			.OrderBy(d => d.Date)
 			.ToListAsync(cancellationToken);
 		var pendingMedia = await _context.MediaFiles
 			.AsNoTracking()
-			.Include(m => m.Translations/*.Where(t => t.LanguageCode == request.AcceptLanguage)*/)
+			.Include(m => m.Translations)
 			.Include(m => m.Tags)
 				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m => !m.IsApproved)

@@ -2,10 +2,10 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,13 +35,13 @@ public class GetSimilarMediaResponse
 	public required IReadOnlyCollection<SuggestedMediaDto> Items { get; init; }
 }
 
-internal class GetSimilarMediaHandler : IRequestHandler<GetSimilarMediaQuery, GetSimilarMediaResponse>
+internal class GetSimilarMediaQueryHandler : IRequestHandler<GetSimilarMediaQuery, GetSimilarMediaResponse>
 {
 	private readonly IAppDbContext _context;
 	private readonly IMediaSimilarityIndexService _similarityService;
 	private readonly IMediaUrlsProvider _urlsProvider;
 
-	public GetSimilarMediaHandler(IAppDbContext context, IMediaSimilarityIndexService similarityService, IMediaUrlsProvider urlsProvider)
+	public GetSimilarMediaQueryHandler(IAppDbContext context, IMediaSimilarityIndexService similarityService, IMediaUrlsProvider urlsProvider)
 	{
 		_context = context;
 		_similarityService = similarityService;

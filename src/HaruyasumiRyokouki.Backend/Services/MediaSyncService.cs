@@ -172,7 +172,7 @@ internal class MediaSyncService : IMediaSyncService
 
 		if (conversionResult.IsFailure)
 		{
-			_logger.LogError("Error occured during {FileName} conversion: {ErrorMessage}", fileName, conversionResult.Error);
+			_logger.LogError("Error occurred during {FileName} conversion: {ErrorMessage}", fileName, conversionResult.Error);
 			return;
 		}
 
@@ -213,7 +213,7 @@ internal class MediaSyncService : IMediaSyncService
 		var result = await _mediaProcessorService.CreateMiniatureAsync(actualFileName, cancellationToken);
 		if (result.IsFailure)
 		{
-			_logger.LogError("Error occured during {FileName} conversion: {ErrorMessage}", fileName, result.Error);
+			_logger.LogError("Error occurred during {FileName} conversion: {ErrorMessage}", fileName, result.Error);
 			return;
 		}
 		await _context.MediaFiles

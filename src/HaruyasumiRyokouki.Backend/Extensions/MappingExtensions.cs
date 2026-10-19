@@ -12,21 +12,6 @@ namespace HaruyasumiRyokouki.Backend.Extensions;
 internal static class MappingExtensions
 {
 	#region Day
-	public static DayShortDto ToShortDto(this Day source)
-	{
-		return new DayShortDto
-		{
-			Date = source.Date,
-			IsReady = source.IsReady,
-			MediaCount = source.Media.Count
-		};
-	}
-
-	public static IEnumerable<DayShortDto> ToShortDtos(this IEnumerable<Day> source)
-	{
-		return source.Select(ToShortDto);
-	}
-
 	public static DayDto ToDto(this Day source, bool admin = false)
 	{
 		return new DayDto
@@ -333,16 +318,6 @@ internal static class MappingExtensions
 	public static IEnumerable<TagPublicDto> ToPublicDtos(this IEnumerable<Tag> source, string? acceptLanguage = null)
 	{
 		return source.Select(x => x.ToPublicDto(acceptLanguage));
-	}
-
-	public static string ToFlatTag(this Tag source, string? acceptLanguage = null)
-	{
-		return source.Translations.Primary(acceptLanguage).First().Text;
-	}
-
-	public static IEnumerable<string> ToFlatTags(this IEnumerable<Tag> source, string? acceptLanguage = null)
-	{
-		return source.Select(x => x.ToFlatTag(acceptLanguage));
 	}
 
 	public static Tag FromDto(this CreateTagDto source)

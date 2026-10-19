@@ -12,7 +12,7 @@ namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 [ApiController]
 [Route("v{version:ApiVersion}/[controller]")]
 [ApiVersion(1)]
-[SwaggerTag("Manages media parameters.")]
+[SwaggerTag("Manages travel days and their notes.")]
 [Produces(MediaTypeNames.Application.Json)]
 public class DaysController : ControllerBase
 {

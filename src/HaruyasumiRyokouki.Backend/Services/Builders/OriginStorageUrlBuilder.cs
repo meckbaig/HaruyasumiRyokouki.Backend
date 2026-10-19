@@ -14,11 +14,6 @@ public class OriginStorageUrlBuilder : AbstractUrlBuilder
 
 	}
 
-	public override bool Validate(out IReadOnlyCollection<string> missingTokens)
-	{
-		return base.Validate(out missingTokens);
-	}
-
 	public string BuildMedia(string fileName)
 		=> Build(MediaBase, fileName);
 

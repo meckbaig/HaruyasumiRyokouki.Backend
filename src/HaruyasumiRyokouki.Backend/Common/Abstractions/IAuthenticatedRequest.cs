@@ -1,6 +1,6 @@
 namespace HaruyasumiRyokouki.Backend.Common.Abstractions;
 
-public interface IAuthentificatedRequest
+public interface IAuthenticatedRequest
 {
 	bool IsAuthenticated { get; set; }
 }

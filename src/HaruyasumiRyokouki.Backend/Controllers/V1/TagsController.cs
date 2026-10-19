@@ -1,18 +1,18 @@
 using Asp.Versioning;
 using HaruyasumiRyokouki.Backend.Extensions;
+using HaruyasumiRyokouki.Backend.Features.Tags;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
-using MediatR;
-using HaruyasumiRyokouki.Backend.Features.Tags;
 
 namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 
 [ApiController]
 [Route("v{version:ApiVersion}/[controller]")]
 [ApiVersion(1)]
-[SwaggerTag("Manages media parameters.")]
+[SwaggerTag("Manages tags, tag suggestions and tagging of media.")]
 [Produces(MediaTypeNames.Application.Json)]
 public class TagsController : ControllerBase
 {

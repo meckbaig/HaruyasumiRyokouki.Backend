@@ -1,10 +1,10 @@
 using FluentValidation;
 using FluentValidation.Results;
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
+using HaruyasumiRyokouki.Backend.Extensions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using HaruyasumiRyokouki.Backend.Common.Exceptions;
-using HaruyasumiRyokouki.Backend.Extensions;
 
 namespace HaruyasumiRyokouki.Backend.Common.Handlers.Exceptions;
 
@@ -181,7 +181,7 @@ internal class CustomExceptionHandler : IExceptionHandler
 		{
 			Type = "https://datatracker.ietf.org/doc/html/rfc9110#name-500-internal-server-error",
 			Status = StatusCodes.Status500InternalServerError,
-			Title = "Unhandled exception occured",
+			Title = "Unhandled exception occurred",
 			Detail = detail
 		};
 	}

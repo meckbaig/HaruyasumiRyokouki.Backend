@@ -97,7 +97,7 @@ internal class MediaSimilarityIndexService : IMediaSimilarityIndexService
 	)
 	{
 		if (query.Length != Dim)
-			throw new ArgumentException($"Ожидался вектор длины {Dim}", nameof(query));
+			throw new ArgumentException($"Expected a vector of length {Dim}", nameof(query));
 
 		var scored = new List<SimilarityHit>(_ids.Length);
 

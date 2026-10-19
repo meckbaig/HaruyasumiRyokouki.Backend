@@ -4,7 +4,7 @@ using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using MediatR;
 using System.Globalization;
 
-namespace HaruyasumiRyokouki.Backend.Common.Behaviours;
+namespace HaruyasumiRyokouki.Backend.Common.Behaviors;
 
 internal class ClientDisplayBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>, IHeaderAwareBehavior
 	where TRequest : IDisplayAwareRequest

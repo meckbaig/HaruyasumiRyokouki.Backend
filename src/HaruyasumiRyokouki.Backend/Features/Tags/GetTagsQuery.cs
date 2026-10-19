@@ -18,12 +18,10 @@ public class GetTagsResponse
 internal class GetTagsQueryHandler : IRequestHandler<GetTagsQuery, GetTagsResponse>
 {
 	private readonly IAppDbContext _context;
-	private readonly ILogger<GetTagsQueryHandler> _logger;
 
-	public GetTagsQueryHandler(IAppDbContext context, ILogger<GetTagsQueryHandler> logger)
+	public GetTagsQueryHandler(IAppDbContext context)
 	{
 		_context = context;
-		_logger = logger;
 	}
 
 	public async Task<GetTagsResponse> Handle(GetTagsQuery request, CancellationToken cancellationToken)

@@ -1,5 +1,6 @@
 using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
@@ -7,7 +8,6 @@ using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using HaruyasumiRyokouki.Backend.Services.Translation;
 using HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 using Meckbaig.Cqrs.Abstractons;
 using MediatR;
@@ -143,5 +143,4 @@ internal class EditDayHandler : IRequestHandler<EditDayCommand, EditDayResponse>
 			.ToList();
 	}
 
-	private record LanguagePriority(string LanguageCode, string LanguageName, int Priority);
 }

@@ -31,11 +31,11 @@ public class GetTagCompletionResponse
 	public required ICollection<TagDto> SimilarExisting { get; set; }
 }
 
-internal class GetTagCompletionQueryHandler : IRequestHandler<GetTagCompletionCommand, GetTagCompletionResponse>
+internal class GetTagCompletionHandler : IRequestHandler<GetTagCompletionCommand, GetTagCompletionResponse>
 {
 	private readonly IAiChatService _aiChatService;
 	private readonly IAppDbContext _context;
-	private readonly ILogger<GetTagCompletionQueryHandler> _logger;
+	private readonly ILogger<GetTagCompletionHandler> _logger;
 	private readonly static JsonSerializerOptions _options = new JsonSerializerOptions
 	{
 		PropertyNameCaseInsensitive = true
@@ -89,10 +89,10 @@ Output rules:
 - `aliases` may be empty.
 """;
 
-	public GetTagCompletionQueryHandler
+	public GetTagCompletionHandler
 	(
 		IAppDbContext context,
-		ILogger<GetTagCompletionQueryHandler> logger,
+		ILogger<GetTagCompletionHandler> logger,
 		ITranslationServiceOptionsAccessor translationAccessor,
 		IContentTranslationServiceFactory factory,
 		IOptions<TranslationProviderOptions> translationOptions

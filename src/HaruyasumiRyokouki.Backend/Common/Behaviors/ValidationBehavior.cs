@@ -1,14 +1,14 @@
 using FluentValidation;
 using MediatR;
 
-namespace HaruyasumiRyokouki.Backend.Common.Behaviours;
+namespace HaruyasumiRyokouki.Backend.Common.Behaviors;
 
-internal class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+internal class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
 	 where TRequest : notnull
 {
 	private readonly IEnumerable<IValidator<TRequest>> _validators;
 
-	public ValidationBehaviour(IEnumerable<IValidator<TRequest>> validators)
+	public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
 	{
 		_validators = validators;
 	}

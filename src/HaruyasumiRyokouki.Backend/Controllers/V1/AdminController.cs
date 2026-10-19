@@ -12,7 +12,7 @@ namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 [ApiController]
 [Route("v{version:ApiVersion}/[controller]")]
 [ApiVersion(1)]
-[SwaggerTag("Manages media parameters.")]
+[SwaggerTag("Administrative operations: pending content and login check.")]
 [Produces(MediaTypeNames.Application.Json)]
 public class AdminController : ControllerBase
 {

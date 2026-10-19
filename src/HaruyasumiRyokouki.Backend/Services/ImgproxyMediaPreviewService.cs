@@ -94,7 +94,7 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		}
 	}
 
-	public string BuildImgproxyString(string fileName, int xAxis, int yAxis, bool download = false)
+	private string BuildImgproxyString(string fileName, int xAxis, int yAxis, bool download = false)
 	{
 		List<ImgProxyOption> options = [new ResizeOption(xAxis, yAxis)];
 		if (download)
@@ -102,7 +102,7 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		return Builder.WithOptions(options.ToArray()).Build(CreateFilePath(fileName));
 	}
 
-	public string BuildImgproxyRawString(string fileName, bool download = false)
+	private string BuildImgproxyRawString(string fileName, bool download = false)
 	{
 		var builder = download
 			? DownloadBuilder.WithRaw().WithOptions(new AttachmentOption(download))
@@ -115,7 +115,7 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		return Path.Combine(_options.FilePath, fileName);
 	}
 
-	public class ResizeOption : ImgProxyOption
+	private class ResizeOption : ImgProxyOption
 	{
 		private int _xAxis;
 		private int _yAxis;
@@ -132,7 +132,7 @@ internal class ImgproxyMediaPreviewService : IMediaPreviewService
 		}
 	}
 
-	public class AttachmentOption : ImgProxyOption
+	private class AttachmentOption : ImgProxyOption
 	{
 		private bool _attachment;
 

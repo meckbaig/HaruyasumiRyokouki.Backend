@@ -2,10 +2,10 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
-public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
+public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
 	[FromRoute]
 	public required DateOnly Date { get; set; }

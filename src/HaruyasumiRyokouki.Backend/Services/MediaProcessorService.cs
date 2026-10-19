@@ -40,10 +40,10 @@ internal class MediaProcessorService : IMediaProcessorService
 		throw new NotImplementedException();
 	}
 
-	public async Task<Result<ConvertionsResponseDto>> ConvertImageAsync(string fileName, CancellationToken cancellationToken)
+	public async Task<Result<ConversionResponseDto>> ConvertImageAsync(string fileName, CancellationToken cancellationToken)
 	{
 		if (!MediaFileNaming.IsImage(fileName))
-			return Result<ConvertionsResponseDto>.Failure("File is not an image");
+			return Result<ConversionResponseDto>.Failure("File is not an image");
 
 		await using var workspace = new TempStorageService(MediaType.Image);
 
@@ -62,9 +62,9 @@ internal class MediaProcessorService : IMediaProcessorService
 			resultImageFileName = Path.GetFileNameWithoutExtension(fileName) + "." + _mediaFormatOptions.ImagePreset.ToString().ToLower();
 			var outputFile = Path.Combine(workspace.TempFolder, resultImageFileName);
 
-			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
+			_logger.LogDebug("File conversion started ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
 			await _ffmpegService.ConvertImageAsync(inputFile, outputFile, cancellationToken);
-			_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
+			_logger.LogDebug("File conversion ended ({OriginalFileName} -> {NewFileName})", fileName, resultImageFileName);
 			SetOriginalTimeInfo(inputFile, outputFile);
 
 			await using var result = File.OpenRead(outputFile);
@@ -76,13 +76,13 @@ internal class MediaProcessorService : IMediaProcessorService
 		string miniature = await CreateMiniatureAsync(inputFile, workspace, cancellationToken);
 		float aspectRatio = await _ffmpegService.GetImageAspectRatioAsync(inputFile, cancellationToken);
 
-		return Result<ConvertionsResponseDto>.Success(new(resultImageFileName, miniature, aspectRatio, []));
+		return Result<ConversionResponseDto>.Success(new(resultImageFileName, miniature, aspectRatio, []));
 	}
 
-	public async Task<Result<ConvertionsResponseDto>> ConvertVideoAsync(string fileName, CancellationToken cancellationToken)
+	public async Task<Result<ConversionResponseDto>> ConvertVideoAsync(string fileName, CancellationToken cancellationToken)
 	{
 		if (!MediaFileNaming.IsVideo(fileName))
-			return Result<ConvertionsResponseDto>.Failure("File is not a video");
+			return Result<ConversionResponseDto>.Failure("File is not a video");
 
 		await using var workspace = new TempStorageService(MediaType.Video);
 
@@ -101,9 +101,9 @@ internal class MediaProcessorService : IMediaProcessorService
 			string webVideoFileName = MediaFileNaming.GetVideoWebName(fileName);
 			var outputFile = Path.Combine(workspace.TempFolder, webVideoFileName);
 
-			_logger.LogDebug("File convertion started ({OriginalFileName} -> {NewFileName})", fileName, webVideoFileName);
+			_logger.LogDebug("File conversion started ({OriginalFileName} -> {NewFileName})", fileName, webVideoFileName);
 			await _ffmpegService.ConvertVideoAsync(inputFile, outputFile, cancellationToken);
-			_logger.LogDebug("File convertion ended ({OriginalFileName} -> {NewFileName})", fileName, webVideoFileName);
+			_logger.LogDebug("File conversion ended ({OriginalFileName} -> {NewFileName})", fileName, webVideoFileName);
 			SetOriginalTimeInfo(inputFile, outputFile);
 
 			await using var result = File.OpenRead(outputFile);
@@ -118,7 +118,7 @@ internal class MediaProcessorService : IMediaProcessorService
 
 		additionalFileNames.Add(Path.GetFileName(previewOutputFile));
 
-		return Result<ConvertionsResponseDto>.Success(new(fileName, miniature, aspectRatio, additionalFileNames));
+		return Result<ConversionResponseDto>.Success(new(fileName, miniature, aspectRatio, additionalFileNames));
 	}
 
 	public async Task<Result<string>> CreateMiniatureAsync(string fileName, CancellationToken cancellationToken)

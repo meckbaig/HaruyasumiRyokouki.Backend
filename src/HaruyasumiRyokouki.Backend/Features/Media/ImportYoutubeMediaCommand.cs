@@ -37,9 +37,9 @@ public class ImportYoutubeMediaResponse : BaseResponse
 	public required MediaFileEditDto Media { get; init; }
 }
 
-internal class ImportYoutubeMediaCommandValidator : AbstractValidator<ImportYoutubeMediaCommand>
+internal class ImportYoutubeMediaValidator : AbstractValidator<ImportYoutubeMediaCommand>
 {
-	public ImportYoutubeMediaCommandValidator()
+	public ImportYoutubeMediaValidator()
 	{
 		RuleFor(x => x.Body.Url)
 			.NotEmpty()
@@ -57,7 +57,7 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 	private readonly IMediaUrlsProvider _urlsProvider;
 	private readonly IHttpClientFactory _httpClientFactory;
 	private readonly IRemovalQueueService _removalQueue;
-	private readonly ILogger<ImportYoutubeMediaCommand> _logger;
+	private readonly ILogger<ImportYoutubeMediaHandler> _logger;
 
 	public ImportYoutubeMediaHandler
 	(
@@ -68,7 +68,7 @@ internal class ImportYoutubeMediaHandler : IRequestHandler<ImportYoutubeMediaCom
 		IMediaUrlsProvider urlsProvider,
 		IHttpClientFactory httpClientFactory,
 		IRemovalQueueService removalQueue,
-		ILogger<ImportYoutubeMediaCommand> logger
+		ILogger<ImportYoutubeMediaHandler> logger
 	)
 	{
 		_context = context;

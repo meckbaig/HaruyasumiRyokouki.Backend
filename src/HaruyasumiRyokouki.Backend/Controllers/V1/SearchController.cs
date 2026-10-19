@@ -11,7 +11,7 @@ namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 [ApiController]
 [Route("v{version:ApiVersion}/[controller]")]
 [ApiVersion(1)]
-[SwaggerTag("Manages media parameters.")]
+[SwaggerTag("Searches days and media by text or tag.")]
 [Produces(MediaTypeNames.Application.Json)]
 public class SearchController : ControllerBase
 {

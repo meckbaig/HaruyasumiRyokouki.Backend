@@ -1,9 +1,9 @@
-using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
-using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
+using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
-public record GetTagSuggestionQuery : IRequest<GetTagSuggestionResponse>, ILocalizableRequest, IAuthentificatedRequest
+public record GetTagSuggestionQuery : IRequest<GetTagSuggestionResponse>, ILocalizableRequest, IAuthenticatedRequest
 {
 	[FromQuery]
 	public required string Text { get; set; }

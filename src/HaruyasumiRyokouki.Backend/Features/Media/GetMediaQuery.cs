@@ -3,10 +3,10 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Extensions.TypeExtensions;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +15,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetMediaQuery : IRequest<GetMediaResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
+public record GetMediaQuery : IRequest<GetMediaResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
 	[FromQuery]
 	public required DateOnly From { get; set; }

@@ -3,7 +3,7 @@ using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 
-namespace HaruyasumiRyokouki.Backend.Common.Behaviours;
+namespace HaruyasumiRyokouki.Backend.Common.Behaviors;
 
 internal class LocalizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>, IHeaderAwareBehavior
 	where TRequest : ILocalizableRequest

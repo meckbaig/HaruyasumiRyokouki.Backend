@@ -49,11 +49,11 @@ public class AddTagResponse
 	public required TagDto Tag { get; set; }
 }
 
-internal class AddTagQueryHandler : IRequestHandler<AddTagCommand, AddTagResponse>
+internal class AddTagHandler : IRequestHandler<AddTagCommand, AddTagResponse>
 {
 	private readonly IAppDbContext _context;
 
-	public AddTagQueryHandler(IAppDbContext context)
+	public AddTagHandler(IAppDbContext context)
 	{
 		_context = context;
 	}

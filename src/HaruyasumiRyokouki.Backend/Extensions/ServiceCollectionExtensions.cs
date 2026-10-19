@@ -1,6 +1,6 @@
 using Asp.Versioning;
 using FluentValidation;
-using HaruyasumiRyokouki.Backend.Common.Behaviours;
+using HaruyasumiRyokouki.Backend.Common.Behaviors;
 using HaruyasumiRyokouki.Backend.Common.Conventions;
 using HaruyasumiRyokouki.Backend.Common.Handlers;
 using HaruyasumiRyokouki.Backend.Common.OptionalType.Supporting.Asp;
@@ -180,11 +180,11 @@ internal static class ServiceCollectionExtensions
 		return services.AddMediatR(c =>
 		{
 			c.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
+			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehavior<,>));
 			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ClientDisplayBehavior<,>));
-			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LocalizationBehavior<,>)); 
-			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ClientAuthentificationBehavior<,>));
+			c.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ClientAuthenticationBehavior<,>));
 		});
 	}
 

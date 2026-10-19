@@ -1,14 +1,14 @@
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using MediatR;
 
-namespace HaruyasumiRyokouki.Backend.Common.Behaviours;
+namespace HaruyasumiRyokouki.Backend.Common.Behaviors;
 
-internal class ClientAuthentificationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-	where TRequest : IAuthentificatedRequest
+internal class ClientAuthenticationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+	where TRequest : IAuthenticatedRequest
 {
 	private readonly IHttpContextAccessor _httpContextAccessor;
 
-	public ClientAuthentificationBehavior(IHttpContextAccessor httpContextAccessor)
+	public ClientAuthenticationBehavior(IHttpContextAccessor httpContextAccessor)
 	{
 		_httpContextAccessor = httpContextAccessor;
 	}

@@ -19,7 +19,7 @@ public class MediaFile
 	public bool Private { get; set; } = false;
 	public bool Favorite { get; set; } = false;
 
-	public ICollection<string> AdditionalFiles = [];
+	public ICollection<string> AdditionalFiles { get; set; } = [];
 
 	public ICollection<MediaTranslation> Translations { get; set; } = [];
 	public ICollection<MediaFileTag> MediaTags { get; set; } = [];

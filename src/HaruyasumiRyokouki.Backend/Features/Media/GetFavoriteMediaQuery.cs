@@ -3,10 +3,10 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
-using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -15,7 +15,7 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
-public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthentificatedRequest
+public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
 	[SwaggerIgnore]
 	[JsonIgnore]
