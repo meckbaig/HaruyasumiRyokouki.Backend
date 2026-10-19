@@ -6,6 +6,7 @@ using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,7 +19,7 @@ public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, ILocal
 {
 	[SwaggerIgnore]
 	[JsonIgnore]
-	public string? AcceptLanguage { get; set; }
+	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
 	[SwaggerIgnore]
 	[JsonIgnore]

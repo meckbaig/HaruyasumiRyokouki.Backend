@@ -2,6 +2,7 @@ using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,7 @@ public record GetTagSuggestionQuery : IRequest<GetTagSuggestionResponse>, ILocal
 
 	[SwaggerIgnore]
 	[JsonIgnore]
-	public string? AcceptLanguage { get; set; }
+	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
 	[SwaggerIgnore]
 	[JsonIgnore]
@@ -47,7 +48,7 @@ internal class GetTagSuggestionQueryHandler : IRequestHandler<GetTagSuggestionQu
 
 		var tags = await _context.Tags
 			.Include(t => t.MediaTags.Where(mt => request.IsAuthenticated || (mt.Media.IsApproved && !mt.Media.Private)))
-			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedTags())
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(t => t.Translations.Any(l => EF.Functions.ILike(l.Text, likePattern)))
 			.OrderByDescending(t => t.MediaTags.Count)
 			.Select(t => t.ToSuggestionDto(request.AcceptLanguage))

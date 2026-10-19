@@ -1,4 +1,3 @@
-using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
@@ -6,6 +5,7 @@ using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +21,7 @@ public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisp
 
 	[SwaggerIgnore]
 	[JsonIgnore]
-	public string? AcceptLanguage { get; set; }
+	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
 	[SwaggerIgnore]
 	[JsonIgnore]
@@ -35,14 +35,6 @@ public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisp
 public class GetDayResponse
 {
 	public DayDto? Day { get; set; }
-}
-
-internal class GetDayQueryValidator : AbstractValidator<GetDayQuery>
-{
-	public GetDayQueryValidator()
-	{
-
-	}
 }
 
 internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
@@ -61,11 +53,11 @@ internal class GetDayQueryHandler : IRequestHandler<GetDayQuery, GetDayResponse>
 		var searchResults = await _context.Days
 			.AsNoTracking()
 			.Include(d => d.Media.Where(m => request.IsAuthenticated || (!m.Private && m.IsApproved)).OrderBy(d => d.Created))
-				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedMedia())
 			.Include(d => d.Media.Where(m => request.IsAuthenticated || (!m.Private && m.IsApproved)).OrderBy(d => d.Created))
 				.ThenInclude(m => m.Tags)
-					.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage!.LocalizedTags())
-			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
+					.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage.LocalizedDays())
 			.FirstOrDefaultAsync(d => d.Date == request.Date, cancellationToken);
 
 		if (searchResults == null)

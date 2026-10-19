@@ -6,6 +6,7 @@ using HaruyasumiRyokouki.Backend.Models.Db;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,7 @@ public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisp
 
 	[SwaggerIgnore]
 	[JsonIgnore]
-	public string? AcceptLanguage { get; set; }
+	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
 	[SwaggerIgnore]
 	[JsonIgnore]
@@ -99,12 +100,12 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 		var searchResults = await _context.Days
 			.AsNoTracking()
 			.Where(d => d.Media.AsQueryable().Any(mediaFilter))
-			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage.LocalizedDays())
 			.Include(d => d.Media.AsQueryable().Where(mediaFilter).OrderBy(m => m.Created))
-				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedMedia())
 			.Include(d => d.Media.AsQueryable().Where(mediaFilter).OrderBy(m => m.Created))
 				.ThenInclude(m => m.Tags)
-					.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedTags())
+					.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedTags())
 			.OrderByDescending(d => d.Date)
 			.ToListAsync(cancellationToken);
 		return searchResults;
@@ -130,12 +131,12 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 				d.Translations.Any(dt => EF.Functions.ILike(dt.Note, likePattern)) ||
 				d.Media.AsQueryable().Any(mediaFilter)
 			)
-			.IncludeFiltered(d => d.Translations, request.AcceptLanguage!.LocalizedDays())
+			.IncludeFiltered(d => d.Translations, request.AcceptLanguage.LocalizedDays())
 			.Include(d => d.Media.AsQueryable().Where(mediaFilter).OrderBy(m => m.Created))
-				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+				.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedMedia())
 			.Include(d => d.Media.AsQueryable().Where(mediaFilter).OrderBy(m => m.Created))
 				.ThenInclude(m => m.Tags)
-					.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedTags())
+					.ThenIncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedTags())
 			.OrderByDescending(d => d.Date)
 			.ToListAsync(cancellationToken);
 		return searchResults;

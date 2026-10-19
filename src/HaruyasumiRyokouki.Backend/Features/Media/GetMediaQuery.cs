@@ -6,6 +6,7 @@ using HaruyasumiRyokouki.Backend.Extensions.TypeExtensions;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ public record GetMediaQuery : IRequest<GetMediaResponse>, ILocalizableRequest, I
 
 	[SwaggerIgnore]
 	[JsonIgnore]
-	public string? AcceptLanguage { get; set; }
+	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
 	[SwaggerIgnore]
 	[JsonIgnore]
@@ -39,7 +40,8 @@ internal class GetMediaQueryValidator : AbstractValidator<GetMediaQuery>
 {
 	public GetMediaQueryValidator()
 	{
-		/// TODO: must have valid AcceptLanguage
+		RuleFor(x => x.To)
+			.GreaterThanOrEqualTo(x => x.From);
 	}
 }
 
@@ -66,7 +68,7 @@ internal class GetMediaQueryHandler : IRequestHandler<GetMediaQuery, GetMediaRes
 
 		var mediaFiles = await _context.MediaFiles
 			.AsNoTracking()
-			.IncludeFiltered(m => m.Translations, request.AcceptLanguage!.LocalizedMedia())
+			.IncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedMedia())
 			.Include(m => m.Tags)
 				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m =>

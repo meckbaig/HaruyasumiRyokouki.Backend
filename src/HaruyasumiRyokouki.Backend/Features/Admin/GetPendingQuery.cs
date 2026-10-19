@@ -6,6 +6,7 @@ using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 using HaruyasumiRyokouki.Backend.Models.InternalDtos;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -17,7 +18,7 @@ public record GetPendingQuery : IRequest<GetPendingResponse>, ILocalizableReques
 {
 	[SwaggerIgnore]
 	[JsonIgnore]
-	public string? AcceptLanguage { get; set; }
+	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
 	[SwaggerIgnore]
 	[JsonIgnore]
@@ -53,7 +54,7 @@ internal class GetPendingHandler : IRequestHandler<GetPendingQuery, GetPendingRe
 			.AsNoTracking()
 			.Include(m => m.Translations/*.Where(t => t.LanguageCode == request.AcceptLanguage)*/)
 			.Include(m => m.Tags)
-				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage!.LocalizedTags())
+				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
 			.Where(m => !m.IsApproved)
 			.OrderBy(m => m.Created)
 			.ToListAsync(cancellationToken);

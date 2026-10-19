@@ -8,6 +8,7 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using HaruyasumiRyokouki.Backend.Services.Translation;
 using HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 using Meckbaig.Cqrs.Abstractons;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ public record EditMediaCommand : IRequest<EditMediaResponse>, ILocalizableReques
 
 	[SwaggerIgnore]
 	[JsonIgnore]
-	public string? AcceptLanguage { get; set; }
+	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
 	public record BodyParameters
 	{

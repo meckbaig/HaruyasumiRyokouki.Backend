@@ -1,4 +1,6 @@
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
+using HaruyasumiRyokouki.Backend.Common.Helpers;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using MediatR;
 
 namespace HaruyasumiRyokouki.Backend.Common.Behaviours;
@@ -9,9 +11,9 @@ internal class LocalizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRe
 	private readonly IHttpContextAccessor _httpContextAccessor;
 
 	public static string HeaderName => "Accept-Language";
-	public static string Description => "Localization of response contents.";
+	public static string Description => $"Localization of response contents. Supported: {string.Join(", ", LanguageCode.Supported)}; defaults to '{LanguageCode.Default}'.";
 	public static string Example => "en";
-	public static bool Required => true;
+	public static bool Required => false;
 
 	public LocalizationBehavior(IHttpContextAccessor httpContextAccessor)
 	{
@@ -20,13 +22,8 @@ internal class LocalizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRe
 
 	public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
 	{
-		var httpContext = _httpContextAccessor.HttpContext;
-		if (httpContext != null)
-		{
-			request.AcceptLanguage = httpContext.Request.Headers.AcceptLanguage.ToString();
-		}
-		
-		/// TODO: add validation and default???
+		var header = _httpContextAccessor.HttpContext?.Request.Headers.AcceptLanguage.ToString();
+		request.AcceptLanguage = AcceptLanguageParser.Resolve(header);
 
 		return await next(cancellationToken);
 	}
