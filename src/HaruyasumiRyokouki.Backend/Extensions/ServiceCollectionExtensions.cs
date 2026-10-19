@@ -129,16 +129,10 @@ internal static class ServiceCollectionExtensions
 		return services;
 	}
 
-	internal static IServiceCollection AddDatabaseConnection(this IServiceCollection services)
+	internal static IServiceCollection AddDatabaseConnection(this IServiceCollection services, IConfiguration configuration)
 	{
-		var connectionOptions = services
-			.BuildServiceProvider()
-			.GetRequiredService<IOptions<ConnectionStringsOptions>>()
-			.Value;
-		var applicationOptions = services
-			.BuildServiceProvider()
-			.GetRequiredService<IOptions<ApplicationOptions>>()
-			.Value;
+		var connectionOptions = configuration.GetOptions<ConnectionStringsOptions>(ConnectionStringsOptions.ConfigurationSectionName);
+		var applicationOptions = configuration.GetOptions<ApplicationOptions>(ApplicationOptions.ConfigurationSectionName);
 
 		return services.AddDbContext<IAppDbContext, AppDbContext>
 		(
@@ -231,14 +225,11 @@ internal static class ServiceCollectionExtensions
 		return services;
 	}
 
-	internal static IServiceCollection AddFileStorageProvider(this IServiceCollection services)
+	internal static IServiceCollection AddFileStorageProvider(this IServiceCollection services, IConfiguration configuration)
 	{
-		var storageOptions = services
-			.BuildServiceProvider()
-			.GetRequiredService<IOptions<MediaStorageOptions>>()
-			.Value;
+		var storageOptions = configuration.GetOptions<MediaStorageOptions>(MediaStorageOptions.ConfigurationSectionName);
 
-		switch (storageOptions!.Provider)
+		switch (storageOptions.Provider)
 		{
 			case MediaStorageOptions.FileStorageProvider.Local:
 				services.AddSingleton<IFileStorage, LocalFileStorageService>();
@@ -271,12 +262,9 @@ internal static class ServiceCollectionExtensions
 		return services;
 	}
 
-	internal static IServiceCollection AddMediaPreviewProvider(this IServiceCollection services)
+	internal static IServiceCollection AddMediaPreviewProvider(this IServiceCollection services, IConfiguration configuration)
 	{
-		var previewOptions = services
-			.BuildServiceProvider()
-			.GetRequiredService<IOptions<MediaPreviewOptions>>()
-			.Value;
+		var previewOptions = configuration.GetOptions<MediaPreviewOptions>(MediaPreviewOptions.ConfigurationSectionName);
 
 		switch (previewOptions.Provider)
 		{
@@ -296,17 +284,24 @@ internal static class ServiceCollectionExtensions
 		return services;
 	}
 
-	internal static IServiceCollection AddAppHealthChecks(this IServiceCollection services)
+	internal static IServiceCollection AddAppHealthChecks(this IServiceCollection services, IConfiguration configuration)
 	{
-		var connectionOptions = services
-			.BuildServiceProvider()
-			.GetRequiredService<IOptions<ConnectionStringsOptions>>()
-			.Value;
+		var connectionOptions = configuration.GetOptions<ConnectionStringsOptions>(ConnectionStringsOptions.ConfigurationSectionName);
 
 		services.AddHealthChecks()
 			.AddNpgSql(connectionOptions.Default, name: "database");
 
 		return services;
+	}
+
+	/// <summary>
+	/// Binds an options section directly from configuration, for decisions made while registering services.
+	/// The options are still validated on startup by their <see cref="IValidateOptions{TOptions}"/>.
+	/// </summary>
+	private static TOptions GetOptions<TOptions>(this IConfiguration configuration, string sectionName) where TOptions : class
+	{
+		return configuration.GetSection(sectionName).Get<TOptions>()
+			?? throw new OptionsValidationException(sectionName, typeof(TOptions), [$"'{sectionName}' must not be null."]);
 	}
 
 	internal static IServiceCollection AddOpenTelemetryMetrics(this IServiceCollection services)
@@ -336,7 +331,6 @@ internal static class ServiceCollectionExtensions
 
 	internal static IServiceCollection AddTranslationServices(this IServiceCollection services)
 	{
-		services.AddSingleton<ITranslationOptionsParser, TranslationOptionsParser>();
 		services.AddSingleton<ITranslationServiceOptionsAccessor, TranslationServiceOptionsAccessor>();
 		services.AddSingleton<IContentTranslationServiceFactory, ContentTranslationServiceFactory>();
 

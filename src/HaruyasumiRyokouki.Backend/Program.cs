@@ -16,7 +16,7 @@ try
 	builder.Services.AddAppOptions();
 	Log.Logger = builder.CreateCompleteLogger();
 	builder.Logging.ClearProviders().AddSerilog(Log.Logger);
-	builder.Services.AddDatabaseConnection();
+	builder.Services.AddDatabaseConnection(builder.Configuration);
 	builder.Services.AddTransient<IMediaProcessorService, MediaProcessorService>();
 	builder.Services.AddScoped<IMediaSyncService, MediaSyncService>();
 	builder.Services.AddSingleton<IFfmpegService, FfmpegService>();
@@ -27,15 +27,15 @@ try
 	builder.Services.AddTranslationServices();
 	builder.Services.AddHostedService<SimilarityWarmupBackgroundService>();
 	builder.Services.AddRemovalQueue();
-	builder.Services.AddFileStorageProvider();
-	builder.Services.AddMediaPreviewProvider();
+	builder.Services.AddFileStorageProvider(builder.Configuration);
+	builder.Services.AddMediaPreviewProvider(builder.Configuration);
 	builder.Services.AddControllersWithJsonNamingPolicy();
 	builder.Services.AddHttpClient();
 	builder.Services.AddHttpContextAccessor();
 	builder.Services.AddMediatRFromAssembly();
 	builder.Services.AddValidatorsFromAssembly();
 	builder.Services.AddSwaggerSupport();
-	builder.Services.AddAppHealthChecks();
+	builder.Services.AddAppHealthChecks(builder.Configuration);
 	builder.Services.AddOpenTelemetryMetrics();
 	builder.Services.AddBasicAuthentication();
 	builder.Services.AddAuthorization();
