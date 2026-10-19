@@ -14,15 +14,15 @@ internal class MediaProcessorService : IMediaProcessorService
 	private readonly IFfmpegService _ffmpegService;
 	private readonly MediaFormatOptions _mediaFormatOptions;
 
-	private static readonly HashSet<string> ImageExtensions =
-	[
+	private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+	{
 		".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff", ".heic", ".heif", ".avif"
-	];
+	};
 
-	private static readonly HashSet<string> VideoExtensions =
-	[
+	private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
+	{
 		".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg"
-	];
+	};
 
 	private const string VideoWebSuffix = "_web";
 	private const string VideoPreviewSuffix = "_preview";
