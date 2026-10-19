@@ -1,4 +1,5 @@
 using FluentValidation;
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
@@ -49,7 +50,8 @@ internal class SearchQueryValidator : AbstractValidator<SearchQuery>
 {
 	public SearchQueryValidator()
 	{
-		RuleFor(x => x).Must(x => !string.IsNullOrWhiteSpace(x.Text) || !string.IsNullOrWhiteSpace(x.Tag) || x.TagId.HasValue);
+		RuleFor(x => x).Must(x => !string.IsNullOrWhiteSpace(x.Text) || !string.IsNullOrWhiteSpace(x.Tag) || x.TagId.HasValue)
+			.WithMessage("Text, tag or tagId must be specified.");
 	}
 }
 
@@ -66,7 +68,8 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 	public async Task<SearchResponse> Handle(SearchQuery request, CancellationToken cancellationToken)
 	{
-		var searchFunction = request.Text != null 
+		// Text has priority, tags are used only when there is no text.
+		var searchFunction = !string.IsNullOrWhiteSpace(request.Text)
 			? SearchByTextAsync(request, cancellationToken)
 			: SearchByTagAsync(request, cancellationToken);
 
@@ -89,10 +92,11 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			mediaFilter = m => (request.IsAuthenticated || (m.IsApproved && !m.Private))
 								&&	m.MediaTags.Any(t => t.TagId == request.TagId!.Value);
 		}
-		if (request.Tag != null)
+		if (!string.IsNullOrWhiteSpace(request.Tag))
 		{
+			string tagPattern = LikePattern.Exact(request.Tag);
 			mediaFilter = m => (request.IsAuthenticated || (m.IsApproved && !m.Private))
-								&& m.Tags.Any(t => EF.Functions.ILike(t.Slug, request.Tag));
+								&& m.Tags.Any(t => EF.Functions.ILike(t.Slug, tagPattern, LikePattern.EscapeCharacter));
 		}
 		if (mediaFilter == null)
 			throw new ArgumentNullException("Media filter is null.");
@@ -113,22 +117,23 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 	private async Task<List<Day>> SearchByTextAsync(SearchQuery request, CancellationToken cancellationToken)
 	{
-		string likePattern = $"%{request.Text}%";
+		string likePattern = LikePattern.Contains(request.Text!);
+		string tagPattern = LikePattern.Exact(request.Text!);
 
 		Expression<Func<MediaFile, bool>> mediaFilter = m =>
 			(request.IsAuthenticated || (m.IsApproved && !m.Private)) &&
 			(
 				m.Translations.Any(mt =>
-					EF.Functions.ILike(mt.Title, likePattern) ||
-					EF.Functions.ILike(mt.Description, likePattern)) ||
+					EF.Functions.ILike(mt.Title, likePattern, LikePattern.EscapeCharacter) ||
+					EF.Functions.ILike(mt.Description, likePattern, LikePattern.EscapeCharacter)) ||
 				m.Tags.Any(t => t.Translations.Any(l =>
-						EF.Functions.ILike(l.Text, request.Text)))
+						EF.Functions.ILike(l.Text, tagPattern, LikePattern.EscapeCharacter)))
 			);
 
 		var searchResults = await _context.Days
 			.AsNoTracking()
 			.Where(d =>
-				d.Translations.Any(dt => EF.Functions.ILike(dt.Note, likePattern)) ||
+				d.Translations.Any(dt => EF.Functions.ILike(dt.Note, likePattern, LikePattern.EscapeCharacter)) ||
 				d.Media.AsQueryable().Any(mediaFilter)
 			)
 			.IncludeFiltered(d => d.Translations, request.AcceptLanguage.LocalizedDays())

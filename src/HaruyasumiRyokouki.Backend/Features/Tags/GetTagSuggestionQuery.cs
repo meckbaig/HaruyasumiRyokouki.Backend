@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
@@ -44,12 +45,12 @@ internal class GetTagSuggestionQueryHandler : IRequestHandler<GetTagSuggestionQu
 
 	public async Task<GetTagSuggestionResponse> Handle(GetTagSuggestionQuery request, CancellationToken cancellationToken)
 	{
-		string likePattern = $"%{request.Text}%";
+		string likePattern = LikePattern.Contains(request.Text);
 
 		var tags = await _context.Tags
 			.Include(t => t.MediaTags.Where(mt => request.IsAuthenticated || (mt.Media.IsApproved && !mt.Media.Private)))
 			.IncludeFiltered(d => d.Translations, request.AcceptLanguage.LocalizedTags())
-			.Where(t => t.Translations.Any(l => EF.Functions.ILike(l.Text, likePattern)))
+			.Where(t => t.Translations.Any(l => EF.Functions.ILike(l.Text, likePattern, LikePattern.EscapeCharacter)))
 			.OrderByDescending(t => t.MediaTags.Count)
 			.Select(t => t.ToSuggestionDto(request.AcceptLanguage))
 			.Take(request.Take)

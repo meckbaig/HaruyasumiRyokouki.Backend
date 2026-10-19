@@ -1,3 +1,4 @@
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
@@ -121,12 +122,12 @@ Output rules:
 
 	private async Task<IEnumerable<TagDto>> FindExistingTagsAsync(GetTagCompletionCommand request, CancellationToken cancellationToken)
 	{
-		string likePattern = $"%{request.Body.Tag}%";
+		string likePattern = LikePattern.Contains(request.Body.Tag);
 
 		var existingTags = await _context.Tags
 			.Include(t => t.MediaTags)
 			.Include(d => d.Translations)
-			.Where(t => t.Translations.Any(l => EF.Functions.ILike(l.Text, likePattern)))
+			.Where(t => t.Translations.Any(l => EF.Functions.ILike(l.Text, likePattern, LikePattern.EscapeCharacter)))
 			.OrderByDescending(t => t.MediaTags.Count)
 			.Select(t => new { Tag = t, Count = t.MediaTags.Count })
 			.Take(8)
