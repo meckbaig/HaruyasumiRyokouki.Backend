@@ -1,8 +1,10 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Extensions;
 using HaruyasumiRyokouki.Backend.Models.Db;
+using HaruyasumiRyokouki.Backend.Models.Db.Enums;
 using HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using HaruyasumiRyokouki.Backend.Services.Translation;
@@ -35,26 +37,45 @@ public class EditDayResponse : BaseResponse
 	public required DayEditDto Day { get; init; }
 }
 
-/// TODO
-//internal class EditDayValidator : AbstractValidator<EditDayCommand>
-//{
-//	public EditDayValidator()
-//	{
-//		RuleFor(x => x.Body)
-//			.NotNull()
-//			.SetValidator(new BodyParametersValidator());
-//	}
+internal class EditDayValidator : AbstractValidator<EditDayCommand>
+{
+	public EditDayValidator()
+	{
+		RuleFor(x => x.Body)
+			.NotNull()
+			.SetValidator(new BodyParametersValidator());
+	}
 
-//	internal class BodyParametersValidator : AbstractValidator<BodyParameters>
-//	{
-//		public BodyParametersValidator()
-//		{
-//			RuleFor(x => x.MediaFile)
-//				.NotNull()
-//				.SetValidator(new DayEditDto.Validator());
-//		}
-//	}
-//}
+	internal class BodyParametersValidator : AbstractValidator<EditDayCommand.BodyParameters>
+	{
+		public BodyParametersValidator()
+		{
+			RuleFor(x => x.Day)
+				.NotNull()
+				.SetValidator(new DayEditDtoValidator());
+		}
+	}
+
+	internal class DayEditDtoValidator : AbstractValidator<DayEditDto>
+	{
+		public DayEditDtoValidator()
+		{
+			RuleFor(x => x.Translations)
+				.NotNull()
+				.Must(t => t.DistinctBy(x => x.LanguageCode).Count() == t.Count)
+				.WithMessage("Translations must have at most one variation for each language.");
+			RuleForEach(x => x.Translations)
+				.ChildRules(translation =>
+				{
+					translation.RuleFor(t => t.LanguageCode)
+						.Must(LanguageCode.IsSupported)
+						.WithMessage($"Language code must be one of: {string.Join(", ", LanguageCode.Supported)}.");
+					translation.RuleFor(t => t.Note)
+						.NotNull();
+				});
+		}
+	}
+}
 
 internal class EditDayHandler : IRequestHandler<EditDayCommand, EditDayResponse>
 {
