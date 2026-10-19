@@ -35,7 +35,7 @@ internal class MediaProcessorService : IMediaProcessorService
 		{
 			var mediaInput = await _fileStorage.GetMediaInputAsync(fileName);
 			var info = await _ffmpegService.GetVideoInfoAsync(mediaInput);
-			return info.Bitrate > (25 * 1024 * 1024);
+			return info.Bitrate > _mediaFormatOptions.VideoConversionBitrateThreshold;
 		}
 		throw new NotImplementedException();
 	}

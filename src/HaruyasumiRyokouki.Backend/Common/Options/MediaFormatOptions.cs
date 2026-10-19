@@ -16,6 +16,12 @@ sealed class MediaFormatOptions
 
 	public required int FavoritesReturnCount { get; set; }
 
+	/// <summary>
+	/// Video bitrate (bits per second) above which a lower bitrate version for streaming
+	/// (<c>*_web</c>) is created during sync. Default is 25 * 1024 * 1024.
+	/// </summary>
+	public long VideoConversionBitrateThreshold { get; set; } = 25 * 1024 * 1024;
+
 	public IReadOnlyCollection<TravelDateOffset> TravelDateOffsets { get; set; } = [];
 
 	public sealed class TravelDateOffset

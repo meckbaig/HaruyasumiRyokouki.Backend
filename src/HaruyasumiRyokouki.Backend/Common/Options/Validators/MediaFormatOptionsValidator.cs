@@ -50,6 +50,11 @@ sealed class MediaFormatOptionsValidator : IValidateOptions<MediaFormatOptions>
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
 				$"{nameof(MediaFormatOptions.FavoritesReturnCount)}' must be greater than 0.");
 		}
+		if (options.VideoConversionBitrateThreshold <= 0)
+		{
+			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
+				$"{nameof(MediaFormatOptions.VideoConversionBitrateThreshold)}' must be greater than 0.");
+		}
 		if (options.TravelDateOffsets == null || options.TravelDateOffsets.Count == 0)
 		{
 			failures.AppendLine($"'{MediaFormatOptions.ConfigurationSectionName}:" +
