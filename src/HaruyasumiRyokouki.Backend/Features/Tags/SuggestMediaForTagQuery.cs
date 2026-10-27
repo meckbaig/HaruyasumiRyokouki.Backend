@@ -1,3 +1,4 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
@@ -35,6 +36,17 @@ public class SuggestMediaForTagResponse
 {
 	public required int SeedCount { get; init; }
 	public required ICollection<SuggestedMediaDto> Items { get; init; }
+}
+
+internal class SuggestMediaForTagQueryValidator : AbstractValidator<SuggestMediaForTagQuery>
+{
+	public SuggestMediaForTagQueryValidator()
+	{
+		RuleFor(x => x.Id)
+			.GreaterThan(0);
+		RuleFor(x => x.Take)
+			.GreaterThan(0);
+	}
 }
 
 internal class SuggestMediaForTagQueryHandler : IRequestHandler<SuggestMediaForTagQuery, SuggestMediaForTagResponse>

@@ -1,3 +1,4 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
@@ -29,6 +30,25 @@ public class GetTagCompletionResponse
 {
 	public required TagDto Tag { get; set; }
 	public required ICollection<TagDto> SimilarExisting { get; set; }
+}
+
+internal class GetTagCompletionValidator : AbstractValidator<GetTagCompletionCommand>
+{
+	public GetTagCompletionValidator()
+	{
+		RuleFor(x => x.Body)
+			.NotNull()
+			.SetValidator(new BodyParametersValidator());
+	}
+
+	internal class BodyParametersValidator : AbstractValidator<GetTagCompletionCommand.BodyParameters>
+	{
+		public BodyParametersValidator()
+		{
+			RuleFor(x => x.Tag)
+				.NotEmpty();
+		}
+	}
 }
 
 internal class GetTagCompletionHandler : IRequestHandler<GetTagCompletionCommand, GetTagCompletionResponse>

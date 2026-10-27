@@ -1,3 +1,4 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.DbContexts;
@@ -32,6 +33,17 @@ public record GetTagSuggestionQuery : IRequest<GetTagSuggestionResponse>, ILocal
 public class GetTagSuggestionResponse
 {
 	public required ICollection<TagSuggestionDto> Items { get; set; }
+}
+
+internal class GetTagSuggestionQueryValidator : AbstractValidator<GetTagSuggestionQuery>
+{
+	public GetTagSuggestionQueryValidator()
+	{
+		RuleFor(x => x.Text)
+			.NotEmpty();
+		RuleFor(x => x.Take)
+			.GreaterThan(0);
+	}
 }
 
 internal class GetTagSuggestionQueryHandler : IRequestHandler<GetTagSuggestionQuery, GetTagSuggestionResponse>

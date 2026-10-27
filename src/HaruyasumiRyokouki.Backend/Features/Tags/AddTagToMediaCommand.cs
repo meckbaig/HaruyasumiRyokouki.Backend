@@ -1,3 +1,4 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using MediatR;
@@ -23,6 +24,27 @@ public record AddTagToMediaCommand : IRequest<AddTagToMediaResponse>
 public class AddTagToMediaResponse
 {
 	public int Affected { get; set; }
+}
+
+internal class AddTagToMediaValidator : AbstractValidator<AddTagToMediaCommand>
+{
+	public AddTagToMediaValidator()
+	{
+		RuleFor(x => x.Id)
+			.GreaterThan(0);
+		RuleFor(x => x.Body)
+			.NotNull()
+			.SetValidator(new BodyParametersValidator());
+	}
+
+	internal class BodyParametersValidator : AbstractValidator<AddTagToMediaCommand.BodyParameters>
+	{
+		public BodyParametersValidator()
+		{
+			RuleFor(x => x.MediaFileIds)
+				.NotEmpty();
+		}
+	}
 }
 
 internal class AddTagToMediaHandler : IRequestHandler<AddTagToMediaCommand, AddTagToMediaResponse>

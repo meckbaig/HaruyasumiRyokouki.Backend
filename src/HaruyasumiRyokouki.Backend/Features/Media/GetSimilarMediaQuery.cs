@@ -1,3 +1,4 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Abstractions;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
@@ -33,6 +34,17 @@ public record GetSimilarMediaQuery : IRequest<GetSimilarMediaResponse>, IDisplay
 public class GetSimilarMediaResponse
 {
 	public required IReadOnlyCollection<SuggestedMediaDto> Items { get; init; }
+}
+
+internal class GetSimilarMediaQueryValidator : AbstractValidator<GetSimilarMediaQuery>
+{
+	public GetSimilarMediaQueryValidator()
+	{
+		RuleFor(x => x.Id)
+			.GreaterThan(0);
+		RuleFor(x => x.Take)
+			.GreaterThan(0);
+	}
 }
 
 internal class GetSimilarMediaQueryHandler : IRequestHandler<GetSimilarMediaQuery, GetSimilarMediaResponse>

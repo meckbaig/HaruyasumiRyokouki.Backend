@@ -1,3 +1,4 @@
+using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Exceptions;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
@@ -16,6 +17,15 @@ public record DeleteMediaCommand : IRequest<DeleteMediaResponse>
 
 public class DeleteMediaResponse : BaseResponse
 {
+}
+
+internal class DeleteMediaValidator : AbstractValidator<DeleteMediaCommand>
+{
+	public DeleteMediaValidator()
+	{
+		RuleFor(x => x.MediaId)
+			.GreaterThan(0);
+	}
 }
 
 internal class DeleteMediaHandler : IRequestHandler<DeleteMediaCommand, DeleteMediaResponse>
