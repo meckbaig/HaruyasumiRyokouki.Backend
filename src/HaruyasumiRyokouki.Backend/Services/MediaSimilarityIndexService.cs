@@ -11,9 +11,9 @@ namespace HaruyasumiRyokouki.Backend.Services;
 internal class MediaSimilarityIndexService : IMediaSimilarityIndexService
 {
 	private readonly ILogger<MediaSimilarityIndexService> _logger;
-	private readonly SimilaritySearchOptions _options;
+	private readonly ApplicationOptions _options;
 
-	public MediaSimilarityIndexService(ILogger<MediaSimilarityIndexService> logger, IOptions<SimilaritySearchOptions> options)
+	public MediaSimilarityIndexService(ILogger<MediaSimilarityIndexService> logger, IOptions<ApplicationOptions> options)
 	{
 		_logger = logger;
 		_options = options.Value;
@@ -43,7 +43,7 @@ internal class MediaSimilarityIndexService : IMediaSimilarityIndexService
 
 	public bool IsLoaded => _ids.Length > 0;
 	public int Count => _ids.Length;
-	public bool IsEnabled => _options.Enabled;
+	public bool IsEnabled => _options.SimilaritySearchEnabled;
 
 	public async Task EnsureLoadedAsync(IAppDbContext context, CancellationToken cancellationToken = default)
 	{

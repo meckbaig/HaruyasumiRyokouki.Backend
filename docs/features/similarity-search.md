@@ -11,7 +11,6 @@ Finds media that look alike by comparing image embeddings. Two admin endpoints u
 | `Services/BackgroundServices/SimilarityWarmupBackgroundService.cs` | Loads the index on startup. |
 | `Features/Media/GetSimilarMediaQuery.cs` | `GET /v1/media/{id}/similar?take=50`. |
 | `Features/Tags/SuggestMediaForTagQuery.cs` | `GET /v1/tags/{id}/suggest?take=300`. |
-| `Common/Options/SimilaritySearchOptions.cs` | `SimilaritySearch:Enabled`. |
 | `Common/HealthChecks/SimilaritySearchHealthCheck.cs` | `similarity-search` entry of `/health`. |
 | `Models/Db/MediaEmbedding.cs` | `media_embeddings`: media id, 768-float vector, model name. |
 
@@ -38,7 +37,7 @@ items when fewer than 3 media have the tag** - too few to describe the subject.
 
 ## Switching it off
 
-`SimilaritySearch:Enabled = false` skips loading the vectors (they take memory: about 3 KB per
+`Application:SimilaritySearchEnabled = false` skips loading the vectors (they take memory: about 3 KB per
 media) and makes both endpoints return **503**. `/health` reports the check as `Healthy` with
 `Disabled.`; enabled with no vectors loaded is `Unhealthy`, which makes the overall status
 `Degraded` because the component is optional.

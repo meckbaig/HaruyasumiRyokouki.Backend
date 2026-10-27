@@ -18,7 +18,7 @@ internal interface IMediaSimilarityIndexService
 	bool IsLoaded { get; }
 
 	/// <summary>
-	/// Whether the similarity search is enabled in <see cref="Common.Options.SimilaritySearchOptions"/>.
+	/// Whether the similarity search is enabled by <see cref="Common.Options.ApplicationOptions.SimilaritySearchEnabled"/>.
 	/// </summary>
 	bool IsEnabled { get; }
 

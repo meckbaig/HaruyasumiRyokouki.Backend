@@ -102,6 +102,7 @@ Everything else is fixed.
 | `AdminLogin`, `AdminPassword` | Credentials of the single administrator (HTTP Basic authentication). |
 | `MaxFailedLoginAttempts` | Failed authentication attempts from one IP after which further attempts get `429`. Default `10`. |
 | `FailedLoginLockoutMinutes` | Window in minutes in which failed attempts are counted; also the lockout duration. Default `15`. |
+| `SimilaritySearchEnabled` | Search of similar media by image embeddings from the `media_embeddings` table (filled by an external tool). `false` skips loading the vectors into memory, and the similarity endpoints return `503`. Default `true`. |
 
 ### SwaggerAuth
 
@@ -219,14 +220,6 @@ AI and translation services used for auto-translation of days and media and for 
 |---|---|
 | `Proxy:Enabled`, `Proxy:Address` | Proxy passed to yt-dlp, for servers where YouTube is blocked. |
 
-### SimilaritySearch
-
-Search of similar media (`GET /v1/media/{id}/similar`) and media suggestions for a tag (`GET /v1/tags/{id}/suggest`) by image embeddings from the `media_embeddings` table. The backend does not compute embeddings: the table is filled by an external tool, so only media that were in that import can be found.
-
-| Key | Description |
-|---|---|
-| `Enabled` | `true` loads all vectors into memory on startup. `false` skips loading, and both endpoints return `503`. Default `true`. |
-
 ### Logging
 
 | Section | Description |
@@ -257,7 +250,7 @@ Search of similar media (`GET /v1/media/{id}/similar`) and media suggestions for
 | `database` | Yes | Connection to PostgreSQL. |
 | `storage` | Yes | `Local`: the media folder exists. `WebDav`: `PROPFIND` of the media folder succeeds with the configured credentials. |
 | `preview` | Yes | The preview service answers on its status URL: `<Endpoint>/health` for imgproxy, `<Endpoint>/status.php` for Nextcloud. |
-| `similarity-search` | No | Number of loaded vectors. `Disabled` when `SimilaritySearch:Enabled` is `false`; unhealthy when the search is enabled but no vectors are loaded. |
+| `similarity-search` | No | Number of loaded vectors. `Disabled` when `Application:SimilaritySearchEnabled` is `false`; unhealthy when the search is enabled but no vectors are loaded. |
 | `ffmpeg`, `ffprobe` | No | The tool starts; its version is shown. Needed for media sync. |
 | `yt-dlp` | No | The tool starts; its version is shown. Needed only for YouTube import. |
 

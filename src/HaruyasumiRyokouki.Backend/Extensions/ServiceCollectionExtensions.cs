@@ -85,9 +85,6 @@ internal static class ServiceCollectionExtensions
 		services
 			.AddOptionsWithValidateOnStart<FileLogOptions>()
 			.BindConfiguration(FileLogOptions.ConfigurationSectionName);
-		services
-			.AddOptions<SimilaritySearchOptions>()
-			.BindConfiguration(SimilaritySearchOptions.ConfigurationSectionName);
 
 		services.AddTranslationProviderOptions();
 

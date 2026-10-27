@@ -43,4 +43,13 @@ sealed class ApplicationOptions
 	/// are counted; it is also the lockout duration once <see cref="MaxFailedLoginAttempts"/> is reached.
 	/// </summary>
 	public int FailedLoginLockoutMinutes { get; set; } = 15;
+
+	/// <summary>
+	/// Enables the search of similar media by image embeddings.
+	/// </summary>
+	/// <remarks>
+	/// When disabled, the embeddings are not loaded into memory and the similarity endpoints return
+	/// <see cref="StatusCodes.Status503ServiceUnavailable"/>.
+	/// </remarks>
+	public bool SimilaritySearchEnabled { get; set; } = true;
 }
