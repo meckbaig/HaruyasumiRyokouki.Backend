@@ -11,17 +11,20 @@ public enum ImageUrlType
 	Download,
 
 	/// <summary>
-	/// Original file through imgproxy. Not supported by the Nextcloud provider and not used in DTOs.
+	/// Original file through imgproxy.
 	/// </summary>
+	/// <remarks>
+	/// Not supported by the Nextcloud provider and not used in DTOs.
+	/// </remarks>
 	Original,
 
 	/// <summary>
-	/// Resized for the client screen.
+	/// Image resized for the screen of the client.
 	/// </summary>
 	FullScreen,
 
 	/// <summary>
-	/// Resized thumbnail.
+	/// Thumbnail for grids and lists.
 	/// </summary>
 	Preview
 }

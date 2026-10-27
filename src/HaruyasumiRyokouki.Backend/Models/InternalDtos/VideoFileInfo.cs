@@ -1,7 +1,7 @@
 namespace HaruyasumiRyokouki.Backend.Models.InternalDtos;
 
 /// <summary>
-/// Video properties read by ffprobe.
+/// Properties of a video read by ffprobe.
 /// </summary>
 public record VideoFileInfo
 {

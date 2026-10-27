@@ -6,22 +6,28 @@ namespace HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 public record MediaTranslationEditDto
 {
 	/// <summary>
-	/// Translation id; ignored on input.
+	/// Identifier of the translation.
 	/// </summary>
+	/// <remarks>
+	/// Ignored on input.
+	/// </remarks>
 	public int Id { get; set; }
 
 	/// <summary>
-	/// Language code: <c>en</c>, <c>ru</c> or <c>ja</c>.
+	/// Language of the text: <c>en</c>, <c>ru</c> or <c>ja</c>.
 	/// </summary>
+	/// <remarks>
+	/// See <see cref="Db.Enums.LanguageCode"/>.
+	/// </remarks>
 	public string LanguageCode { get; set; } = null!;
 
 	/// <summary>
-	/// Title.
+	/// Title written by the author.
 	/// </summary>
 	public string? Title { get; set; }
 
 	/// <summary>
-	/// Description.
+	/// Description written by the author.
 	/// </summary>
 	public string? Description { get; set; }
 }

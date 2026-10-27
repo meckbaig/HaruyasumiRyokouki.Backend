@@ -5,27 +5,36 @@ using Meckbaig.Cqrs.Dto.Abstractions;
 namespace HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 
 /// <summary>
-/// New tag. All texts of the tag, translations and aliases, must be different.
+/// New tag.
 /// </summary>
+/// <remarks>
+/// All texts of the tag, display names and aliases in all languages, must be different.
+/// </remarks>
 public record CreateTagDto : IEditDto
 {
 	/// <summary>
-	/// Unique tag key, used in links (<c>/v1/search?tag=</c>).
+	/// Unique key of the tag in English, e.g. <c>cherry_blossom</c>.
 	/// </summary>
+	/// <remarks>
+	/// Used in links to the tag search: <c>GET /v1/search?tag=cherry_blossom</c>.
+	/// </remarks>
 	public string Slug { get; set; }
 
 	/// <summary>
-	/// Display names, at most one per language.
+	/// Display names of the tag, at most one per language.
 	/// </summary>
 	public ICollection<TagTranslationDto> Translations { get; set; }
 
 	/// <summary>
-	/// Additional search texts in any supported language; not displayed.
+	/// Search aliases of the tag: synonyms and spelling variants in any supported language.
 	/// </summary>
+	/// <remarks>
+	/// Aliases are never displayed. They let the tag be found by other words.
+	/// </remarks>
 	public ICollection<TagTranslationDto> Aliases { get; set; }
 
 	/// <summary>
-	/// Entity type the DTO edits.
+	/// Entity created from the DTO.
 	/// </summary>
 	public static Type GetOriginType() => typeof(Tag);
 
@@ -61,8 +70,11 @@ public record CreateTagDto : IEditDto
 		}
 
 		/// <summary>
-		/// Texts used more than once among all translations and aliases (unique per tag in the database, regardless of language).
+		/// Returns the texts used more than once among all display names and aliases.
 		/// </summary>
+		/// <remarks>
+		/// Texts are unique per tag in the database, regardless of the language.
+		/// </remarks>
 		private static IEnumerable<string> FindDuplicateTexts(CreateTagDto dto)
 		{
 			return (dto.Translations ?? []).Concat(dto.Aliases ?? [])

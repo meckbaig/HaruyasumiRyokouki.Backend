@@ -1,13 +1,16 @@
 namespace HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 
 /// <summary>
-/// Tag found by <c>GET /v1/tags/suggestion</c>.
+/// Tag suggested while the user types a search.
 /// </summary>
 public record TagSuggestionDto
 {
 	/// <summary>
-	/// Unique tag key, used in links (<c>/v1/search?tag=</c>).
+	/// Unique key of the tag in English, e.g. <c>cherry_blossom</c>.
 	/// </summary>
+	/// <remarks>
+	/// Used in links to the tag search: <c>GET /v1/search?tag=cherry_blossom</c>.
+	/// </remarks>
 	public required string Slug { get; set; }
 
 	/// <summary>

@@ -6,38 +6,44 @@ namespace HaruyasumiRyokouki.Backend.Models.Db;
 public class MediaTranslation
 {
 	/// <summary>
-	/// Id.
+	/// Identifier of the translation.
 	/// </summary>
 	public int Id { get; set; }
 
 	/// <summary>
-	/// Media file id.
+	/// Identifier of the <see cref="MediaFile"/>.
 	/// </summary>
 	public int MediaFileId { get; set; }
 
 	/// <summary>
-	/// Language code: <c>en</c>, <c>ru</c> or <c>ja</c>.
+	/// Language of the text: <c>en</c>, <c>ru</c> or <c>ja</c>.
 	/// </summary>
+	/// <remarks>
+	/// See <see cref="Db.Enums.LanguageCode"/>.
+	/// </remarks>
 	public string LanguageCode { get; set; } = null!;
 
 	/// <summary>
-	/// Title.
+	/// Title written by the author.
 	/// </summary>
 	public string? Title { get; set; }
 
 	/// <summary>
-	/// Description.
+	/// Description written by the author.
 	/// </summary>
 	public string? Description { get; set; }
 
 	/// <summary>
-	/// The media file.
+	/// The media file of the translation.
 	/// </summary>
 	public MediaFile MediaFile { get; set; }
 
 	/// <summary>
-	/// Copy without ids, to add the same texts to another media file.
+	/// Creates a copy without identifiers.
 	/// </summary>
+	/// <remarks>
+	/// Used to add the same texts to several media files edited together.
+	/// </remarks>
 	public MediaTranslation Clone()
 	{
 		return new MediaTranslation

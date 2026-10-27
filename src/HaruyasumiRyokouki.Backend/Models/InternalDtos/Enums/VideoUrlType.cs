@@ -11,12 +11,12 @@ public enum VideoUrlType
 	Download,
 
 	/// <summary>
-	/// File for playback: the lower bitrate <c>_web</c> version when it exists, otherwise the original.
+	/// File to play: the lower bitrate <c>_web</c> version when it exists, otherwise the original.
 	/// </summary>
 	Stream,
 
 	/// <summary>
-	/// Resized preview image of the video.
+	/// Preview image of the video resized as a thumbnail.
 	/// </summary>
 	Preview
 }

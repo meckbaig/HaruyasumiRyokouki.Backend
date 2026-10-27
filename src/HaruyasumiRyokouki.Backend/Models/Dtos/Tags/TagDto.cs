@@ -1,28 +1,34 @@
 namespace HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 
 /// <summary>
-/// Tag with all texts, for the admin.
+/// Tag with all texts, for the editor.
 /// </summary>
 public record TagDto
 {
 	/// <summary>
-	/// Tag id.
+	/// Identifier of the tag.
 	/// </summary>
 	public int Id { get; set; }
 
 	/// <summary>
-	/// Unique tag key, used in links (<c>/v1/search?tag=</c>).
+	/// Unique key of the tag in English, e.g. <c>cherry_blossom</c>.
 	/// </summary>
+	/// <remarks>
+	/// Used in links to the tag search: <c>GET /v1/search?tag=cherry_blossom</c>.
+	/// </remarks>
 	public string Slug { get; set; }
 
 	/// <summary>
-	/// Display names, at most one per language.
+	/// Display names of the tag, at most one per language.
 	/// </summary>
 	public ICollection<TagTranslationDto> Translations { get; set; }
 
 	/// <summary>
-	/// Additional search texts in any supported language; not displayed.
+	/// Search aliases of the tag: synonyms and spelling variants in any supported language.
 	/// </summary>
+	/// <remarks>
+	/// Aliases are never displayed. They let the tag be found by other words.
+	/// </remarks>
 	public ICollection<TagTranslationDto> Aliases { get; set; }
 
 	/// <summary>

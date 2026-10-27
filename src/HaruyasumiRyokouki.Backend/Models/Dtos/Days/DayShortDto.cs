@@ -1,17 +1,17 @@
 namespace HaruyasumiRyokouki.Backend.Models.Dtos.Days;
 
 /// <summary>
-/// Day in the list of days.
+/// Day in the list of all days.
 /// </summary>
 public record DayShortDto
 {
 	/// <summary>
-	/// Date of the day.
+	/// Date of the day in the local time of the trip.
 	/// </summary>
 	public DateOnly Date { get; set; }
 
 	/// <summary>
-	/// The notes of the day are finished.
+	/// The day note and all media of the day have been reviewed by the editor.
 	/// </summary>
 	public bool IsReady { get; set; }
 

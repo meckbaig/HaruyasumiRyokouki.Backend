@@ -1,27 +1,33 @@
 namespace HaruyasumiRyokouki.Backend.Models.Db;
 
 /// <summary>
-/// Image embedding of a media file for similarity search. Filled by an external tool.
+/// Image embedding of a media file, used to find similar media.
 /// </summary>
+/// <remarks>
+/// The backend never writes this table: it is filled by a separate tool. Media added later have no embedding.
+/// </remarks>
 public class MediaEmbedding
 {
 	/// <summary>
-	/// Media file id; one embedding per media file.
+	/// Identifier of the <see cref="MediaFile"/>. One embedding per media file.
 	/// </summary>
 	public int MediaFileId { get; set; }
 
 	/// <summary>
-	/// Vector of 768 values, expected to be normalized: the index uses the dot product as cosine similarity.
+	/// Embedding of 768 values.
 	/// </summary>
+	/// <remarks>
+	/// Expected to be normalized, because the similarity index uses the dot product as the cosine similarity.
+	/// </remarks>
 	public required float[] Vector { get; set; }
 
 	/// <summary>
-	/// Name of the model that produced the vector.
+	/// Name of the model that produced <see cref="Vector"/>.
 	/// </summary>
 	public required string Model { get; set; }
 
 	/// <summary>
-	/// The media file.
+	/// The media file of the embedding.
 	/// </summary>
 	public MediaFile MediaFile { get; set; } = null!;
 }

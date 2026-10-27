@@ -11,7 +11,7 @@ public record StorageFile
 	public string FileName { get; set; }
 
 	/// <summary>
-	/// File modification time in UTC.
+	/// Last modification time of the file in UTC.
 	/// </summary>
 	public DateTime Created { get; set; }
 }

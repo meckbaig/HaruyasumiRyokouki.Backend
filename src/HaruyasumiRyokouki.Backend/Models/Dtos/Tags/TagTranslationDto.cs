@@ -8,12 +8,15 @@ namespace HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 public record TagTranslationDto
 {
 	/// <summary>
-	/// Language code: <c>en</c>, <c>ru</c> or <c>ja</c>.
+	/// Language of the text: <c>en</c>, <c>ru</c> or <c>ja</c>.
 	/// </summary>
+	/// <remarks>
+	/// See <see cref="Db.Enums.LanguageCode"/>.
+	/// </remarks>
 	public string LanguageCode { get; set; }
 
 	/// <summary>
-	/// The text; unique within the tag.
+	/// The text. Unique within the tag.
 	/// </summary>
 	public string Text { get; set; }
 

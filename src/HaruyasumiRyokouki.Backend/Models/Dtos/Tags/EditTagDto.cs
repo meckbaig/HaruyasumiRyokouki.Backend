@@ -6,27 +6,39 @@ using Meckbaig.Cqrs.Dto.Abstractions;
 namespace HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 
 /// <summary>
-/// Changes of a tag. An absent field is not modified.
+/// Changes of a tag.
 /// </summary>
+/// <remarks>
+/// Every field is an <see cref="Common.OptionalType.Optional{T}"/>: a field absent from the request is not modified.
+/// </remarks>
 public record EditTagDto : IEditDto
 {
 	/// <summary>
-	/// Unique tag key, used in links (<c>/v1/search?tag=</c>).
+	/// Unique key of the tag in English, e.g. <c>cherry_blossom</c>.
 	/// </summary>
+	/// <remarks>
+	/// Used in links to the tag search: <c>GET /v1/search?tag=cherry_blossom</c>.
+	/// </remarks>
 	public Optional<string> Slug { get; set; }
 
 	/// <summary>
-	/// Replaces all display names, at most one per language.
+	/// New display names, at most one per language.
 	/// </summary>
+	/// <remarks>
+	/// Replace all current display names.
+	/// </remarks>
 	public Optional<ICollection<TagTranslationDto>> Translations { get; set; }
 
 	/// <summary>
-	/// Replaces all search aliases.
+	/// New search aliases.
 	/// </summary>
+	/// <remarks>
+	/// Replace all current aliases.
+	/// </remarks>
 	public Optional<ICollection<TagTranslationDto>> Aliases { get; set; }
 
 	/// <summary>
-	/// Entity type the DTO edits.
+	/// Entity edited with the DTO.
 	/// </summary>
 	public static Type GetOriginType() => typeof(Tag);
 

@@ -6,17 +6,17 @@ namespace HaruyasumiRyokouki.Backend.Models.Db;
 public class MediaFileTag
 {
 	/// <summary>
-	/// Media file id.
+	/// Identifier of the <see cref="MediaFile"/>.
 	/// </summary>
 	public int MediaId { get; set; }
 
 	/// <summary>
-	/// The media file.
+	/// The tagged media file.
 	/// </summary>
 	public MediaFile Media { get; set; } = null!;
 
 	/// <summary>
-	/// Tag id.
+	/// Identifier of the <see cref="Db.Tag"/>.
 	/// </summary>
 	public int TagId { get; set; }
 

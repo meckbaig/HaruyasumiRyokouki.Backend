@@ -6,17 +6,17 @@ namespace HaruyasumiRyokouki.Backend.Models.Db.Enums;
 public enum MediaType
 {
 	/// <summary>
-	/// Image.
+	/// Photo or other image.
 	/// </summary>
 	Image = 0,
 
 	/// <summary>
-	/// Video, local or YouTube.
+	/// Video from the file storage or YouTube.
 	/// </summary>
 	Video = 1,
 
 	/// <summary>
-	/// Unsupported extension; such files are skipped by sync.
+	/// Unsupported extension. Such files are skipped by sync.
 	/// </summary>
 	Unknown = -1
 }

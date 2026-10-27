@@ -8,18 +8,24 @@ namespace HaruyasumiRyokouki.Backend.Models.Dtos.Media;
 public record VideoUrlsDto
 {
 	/// <summary>
-	/// Original file; <see langword="null"/> (omitted) for YouTube.
+	/// Original file for downloading, or <see langword="null"/> for YouTube media.
 	/// </summary>
+	/// <remarks>
+	/// Omitted from the response when <see langword="null"/>.
+	/// </remarks>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Download { get; set; }
 
 	/// <summary>
-	/// URL to play: the lower bitrate version if there is one, the original otherwise, the embed URL for YouTube.
+	/// URL to play the video.
 	/// </summary>
+	/// <remarks>
+	/// The lower bitrate <c>_web</c> version when it exists, otherwise the original. For YouTube media it is the embed URL.
+	/// </remarks>
 	public string? Stream { get; set; }
 
 	/// <summary>
-	/// Resized preview image.
+	/// Preview image of the video resized as a thumbnail.
 	/// </summary>
 	public string Preview { get; set; } = null!;
 }
