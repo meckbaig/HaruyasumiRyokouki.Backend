@@ -2,9 +2,19 @@ using HaruyasumiRyokouki.Backend.DbContexts;
 
 namespace HaruyasumiRyokouki.Backend.Services.Interfaces;
 
+/// <summary>
+/// In-memory index of image embeddings from <c>media_embeddings</c>. Singleton.
+/// </summary>
 internal interface IMediaSimilarityIndexService
 {
+	/// <summary>
+	/// Number of loaded vectors.
+	/// </summary>
 	int Count { get; }
+
+	/// <summary>
+	/// At least one vector is loaded.
+	/// </summary>
 	bool IsLoaded { get; }
 
 	/// <summary>

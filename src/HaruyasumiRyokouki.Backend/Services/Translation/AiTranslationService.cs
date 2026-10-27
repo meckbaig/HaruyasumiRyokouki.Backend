@@ -4,10 +4,16 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 namespace HaruyasumiRyokouki.Backend.Services.Translation;
 
+/// <summary>
+/// Translation through a chat model with a translation prompt.
+/// </summary>
 public class AiTranslationService : IContentTranslationService
 {
 	private readonly IAiChatService _aiChatService;
 
+	/// <summary>
+	/// Creates the service on top of a chat model.
+	/// </summary>
 	public AiTranslationService(IAiChatService aiChatService)
 	{
 		_aiChatService = aiChatService;
@@ -56,6 +62,7 @@ public class AiTranslationService : IContentTranslationService
 		return prompt;
 	}
 
+	/// <inheritdoc/>
 	public async Task<string> TranslateTextAsync(string text, string outputLanguage, string? inputLanguage = null, CancellationToken cancellationToken = default)
 	{
 		return await _aiChatService.GetChatResponseAsync(text, GetSystemPrompt(outputLanguage, inputLanguage), returnJson: false, cancellationToken: cancellationToken);

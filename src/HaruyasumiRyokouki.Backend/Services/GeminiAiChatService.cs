@@ -5,11 +5,17 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 namespace HaruyasumiRyokouki.Backend.Services;
 
+/// <summary>
+/// Chat model of Google Gemini.
+/// </summary>
 public class GeminiAiChatService : IAiChatService
 {
 	private readonly Client _client;
 	private readonly GeminiTranslationServiceOptions _options;
 
+	/// <summary>
+	/// Creates the service for a <c>GeminiAi</c> provider entry.
+	/// </summary>
 	public GeminiAiChatService(GeminiTranslationServiceOptions options)
 	{
 		_client = new Client(apiKey: options.ApiKey);
@@ -17,6 +23,7 @@ public class GeminiAiChatService : IAiChatService
 		_options = options;
 	}
 
+	/// <inheritdoc/>
 	public async Task<string> GetChatResponseAsync
 	(
 		string message,

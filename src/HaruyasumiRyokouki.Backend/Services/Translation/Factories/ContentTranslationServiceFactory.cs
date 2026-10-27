@@ -4,15 +4,20 @@ using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 namespace HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 
+/// <inheritdoc/>
 public sealed class ContentTranslationServiceFactory : IContentTranslationServiceFactory
 {
 	private readonly IServiceProvider _services;
 
+	/// <summary>
+	/// Constructor with parameters for DI.
+	/// </summary>
 	public ContentTranslationServiceFactory(IServiceProvider services)
 	{
 		_services = services;
 	}
 
+	/// <inheritdoc/>
 	public IContentTranslationService CreateTranslationService(TranslationServiceOptions options)
 	{
 		return options switch
@@ -31,6 +36,7 @@ public sealed class ContentTranslationServiceFactory : IContentTranslationServic
 		};
 	}
 
+	/// <inheritdoc/>
 	public IAiChatService CreateAiService(IAiServiceOptions options)
 	{
 		return options switch

@@ -4,15 +4,20 @@ using Microsoft.Extensions.Options;
 
 namespace HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 
+/// <inheritdoc/>
 public sealed class TranslationServiceOptionsAccessor : ITranslationServiceOptionsAccessor
 {
 	private readonly TranslationProviderOptions _options;
 
+	/// <summary>
+	/// Constructor with parameters for DI.
+	/// </summary>
 	public TranslationServiceOptionsAccessor(IOptions<TranslationProviderOptions> options)
 	{
 		_options = options.Value;
 	}
 
+	/// <inheritdoc/>
 	public TranslationServiceOptions GetTranslationServiceOptions(string name)
 	{
 		if (!_options.Providers.TryGetValue(name, out var provider))
@@ -23,6 +28,7 @@ public sealed class TranslationServiceOptionsAccessor : ITranslationServiceOptio
 		return provider;
 	}
 
+	/// <inheritdoc/>
 	public IAiServiceOptions GetAiServiceOptions(string name)
 	{
 		var options = GetTranslationServiceOptions(name);
