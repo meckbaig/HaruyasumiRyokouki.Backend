@@ -246,7 +246,7 @@ Search of similar media (`GET /v1/media/{id}/similar`) and media suggestions for
 - `Accept-Language` - response language: `en`, `ru` or `ja`. Browser-style values such as `ru-RU,ru;q=0.9` are supported. Optional, defaults to `en`.
 - `X-Display` - client screen, used to choose image sizes: `dpr=1.25; min-side=864`. Optional.
 - `Authorization: Basic ...` - admin requests. Without it, private media and media that are not approved yet are hidden.
-- Errors are returned as RFC 9457 problem details: `400` - validation, `404` - not found, `409` - conflict (e.g. a sync is already running), `429` - too many failed logins, `502` - an external service failed (yt-dlp, preview download), `500` - other errors.
+- Errors are returned as RFC 9457 problem details: `400` - validation, `404` - not found, `409` - conflict (e.g. a sync is already running), `429` - too many failed logins, `502` - an external service failed (yt-dlp, preview download), `503` - the feature is disabled (similarity search), `500` - other errors.
 
 ## Health check
 
@@ -262,6 +262,44 @@ Search of similar media (`GET /v1/media/{id}/similar`) and media suggestions for
 | `yt-dlp` | No | The tool starts; its version is shown. Needed only for YouTube import. |
 
 Overall status: `Unhealthy` (HTTP `503`) when a required check fails; `Degraded` (HTTP `200`) when only optional checks fail; otherwise `Healthy`.
+
+## Where things live
+
+All code is in `src/HaruyasumiRyokouki.Backend`, unit tests in `tests/HaruyasumiRyokouki.Backend.UnitTests`.
+
+| Directory | Contents |
+|---|---|
+| `Controllers/V1/` | Routes and `[Authorize]` only; every action sends a MediatR request. |
+| `Features/<Area>/` | One file per endpoint: request, response, validator, handler. |
+| `Services/` | DI services: storage, ffmpeg, preview URLs, translation, sync, background services. |
+| `Common/` | Behaviors, exceptions, options and their validators, health checks, static helpers. |
+| `Extensions/` | DI registration, middleware, mapping, EF query helpers. |
+| `Models/` | EF entities (`Db/`), API contracts (`Dtos/`), internal values (`InternalDtos/`). |
+| `Migrations/` | EF Core migrations. |
+
+### Finding a feature
+
+| Feature | Start here | Documentation |
+|---|---|---|
+| Layers, request pipeline, errors, configuration | `Program.cs` | [architecture.md](docs/architecture.md) |
+| Admin login, brute-force protection, Swagger login | `Common/Handlers/BasicAuthenticationHandler.cs` | [auth.md](docs/features/auth.md) |
+| Days, map, favorites, pending, what visitors see | `Features/Days/GetDayQuery.cs` | [reading-and-visibility.md](docs/features/reading-and-visibility.md) |
+| Editing media and days, auto-translation, deleting | `Features/Media/EditMediaCommand.cs` | [editing.md](docs/features/editing.md) |
+| Media import from the storage, conversion, dates | `Services/MediaSyncService.cs` | [media-sync.md](docs/features/media-sync.md) |
+| YouTube videos | `Features/Media/ImportYoutubeMediaCommand.cs` | [youtube-import.md](docs/features/youtube-import.md) |
+| Media URLs, preview services, image sizes, `X-Display` | `Services/MediaUrlsProvider.cs` | [media-urls.md](docs/features/media-urls.md) |
+| Languages, `Accept-Language`, translation providers | `Common/Helpers/TranslationPlanner.cs` | [localization-and-translation.md](docs/features/localization-and-translation.md) |
+| Tags, aliases, tag completion, search | `Features/Search/SearchQuery.cs` | [tags-and-search.md](docs/features/tags-and-search.md) |
+| Similar media, media suggestions for a tag | `Services/MediaSimilarityIndexService.cs` | [similarity-search.md](docs/features/similarity-search.md) |
+| Health, metrics, logs, in-memory state | `Common/HealthChecks/` | [operations.md](docs/features/operations.md) |
+
+## Running tests
+
+```
+dotnet test
+```
+
+Unit tests cover code that needs no database, files or network: helpers, validators, JSON handling of `Optional<T>`, URL building, the login limiter. Handlers that use the database are not unit tested.
 
 ## Deploying
 
@@ -299,7 +337,10 @@ Set `Kestrel:Endpoints:Http:Url` to `http://+:8080` (or remove the `Kestrel` sec
 
 ## Documentation
 
-- [docs/documentation-notes.md](docs/documentation-notes.md) - how media sync, conversion, YouTube import, file removal and auto-translation work.
+Technical detail lives in [docs/](docs/), one file per feature. Each feature page lists its files first and ends with **Invariants** - rules that look like bugs and are not, or that are easy to break.
+
+- [docs/architecture.md](docs/architecture.md) - read before changing anything.
+- [docs/issues.md](docs/issues.md) - known problems left for later.
 - [docs/conventions.md](docs/conventions.md) - code structure conventions.
 - Swagger (`/swagger`) - API reference generated from the code.
 - [HaruyasumiRyokouki.Frontend](https://github.com/meckbaig/HaruyasumiRyokouki.Frontend) - the client application.

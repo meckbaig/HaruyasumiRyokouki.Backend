@@ -5,4 +5,4 @@
 - `Extensions/` - extension methods only (`this`-parameter). `Extensions/TypeExtensions/` holds type-specific extensions.
 - `Common/Helpers/` - stateless static helper classes that are neither DI services nor extension methods (pure functions with no dependencies and no mutable state).
 - `Common/` - cross-cutting infrastructure (options, behaviors, filters, exceptions, result types, etc.).
-- XML documentation describes what is needed to use the code. How the system works as a whole is described in the README and in [documentation-notes.md](documentation-notes.md).
+- XML documentation describes what is needed to use the code. How the system works is described in the README and in the feature pages in [features/](features/).
