@@ -5,13 +5,34 @@ using Meckbaig.Cqrs.Dto.Abstractions;
 
 namespace HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 
+/// <summary>
+/// Changes of a tag. An absent field is not modified.
+/// </summary>
 public record EditTagDto : IEditDto
 {
+	/// <summary>
+	/// Unique tag key, used in links (<c>/v1/search?tag=</c>).
+	/// </summary>
 	public Optional<string> Slug { get; set; }
+
+	/// <summary>
+	/// Replaces all display names, at most one per language.
+	/// </summary>
 	public Optional<ICollection<TagTranslationDto>> Translations { get; set; }
+
+	/// <summary>
+	/// Replaces all search aliases.
+	/// </summary>
 	public Optional<ICollection<TagTranslationDto>> Aliases { get; set; }
 
+	/// <summary>
+	/// Entity type the DTO edits.
+	/// </summary>
 	public static Type GetOriginType() => typeof(Tag);
+
+	/// <summary>
+	/// Validator of the DTO.
+	/// </summary>
 	public static Type GetValidatorType() => typeof(Validator);
 
 	internal class Validator : AbstractValidator<EditTagDto>

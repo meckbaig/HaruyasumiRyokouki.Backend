@@ -4,13 +4,34 @@ using Meckbaig.Cqrs.Dto.Abstractions;
 
 namespace HaruyasumiRyokouki.Backend.Models.Dtos.Tags;
 
+/// <summary>
+/// New tag. All texts of the tag, translations and aliases, must be different.
+/// </summary>
 public record CreateTagDto : IEditDto
 {
+	/// <summary>
+	/// Unique tag key, used in links (<c>/v1/search?tag=</c>).
+	/// </summary>
 	public string Slug { get; set; }
+
+	/// <summary>
+	/// Display names, at most one per language.
+	/// </summary>
 	public ICollection<TagTranslationDto> Translations { get; set; }
+
+	/// <summary>
+	/// Additional search texts in any supported language; not displayed.
+	/// </summary>
 	public ICollection<TagTranslationDto> Aliases { get; set; }
 
+	/// <summary>
+	/// Entity type the DTO edits.
+	/// </summary>
 	public static Type GetOriginType() => typeof(Tag);
+
+	/// <summary>
+	/// Validator of the DTO.
+	/// </summary>
 	public static Type GetValidatorType() => typeof(Validator);
 
 	internal class Validator : AbstractValidator<CreateTagDto>
