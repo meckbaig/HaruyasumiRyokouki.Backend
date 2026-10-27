@@ -9,6 +9,9 @@ using System.Net.Mime;
 
 namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 
+/// <summary>
+/// Administrative operations.
+/// </summary>
 [ApiController]
 [Route("v{version:ApiVersion}/[controller]")]
 [ApiVersion(1)]
@@ -26,6 +29,11 @@ public class AdminController : ControllerBase
 		_mediator = mediator;
 	}
 
+	/// <summary>
+	/// Returns days that are not ready and media that are not approved.
+	/// </summary>
+	/// <response code="200">Pending days and media.</response>
+	/// <response code="401">No or invalid admin credentials.</response>
 	[Authorize]
 	[HttpGet("pending")]
 	public async Task<ActionResult<GetPendingResponse>> GetList([FromQuery] GetPendingQuery query, CancellationToken cancellationToken)
@@ -34,6 +42,12 @@ public class AdminController : ControllerBase
 		return result.ToJsonResponse();
 	}
 
+	/// <summary>
+	/// Checks the admin credentials.
+	/// </summary>
+	/// <response code="200">Credentials are valid.</response>
+	/// <response code="401">No or invalid admin credentials.</response>
+	/// <response code="429">Too many failed attempts from this IP address.</response>
 	[Authorize]
 	[HttpGet("login")]
 	public async Task<IActionResult> Login()

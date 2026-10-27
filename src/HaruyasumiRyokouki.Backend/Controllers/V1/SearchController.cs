@@ -8,6 +8,9 @@ using System.Net.Mime;
 
 namespace HaruyasumiRyokouki.Backend.Controllers.V1;
 
+/// <summary>
+/// Search of days and media.
+/// </summary>
 [ApiController]
 [Route("v{version:ApiVersion}/[controller]")]
 [ApiVersion(1)]
@@ -25,6 +28,15 @@ public class SearchController : ControllerBase
 		_mediator = mediator;
 	}
 
+	/// <summary>
+	/// Searches days and media by text or by tag.
+	/// </summary>
+	/// <remarks>
+	/// Text has priority: when <c>text</c> is given, tags are ignored. Text matches day notes, media titles and descriptions
+	/// partially and tag texts exactly, in any language. A tag is found by <c>tag</c> (slug) or <c>tagId</c>.
+	/// </remarks>
+	/// <response code="200">Days with the matching media, newest first.</response>
+	/// <response code="400">None of text, tag and tagId is given.</response>
 	[HttpGet]
 	public async Task<ActionResult<SearchResponse>> GetList(SearchQuery query, CancellationToken cancellationToken)
 	{
