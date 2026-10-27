@@ -2,6 +2,9 @@ using Meckbaig.Result.Base;
 
 namespace HaruyasumiRyokouki.Backend.Common.ResultType;
 
+/// <summary>
+/// Result of an operation that can fail without an exception: a value or a <see cref="StringError"/>.
+/// </summary>
 public readonly struct Result<TValue> : IResult<TValue, StringError>
 {
 	/// <inheritdoc/>
@@ -168,6 +171,8 @@ public readonly struct Result<TValue> : IResult<TValue, StringError>
 		return false;
 	}
 
-	/// <inheritdoc cref="IResult.ToString"/>
+	/// <summary>
+	/// <c>Success - value</c> or <c>Failure - error</c>, for logs.
+	/// </summary>
 	public override string ToString() => _isSuccess ? $"Success - {Value}" : $"Failure - {Error}";
 }

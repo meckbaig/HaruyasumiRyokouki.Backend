@@ -47,6 +47,9 @@ public readonly struct Optional<T>
 	/// <param name="value">The optional value.</param>
 	public static implicit operator T?(Optional<T> value) => value.Value;
 
+	/// <summary>
+	/// Value for logs: <c>no value</c>, <c>null</c>, or the value (strings in quotes).
+	/// </summary>
 	public override string ToString()
 	{
 		if (!HasValue)

@@ -5,8 +5,12 @@ using System.Reflection;
 
 namespace HaruyasumiRyokouki.Backend.Common.Filters;
 
+/// <summary>
+/// Swagger filter that removes parameters of properties marked with <c>[SwaggerIgnore]</c> - the ones filled by pipeline behaviors.
+/// </summary>
 public class RemoveSwaggerIgnoredParamsDocumentFilter : IDocumentFilter
 {
+	/// <inheritdoc/>
 	public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
 	{
 		foreach (var path in swaggerDoc.Paths)

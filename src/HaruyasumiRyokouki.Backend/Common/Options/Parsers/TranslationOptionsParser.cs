@@ -2,8 +2,10 @@ using HaruyasumiRyokouki.Backend.Common.Options.Abstractions;
 
 namespace HaruyasumiRyokouki.Backend.Common.Options.Parsers;
 
+/// <inheritdoc/>
 public sealed class TranslationOptionsParser : ITranslationOptionsParser
 {
+	/// <inheritdoc/>
 	public TranslationProviderOptions Parse(IConfigurationSection section)
 	{
 		var usage = section

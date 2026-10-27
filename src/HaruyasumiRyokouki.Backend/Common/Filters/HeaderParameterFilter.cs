@@ -5,8 +5,12 @@ using System.Text.RegularExpressions;
 
 namespace HaruyasumiRyokouki.Backend.Common.Filters;
 
+/// <summary>
+/// Swagger filter that writes header parameter names in header case (<c>AcceptLanguage</c> → <c>Accept-Language</c>).
+/// </summary>
 public class HeaderParameterFilter : IParameterFilter
 {
+	/// <inheritdoc/>
 	public void Apply(OpenApiParameter parameter, ParameterFilterContext context)
 	{
 		if (parameter.In != ParameterLocation.Header)
@@ -16,6 +20,9 @@ public class HeaderParameterFilter : IParameterFilter
 
 	private static readonly Regex WordRegex = new(@"[A-Z]+(?![a-z])|[A-Z][a-z]*|\d+", RegexOptions.Compiled);
 
+	/// <summary>
+	/// Converts a PascalCase name to a header name: words separated by <c>-</c>, each capitalized.
+	/// </summary>
 	public static string PascalCaseToHeader(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))

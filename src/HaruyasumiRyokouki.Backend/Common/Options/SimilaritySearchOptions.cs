@@ -1,5 +1,8 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
+/// <summary>
+/// Options of the <c>SimilaritySearch</c> configuration section; see the Configuration section of README.
+/// </summary>
 sealed class SimilaritySearchOptions
 {
 	public const string ConfigurationSectionName = "SimilaritySearch";

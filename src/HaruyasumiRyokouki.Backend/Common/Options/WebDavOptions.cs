@@ -1,5 +1,8 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
+/// <summary>
+/// Options of the <c>WebDavStorageProvider</c> configuration section; see the Configuration section of README.
+/// </summary>
 sealed class WebDavOptions
 {
 	public const string ConfigurationSectionName = "WebDavStorageProvider";

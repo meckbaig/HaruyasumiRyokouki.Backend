@@ -4,8 +4,12 @@ using System.Text;
 
 namespace HaruyasumiRyokouki.Backend.Common.Options.Validators;
 
+/// <summary>
+/// Validates <see cref="TranslationProviderOptions"/> on startup: fields of each entry and the names in <c>Usage</c>.
+/// </summary>
 public class TranslationProviderOptionsValidator : IValidateOptions<TranslationProviderOptions>
 {
+	/// <inheritdoc/>
 	public ValidateOptionsResult Validate(
 		string? name,
 		TranslationProviderOptions options)

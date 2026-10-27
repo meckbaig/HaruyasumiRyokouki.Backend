@@ -7,6 +7,9 @@ using System.Reflection;
 
 namespace HaruyasumiRyokouki.Backend.Common.Filters;
 
+/// <summary>
+/// Swagger filter that adds the headers of <see cref="Abstractions.IHeaderAwareBehavior"/> behaviors to the operations they apply to.
+/// </summary>
 public class HeaderAwareOperationFilter : IOperationFilter
 {
 	/// <summary>
