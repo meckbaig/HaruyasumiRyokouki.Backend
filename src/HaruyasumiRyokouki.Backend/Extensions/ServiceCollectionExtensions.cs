@@ -4,6 +4,7 @@ using HaruyasumiRyokouki.Backend.Common.Behaviors;
 using HaruyasumiRyokouki.Backend.Common.Conventions;
 using HaruyasumiRyokouki.Backend.Common.Handlers;
 using HaruyasumiRyokouki.Backend.Common.HealthChecks;
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.OptionalType.Supporting.Asp;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Common.Options.Abstractions;
@@ -214,7 +215,7 @@ internal static class ServiceCollectionExtensions
 		);
 		services.AddSwaggerGen(options =>
 		{
-			options.IncludeXmlComments(Assembly.GetExecutingAssembly());
+			options.IncludeXmlComments(() => SwaggerXmlComments.Load(Assembly.GetExecutingAssembly()));
 			options.EnableAnnotations();
 			options.DocInclusionPredicate((docName, apiDesc) =>
 			{
