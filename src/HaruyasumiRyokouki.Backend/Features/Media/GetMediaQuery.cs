@@ -15,22 +15,34 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
+/// <summary>
+/// Request of <c>GET /v1/media</c>.
+/// </summary>
 public record GetMediaQuery : IRequest<GetMediaResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
+	/// <summary>
+	/// First day of the range, inclusive.
+	/// </summary>
 	[FromQuery]
 	public required DateOnly From { get; set; }
 
+	/// <summary>
+	/// Last day of the range, inclusive. Not earlier than <see cref="From"/>.
+	/// </summary>
 	[FromQuery]
 	public required DateOnly To { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public bool IsAuthenticated { get; set; }
@@ -45,8 +57,14 @@ internal class GetMediaQueryValidator : AbstractValidator<GetMediaQuery>
 	}
 }
 
+/// <summary>
+/// Response of <c>GET /v1/media</c>.
+/// </summary>
 public class GetMediaResponse
 {
+	/// <summary>
+	/// Media with coordinates, ordered by creation time.
+	/// </summary>
 	public required ICollection<MediaFileDto> Items { get; init; }
 }
 

@@ -11,16 +11,31 @@ using static HaruyasumiRyokouki.Backend.Features.Tags.EditTagCommand;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
+/// <summary>
+/// Request of <c>PATCH /v1/tags/{id}</c>.
+/// </summary>
 public record EditTagCommand : IRequest<EditTagResponse>
 {
+	/// <summary>
+	/// Id of the tag to edit.
+	/// </summary>
 	[FromRoute]
 	public required int Id { get; set; }
 
+	/// <summary>
+	/// Request body.
+	/// </summary>
 	[FromBody]
 	public required BodyParameters Body { get; init; }
 
+	/// <summary>
+	/// Body of <see cref="EditTagCommand"/>.
+	/// </summary>
 	public record BodyParameters
 	{
+		/// <summary>
+		/// Changes of the tag. Absent fields are not modified.
+		/// </summary>
 		public required EditTagDto Tag { get; init; }
 	}
 }
@@ -89,8 +104,14 @@ internal class EditTagValidator : AbstractValidator<EditTagCommand>
 	}
 }
 
+/// <summary>
+/// Response of <c>PATCH /v1/tags/{id}</c>.
+/// </summary>
 public class EditTagResponse
 {
+	/// <summary>
+	/// The edited tag.
+	/// </summary>
 	public required TagDto Tag { get; set; }
 }
 

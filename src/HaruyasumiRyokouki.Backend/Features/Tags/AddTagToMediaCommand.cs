@@ -7,22 +7,43 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
+/// <summary>
+/// Request of <c>POST /v1/tags/{id}/media</c>.
+/// </summary>
 public record AddTagToMediaCommand : IRequest<AddTagToMediaResponse>
 {
+	/// <summary>
+	/// Id of the tag to add.
+	/// </summary>
 	[FromRoute]
 	public required int Id { get; init; }
 
+	/// <summary>
+	/// Request body.
+	/// </summary>
 	[FromBody]
 	public required BodyParameters Body { get; init; }
 
+	/// <summary>
+	/// Body of <see cref="AddTagToMediaCommand"/>.
+	/// </summary>
 	public record BodyParameters
 	{
+		/// <summary>
+		/// Media files to tag. Their other tags are kept.
+		/// </summary>
 		public required ICollection<int> MediaFileIds { get; init; }
 	}
 }
 
+/// <summary>
+/// Response of <c>POST /v1/tags/{id}/media</c>.
+/// </summary>
 public class AddTagToMediaResponse
 {
+	/// <summary>
+	/// Number of media files that did not have the tag before.
+	/// </summary>
 	public int Affected { get; set; }
 }
 

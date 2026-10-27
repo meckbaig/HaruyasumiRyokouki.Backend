@@ -4,10 +4,16 @@ using MediatR;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
+/// <summary>
+/// Request of <c>PUT /v1/media/sync</c>.
+/// </summary>
 public record SyncMediaCommand : IRequest<SyncMediaResponse>
 {
 }
 
+/// <summary>
+/// Empty response; the endpoint returns <c>200</c> without a body.
+/// </summary>
 public class SyncMediaResponse : BaseResponse
 {
 }

@@ -15,26 +15,47 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
+/// <summary>
+/// Request of <c>GET /v1/tags/{id}/suggest</c>.
+/// </summary>
 public record SuggestMediaForTagQuery : IRequest<SuggestMediaForTagResponse>, IDisplayAwareRequest, ILocalizableRequest
 {
+	/// <summary>
+	/// Id of the tag.
+	/// </summary>
 	[FromRoute]
 	public required int Id { get; init; }
 
+	/// <summary>
+	/// Maximum number of results.
+	/// </summary>
 	[FromQuery]
 	public int Take { get; init; } = 300;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 }
 
+/// <summary>
+/// Response of <c>GET /v1/tags/{id}/suggest</c>.
+/// </summary>
 public class SuggestMediaForTagResponse
 {
+	/// <summary>
+	/// Number of media that already have the tag. Below 3 no suggestions are made.
+	/// </summary>
 	public required int SeedCount { get; init; }
+
+	/// <summary>
+	/// Suggested media without the tag, most similar first.
+	/// </summary>
 	public required ICollection<SuggestedMediaDto> Items { get; init; }
 }
 

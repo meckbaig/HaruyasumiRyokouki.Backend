@@ -17,23 +17,48 @@ using Microsoft.Extensions.Options;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
+/// <summary>
+/// Request of <c>PUT /v1/days/{date}</c>.
+/// </summary>
 public record EditDayCommand : IRequest<EditDayResponse>
 {
+	/// <summary>
+	/// Date of the day to edit.
+	/// </summary>
 	[FromRoute]
 	public required DateOnly Date { get; set; }
 
+	/// <summary>
+	/// Request body.
+	/// </summary>
 	[FromBody]
 	public required BodyParameters Body { get; init; }
 
+	/// <summary>
+	/// Body of <see cref="EditDayCommand"/>.
+	/// </summary>
 	public record BodyParameters
 	{
+		/// <summary>
+		/// New ready flag and notes. Translations replace the stored ones; <c>Date</c> is ignored.
+		/// </summary>
 		public required DayEditDto Day { get; init; }
+
+		/// <summary>
+		/// Translate the notes into the missing languages and return them without saving.
+		/// </summary>
 		public bool AutoTranslate { get; init; }
 	}
 }
 
+/// <summary>
+/// Response of <c>PUT /v1/days/{date}</c>.
+/// </summary>
 public class EditDayResponse : BaseResponse
 {
+	/// <summary>
+	/// The saved day; with auto-translation, the translated notes are included but not saved.
+	/// </summary>
 	public required DayEditDto Day { get; init; }
 }
 

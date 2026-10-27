@@ -20,25 +20,52 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
+/// <summary>
+/// Request of <c>PATCH /v1/media</c>.
+/// </summary>
 public record EditMediaCommand : IRequest<EditMediaResponse>, ILocalizableRequest
 {
+	/// <summary>
+	/// Request body.
+	/// </summary>
 	[FromBody]
 	public required BodyParameters Body { get; init; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
+	/// <summary>
+	/// Body of <see cref="EditMediaCommand"/>.
+	/// </summary>
 	public record BodyParameters
 	{
+		/// <summary>
+		/// Media files to edit; the same changes are applied to all of them.
+		/// </summary>
 		public ICollection<int> Ids { get; set; } = [];
+
+		/// <summary>
+		/// Changes to apply. Absent fields are not modified.
+		/// </summary>
 		public EditMediaChanges Changes { get; set; }
+
+		/// <summary>
+		/// Translate titles and descriptions sent in <see cref="EditMediaChanges.Translations"/> into the missing languages and return them without saving.
+		/// </summary>
 		public bool AutoTranslate { get; init; }
 	}
 }
 
+/// <summary>
+/// Response of <c>PATCH /v1/media</c>.
+/// </summary>
 public class EditMediaResponse : BaseResponse
 {
+	/// <summary>
+	/// The edited media with all translations; tags in the requested language.
+	/// </summary>
 	public required IEnumerable<MediaFileEditDto> Items { get; init; }
 }
 

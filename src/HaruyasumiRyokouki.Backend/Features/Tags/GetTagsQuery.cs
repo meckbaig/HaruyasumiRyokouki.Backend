@@ -6,12 +6,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
+/// <summary>
+/// Request of <c>GET /v1/tags</c>.
+/// </summary>
 public record GetTagsQuery : IRequest<GetTagsResponse>
 {
 }
 
+/// <summary>
+/// Response of <c>GET /v1/tags</c>.
+/// </summary>
 public class GetTagsResponse
 {
+	/// <summary>
+	/// All tags with all translations and aliases, most used first.
+	/// </summary>
 	public List<TagDto> Items { get; set; }
 }
 

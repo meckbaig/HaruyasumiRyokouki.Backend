@@ -15,24 +15,42 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
+/// <summary>
+/// Request of <c>GET /v1/media/{id}/similar</c>.
+/// </summary>
 public record GetSimilarMediaQuery : IRequest<GetSimilarMediaResponse>, IDisplayAwareRequest, ILocalizableRequest
 {
+	/// <summary>
+	/// Media file to find similar media for.
+	/// </summary>
 	[FromRoute]
 	public required int Id { get; init; }
 
+	/// <summary>
+	/// Maximum number of results.
+	/// </summary>
 	[FromQuery]
 	public int Take { get; init; } = 50;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 }
+
+/// <summary>
+/// Response of <c>GET /v1/media/{id}/similar</c>.
+/// </summary>
 public class GetSimilarMediaResponse
 {
+	/// <summary>
+	/// Similar media, most similar first.
+	/// </summary>
 	public required IReadOnlyCollection<SuggestedMediaDto> Items { get; init; }
 }
 

@@ -14,26 +14,41 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
+/// <summary>
+/// Request of <c>GET /v1/days/{date}</c>.
+/// </summary>
 public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
+	/// <summary>
+	/// Date of the day.
+	/// </summary>
 	[FromRoute]
 	public required DateOnly Date { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public bool IsAuthenticated { get; set; }
 }
 
+/// <summary>
+/// Response of <c>GET /v1/days/{date}</c>.
+/// </summary>
 public class GetDayResponse
 {
+	/// <summary>
+	/// The day with its note and media in the requested language.
+	/// </summary>
 	public DayDto? Day { get; set; }
 }
 

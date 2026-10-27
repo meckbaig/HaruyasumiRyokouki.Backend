@@ -17,32 +17,53 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Search;
 
+/// <summary>
+/// Request of <c>GET /v1/search</c>. At least one of <see cref="Text"/>, <see cref="Tag"/> and <see cref="TagId"/> is required.
+/// </summary>
 public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
+	/// <summary>
+	/// Text to search for. When given, the tag parameters are ignored.
+	/// </summary>
 	[FromQuery]
 	public string? Text { get; init; }
 
+	/// <summary>
+	/// Id of a tag. Used when <see cref="Text"/> and <see cref="Tag"/> are not given.
+	/// </summary>
 	[FromQuery]
 	public int? TagId { get; init; }
 
+	/// <summary>
+	/// Slug of a tag, case-insensitive. Used when <see cref="Text"/> is not given.
+	/// </summary>
 	[FromQuery]
 	public string? Tag { get; init; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public bool IsAuthenticated { get; set; }
 }
 
+/// <summary>
+/// Response of <c>GET /v1/search</c>.
+/// </summary>
 public class SearchResponse
 {
+	/// <summary>
+	/// Days with the matching media, newest first.
+	/// </summary>
 	public List<DayDto> Items { get; set; }
 }
 

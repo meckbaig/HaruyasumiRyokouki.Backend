@@ -9,13 +9,25 @@ using static HaruyasumiRyokouki.Backend.Features.Tags.AddTagCommand;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
+/// <summary>
+/// Request of <c>POST /v1/tags</c>.
+/// </summary>
 public record AddTagCommand : IRequest<AddTagResponse>
 {
+	/// <summary>
+	/// Request body.
+	/// </summary>
 	[FromBody]
 	public required BodyParameters Body { get; init; }
 
+	/// <summary>
+	/// Body of <see cref="AddTagCommand"/>.
+	/// </summary>
 	public record BodyParameters
 	{
+		/// <summary>
+		/// The tag to create.
+		/// </summary>
 		public required CreateTagDto Tag { get; init; }
 	}
 }
@@ -44,8 +56,14 @@ internal class AddTagValidator : AbstractValidator<AddTagCommand>
 	}
 }
 
+/// <summary>
+/// Response of <c>POST /v1/tags</c>.
+/// </summary>
 public class AddTagResponse
 {
+	/// <summary>
+	/// The created tag.
+	/// </summary>
 	public required TagDto Tag { get; set; }
 }
 

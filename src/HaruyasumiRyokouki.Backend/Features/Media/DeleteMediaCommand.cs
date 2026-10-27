@@ -9,12 +9,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
+/// <summary>
+/// Request of <c>DELETE /v1/media/{mediaId}</c>.
+/// </summary>
 public record DeleteMediaCommand : IRequest<DeleteMediaResponse>
 {
+	/// <summary>
+	/// Id of the media file to delete.
+	/// </summary>
 	[FromRoute]
 	public required int MediaId { get; init; }
 }
 
+/// <summary>
+/// Empty response; the endpoint returns <c>200</c> without a body.
+/// </summary>
 public class DeleteMediaResponse : BaseResponse
 {
 }

@@ -15,20 +15,42 @@ using System.Text.Json;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
+/// <summary>
+/// Request of <c>POST /v1/tags/completion</c>.
+/// </summary>
 public record GetTagCompletionCommand : IRequest<GetTagCompletionResponse>
 {
+	/// <summary>
+	/// Request body.
+	/// </summary>
 	[FromBody]
 	public required BodyParameters Body { get; init; }
 
+	/// <summary>
+	/// Body of <see cref="GetTagCompletionCommand"/>.
+	/// </summary>
 	public record BodyParameters
 	{
+		/// <summary>
+		/// The tag as typed by the admin, in any language.
+		/// </summary>
 		public required string Tag { get; init; }
 	}
 }
 
+/// <summary>
+/// Response of <c>POST /v1/tags/completion</c>. Nothing is saved.
+/// </summary>
 public class GetTagCompletionResponse
 {
+	/// <summary>
+	/// Draft tag from the AI: slug from the English translation, translations and search aliases.
+	/// </summary>
 	public required TagDto Tag { get; set; }
+
+	/// <summary>
+	/// Up to 8 existing tags with a text containing the input, most used first.
+	/// </summary>
 	public required ICollection<TagDto> SimilarExisting { get; set; }
 }
 

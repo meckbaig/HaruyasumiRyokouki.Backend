@@ -13,25 +13,42 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Tags;
 
+/// <summary>
+/// Request of <c>GET /v1/tags/suggestion</c>.
+/// </summary>
 public record GetTagSuggestionQuery : IRequest<GetTagSuggestionResponse>, ILocalizableRequest, IAuthenticatedRequest
 {
+	/// <summary>
+	/// Text that a translation or alias of the tag must contain, case-insensitive.
+	/// </summary>
 	[FromQuery]
 	public required string Text { get; set; }
 
+	/// <summary>
+	/// Maximum number of tags.
+	/// </summary>
 	[FromQuery]
 	public int Take { get; set; } = 8;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public bool IsAuthenticated { get; set; }
 }
 
+/// <summary>
+/// Response of <c>GET /v1/tags/suggestion</c>.
+/// </summary>
 public class GetTagSuggestionResponse
 {
+	/// <summary>
+	/// Tags in the requested language, most used first.
+	/// </summary>
 	public required ICollection<TagSuggestionDto> Items { get; set; }
 }
 

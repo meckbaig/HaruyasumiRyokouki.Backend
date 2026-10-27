@@ -8,14 +8,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
+/// <summary>
+/// Request of <c>GET /v1/days/{date}/edit</c>.
+/// </summary>
 public record GetEditDayQuery : IRequest<GetEditDayResponse>
 {
+	/// <summary>
+	/// Date of the day.
+	/// </summary>
 	[FromRoute]
 	public required DateOnly Date { get; set; }
 }
 
+/// <summary>
+/// Response of <c>GET /v1/days/{date}/edit</c>.
+/// </summary>
 public class GetEditDayResponse
 {
+	/// <summary>
+	/// The day with notes in all languages.
+	/// </summary>
 	public required DayEditDto Day { get; init; }
 }
 

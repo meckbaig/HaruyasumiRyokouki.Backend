@@ -14,20 +14,35 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Admin;
 
+/// <summary>
+/// Request of <c>GET /v1/admin/pending</c>.
+/// </summary>
 public record GetPendingQuery : IRequest<GetPendingResponse>, ILocalizableRequest, IDisplayAwareRequest
 {
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 }
 
+/// <summary>
+/// Days that are not ready and media that are not approved.
+/// </summary>
 public class GetPendingResponse
 {
+	/// <summary>
+	/// Media that are not approved, oldest first, with all translations.
+	/// </summary>
 	public List<MediaFileEditDto> Media { get; set; }
+
+	/// <summary>
+	/// Days that are not ready, by date, with all translations.
+	/// </summary>
 	public List<DayEditDto> Days { get; set; }
 }
 

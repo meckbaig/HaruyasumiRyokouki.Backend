@@ -8,15 +8,25 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Days;
 
+/// <summary>
+/// Request of <c>GET /v1/days</c>.
+/// </summary>
 public record GetDaysQuery : IRequest<GetDaysResponse>, IAuthenticatedRequest
 {
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public bool IsAuthenticated { get; set; }
 }
 
+/// <summary>
+/// Response of <c>GET /v1/days</c>.
+/// </summary>
 public class GetDaysResponse
 {
+	/// <summary>
+	/// All days ordered by date.
+	/// </summary>
 	public List<DayShortDto> Items { get; set; }
 }
 

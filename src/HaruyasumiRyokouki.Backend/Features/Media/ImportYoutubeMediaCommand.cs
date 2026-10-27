@@ -18,22 +18,41 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
+/// <summary>
+/// Request of <c>POST /v1/media/youtube</c>.
+/// </summary>
 public record ImportYoutubeMediaCommand : IRequest<ImportYoutubeMediaResponse>, IDisplayAwareRequest
 {
+	/// <summary>
+	/// Request body.
+	/// </summary>
 	[FromBody]
 	public required BodyParameters Body { get; init; }
 
+	/// <inheritdoc/>
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 
+	/// <summary>
+	/// Body of <see cref="ImportYoutubeMediaCommand"/>.
+	/// </summary>
 	public record BodyParameters
 	{
+		/// <summary>
+		/// YouTube link (<c>watch?v=</c>, <c>youtu.be/</c>, <c>shorts/</c>, <c>embed/</c>) or an 11-character video id.
+		/// </summary>
 		public required string Url { get; init; }
 	}
 }
 
+/// <summary>
+/// Response of <c>POST /v1/media/youtube</c>.
+/// </summary>
 public class ImportYoutubeMediaResponse : BaseResponse
 {
+	/// <summary>
+	/// The imported media file, not approved yet.
+	/// </summary>
 	public required MediaFileEditDto Media { get; init; }
 }
 

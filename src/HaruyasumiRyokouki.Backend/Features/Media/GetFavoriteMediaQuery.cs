@@ -15,23 +15,35 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
+/// <summary>
+/// Request of <c>GET /v1/media/favorites</c>.
+/// </summary>
 public record GetFavoriteMediaQuery : IRequest<GetFavoriteMediaResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public bool IsAuthenticated { get; set; }
 }
 
+/// <summary>
+/// Response of <c>GET /v1/media/favorites</c>.
+/// </summary>
 public class GetFavoriteMediaResponse
 {
+	/// <summary>
+	/// Random favorite media, <c>MediaFormat:FavoritesReturnCount</c> at most.
+	/// </summary>
 	public required ICollection<MediaFileDto> Items { get; init; }
 }
 

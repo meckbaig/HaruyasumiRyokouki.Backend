@@ -15,22 +15,36 @@ using System.Text.Json.Serialization;
 
 namespace HaruyasumiRyokouki.Backend.Features.Media;
 
+/// <summary>
+/// Request of <c>GET /v1/media/edit</c>.
+/// </summary>
 public record GetEditMediaQuery : IRequest<GetEditMediaResponse>, IDisplayAwareRequest, ILocalizableRequest
 {
+	/// <summary>
+	/// Media files to return.
+	/// </summary>
 	[FromQuery]
 	public required ICollection<int> Ids { get; init; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public ClientDisplay? ClientDisplay { get; set; }
 
+	/// <inheritdoc/>
 	[SwaggerIgnore]
 	[JsonIgnore]
 	public string AcceptLanguage { get; set; } = LanguageCode.Default;
 }
 
+/// <summary>
+/// Response of <c>GET /v1/media/edit</c>.
+/// </summary>
 public class GetEditMediaResponse
 {
+	/// <summary>
+	/// Media files with all translations.
+	/// </summary>
 	public required ICollection<MediaFileEditDto> Items { get; init; }
 }
 
