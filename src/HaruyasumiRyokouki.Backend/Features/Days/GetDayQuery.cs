@@ -47,7 +47,7 @@ public record GetDayQuery : IRequest<GetDayResponse>, ILocalizableRequest, IDisp
 public class GetDayResponse
 {
 	/// <summary>
-	/// The day with its note and media in the requested language.
+	/// The day with its diary note and media in the requested language.
 	/// </summary>
 	public DayDto? Day { get; set; }
 }

@@ -17,7 +17,7 @@ namespace HaruyasumiRyokouki.Backend.Features.Tags;
 public record EditTagCommand : IRequest<EditTagResponse>
 {
 	/// <summary>
-	/// Id of the tag to edit.
+	/// Identifier of the tag to edit.
 	/// </summary>
 	[FromRoute]
 	public required int Id { get; set; }
@@ -34,8 +34,11 @@ public record EditTagCommand : IRequest<EditTagResponse>
 	public record BodyParameters
 	{
 		/// <summary>
-		/// Changes of the tag. Absent fields are not modified.
+		/// Changes of the tag.
 		/// </summary>
+		/// <remarks>
+		/// Fields absent from the request are not modified.
+		/// </remarks>
 		public required EditTagDto Tag { get; init; }
 	}
 }
@@ -66,9 +69,11 @@ internal class EditTagValidator : AbstractValidator<EditTagCommand>
 	}
 
 	/// <summary>
-	/// Texts used more than once among the tag translations and aliases after the edit
-	/// (unique per tag in the database, regardless of language). A list that is not edited is taken from the database.
+	/// Returns the texts used more than once among the display names and aliases of the tag after the edit.
 	/// </summary>
+	/// <remarks>
+	/// Texts are unique per tag in the database, regardless of the language. A list that is not edited is taken from the database.
+	/// </remarks>
 	private static async Task<List<string>> FindDuplicateTextsAsync(IAppDbContext context, EditTagCommand command, CancellationToken cancellationToken)
 	{
 		var tag = command.Body.Tag;

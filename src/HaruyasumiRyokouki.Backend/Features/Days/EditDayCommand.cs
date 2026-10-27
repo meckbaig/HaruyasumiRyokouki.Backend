@@ -40,12 +40,15 @@ public record EditDayCommand : IRequest<EditDayResponse>
 	public record BodyParameters
 	{
 		/// <summary>
-		/// New ready flag and notes. Translations replace the stored ones; <c>Date</c> is ignored.
+		/// New review flag and diary notes of the day.
 		/// </summary>
+		/// <remarks>
+		/// The translations replace the stored ones. <see cref="DayEditDto.Date"/> is ignored.
+		/// </remarks>
 		public required DayEditDto Day { get; init; }
 
 		/// <summary>
-		/// Translate the notes into the missing languages and return them without saving.
+		/// Translate the note into the missing languages and return the translations without saving them.
 		/// </summary>
 		public bool AutoTranslate { get; init; }
 	}
@@ -57,8 +60,11 @@ public record EditDayCommand : IRequest<EditDayResponse>
 public class EditDayResponse : BaseResponse
 {
 	/// <summary>
-	/// The saved day; with auto-translation, the translated notes are included but not saved.
+	/// The saved day.
 	/// </summary>
+	/// <remarks>
+	/// With <see cref="EditDayCommand.BodyParameters.AutoTranslate"/> it also contains the machine translations, which are not saved.
+	/// </remarks>
 	public required DayEditDto Day { get; init; }
 }
 

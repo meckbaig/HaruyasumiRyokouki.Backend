@@ -21,7 +21,7 @@ namespace HaruyasumiRyokouki.Backend.Features.Tags;
 public record SuggestMediaForTagQuery : IRequest<SuggestMediaForTagResponse>, IDisplayAwareRequest, ILocalizableRequest
 {
 	/// <summary>
-	/// Id of the tag.
+	/// Identifier of the tag.
 	/// </summary>
 	[FromRoute]
 	public required int Id { get; init; }
@@ -49,8 +49,11 @@ public record SuggestMediaForTagQuery : IRequest<SuggestMediaForTagResponse>, ID
 public class SuggestMediaForTagResponse
 {
 	/// <summary>
-	/// Number of media that already have the tag. Below 3 no suggestions are made.
+	/// Number of media that already have the tag.
 	/// </summary>
+	/// <remarks>
+	/// Below 3 no suggestions are made.
+	/// </remarks>
 	public required int SeedCount { get; init; }
 
 	/// <summary>

@@ -15,15 +15,18 @@ namespace HaruyasumiRyokouki.Backend.Features.Media;
 public record DeleteMediaCommand : IRequest<DeleteMediaResponse>
 {
 	/// <summary>
-	/// Id of the media file to delete.
+	/// Identifier of the media file to delete.
 	/// </summary>
 	[FromRoute]
 	public required int MediaId { get; init; }
 }
 
 /// <summary>
-/// Empty response; the endpoint returns <c>200</c> without a body.
+/// Empty response.
 /// </summary>
+/// <remarks>
+/// The endpoint returns <see cref="StatusCodes.Status200OK"/> without a body.
+/// </remarks>
 public class DeleteMediaResponse : BaseResponse
 {
 }

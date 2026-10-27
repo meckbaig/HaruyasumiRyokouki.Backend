@@ -32,19 +32,22 @@ public record GetTagCompletionCommand : IRequest<GetTagCompletionResponse>
 	public record BodyParameters
 	{
 		/// <summary>
-		/// The tag as typed by the admin, in any language.
+		/// The tag as typed by the editor, in any language.
 		/// </summary>
 		public required string Tag { get; init; }
 	}
 }
 
 /// <summary>
-/// Response of <c>POST /v1/tags/completion</c>. Nothing is saved.
+/// Response of <c>POST /v1/tags/completion</c>.
 /// </summary>
+/// <remarks>
+/// Nothing is saved.
+/// </remarks>
 public class GetTagCompletionResponse
 {
 	/// <summary>
-	/// Draft tag from the AI: slug from the English translation, translations and search aliases.
+	/// Draft of the tag made by the AI: slug from the English translation, display names and search aliases.
 	/// </summary>
 	public required TagDto Tag { get; set; }
 

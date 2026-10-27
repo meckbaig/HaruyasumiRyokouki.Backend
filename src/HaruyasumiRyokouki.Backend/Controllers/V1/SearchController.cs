@@ -32,8 +32,9 @@ public class SearchController : ControllerBase
 	/// Searches days and media by text or by tag.
 	/// </summary>
 	/// <remarks>
-	/// Text has priority: when <c>text</c> is given, tags are ignored. Text matches day notes, media titles and descriptions
-	/// partially and tag texts exactly, in any language. A tag is found by <c>tag</c> (slug) or <c>tagId</c>.
+	/// Text has priority: when <see cref="SearchQuery.Text"/> is given, tags are ignored. Text matches day notes, media titles
+	/// and descriptions partially and tag texts exactly, in any language. A tag is found by <see cref="SearchQuery.Tag"/> (slug)
+	/// or <see cref="SearchQuery.TagId"/>.
 	/// </remarks>
 	/// <response code="200">Days with the matching media, newest first.</response>
 	/// <response code="400">None of text, tag and tagId is given.</response>

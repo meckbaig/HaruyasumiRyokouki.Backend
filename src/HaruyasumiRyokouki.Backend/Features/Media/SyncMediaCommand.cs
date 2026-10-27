@@ -12,8 +12,11 @@ public record SyncMediaCommand : IRequest<SyncMediaResponse>
 }
 
 /// <summary>
-/// Empty response; the endpoint returns <c>200</c> without a body.
+/// Empty response.
 /// </summary>
+/// <remarks>
+/// The endpoint returns <see cref="StatusCodes.Status200OK"/> without a body.
+/// </remarks>
 public class SyncMediaResponse : BaseResponse
 {
 }

@@ -18,25 +18,37 @@ using System.Text.Json.Serialization;
 namespace HaruyasumiRyokouki.Backend.Features.Search;
 
 /// <summary>
-/// Request of <c>GET /v1/search</c>. At least one of <see cref="Text"/>, <see cref="Tag"/> and <see cref="TagId"/> is required.
+/// Request of <c>GET /v1/search</c>.
 /// </summary>
+/// <remarks>
+/// At least one of <see cref="Text"/>, <see cref="Tag"/> and <see cref="TagId"/> is required.
+/// </remarks>
 public record SearchQuery : IRequest<SearchResponse>, ILocalizableRequest, IDisplayAwareRequest, IAuthenticatedRequest
 {
 	/// <summary>
-	/// Text to search for. When given, the tag parameters are ignored.
+	/// Text to search for.
 	/// </summary>
+	/// <remarks>
+	/// When given, <see cref="Tag"/> and <see cref="TagId"/> are ignored.
+	/// </remarks>
 	[FromQuery]
 	public string? Text { get; init; }
 
 	/// <summary>
-	/// Id of a tag. Used when <see cref="Text"/> and <see cref="Tag"/> are not given.
+	/// Identifier of a tag.
 	/// </summary>
+	/// <remarks>
+	/// Used when <see cref="Text"/> and <see cref="Tag"/> are not given.
+	/// </remarks>
 	[FromQuery]
 	public int? TagId { get; init; }
 
 	/// <summary>
-	/// Slug of a tag, case-insensitive. Used when <see cref="Text"/> is not given.
+	/// Slug of a tag, case-insensitive.
 	/// </summary>
+	/// <remarks>
+	/// Used when <see cref="Text"/> is not given.
+	/// </remarks>
 	[FromQuery]
 	public string? Tag { get; init; }
 

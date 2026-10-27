@@ -57,7 +57,7 @@ public class TagsController : ControllerBase
 	/// <summary>
 	/// Drafts a new tag with AI: translations and search aliases, plus existing tags containing the text.
 	/// </summary>
-	/// <remarks>Nothing is saved; the draft is created with <c>POST /v1/tags</c> after review.</remarks>
+	/// <remarks>Nothing is saved. The editor reviews the draft and creates the tag with <c>POST /v1/tags</c>.</remarks>
 	/// <response code="200">Draft tag and similar existing tags.</response>
 	/// <response code="400">Validation error.</response>
 	/// <response code="401">No or invalid admin credentials.</response>
@@ -86,7 +86,7 @@ public class TagsController : ControllerBase
 	/// <summary>
 	/// Edits a tag. Fields absent from the body are not modified.
 	/// </summary>
-	/// <remarks><c>translations</c> replaces all translations, <c>aliases</c> replaces all aliases.</remarks>
+	/// <remarks><see cref="Models.Dtos.Tags.EditTagDto.Translations"/> replaces all display names, <see cref="Models.Dtos.Tags.EditTagDto.Aliases"/> replaces all aliases.</remarks>
 	/// <response code="200">Edited tag.</response>
 	/// <response code="400">Validation error, including a duplicate slug or a text used twice in the tag.</response>
 	/// <response code="401">No or invalid admin credentials.</response>
@@ -102,7 +102,7 @@ public class TagsController : ControllerBase
 	/// <summary>
 	/// Suggests media for a tag: media similar to those already tagged, most similar first.
 	/// </summary>
-	/// <response code="200">Suggested media and the number of tagged media used as the sample; no media when fewer than 3 are tagged.</response>
+	/// <response code="200">Suggested media and the number of tagged media used as the sample. No media when fewer than 3 are tagged.</response>
 	/// <response code="400">Validation error.</response>
 	/// <response code="401">No or invalid admin credentials.</response>
 	/// <response code="404">Tag not found.</response>

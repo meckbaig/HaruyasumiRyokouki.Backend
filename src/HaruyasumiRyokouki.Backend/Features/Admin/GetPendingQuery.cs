@@ -31,17 +31,17 @@ public record GetPendingQuery : IRequest<GetPendingResponse>, ILocalizableReques
 }
 
 /// <summary>
-/// Days that are not ready and media that are not approved.
+/// Content waiting for the review of the editor.
 /// </summary>
 public class GetPendingResponse
 {
 	/// <summary>
-	/// Media that are not approved, oldest first, with all translations.
+	/// Media not reviewed by the editor yet, oldest first, with texts in all languages.
 	/// </summary>
 	public List<MediaFileEditDto> Media { get; set; }
 
 	/// <summary>
-	/// Days that are not ready, by date, with all translations.
+	/// Days not reviewed by the editor yet, by date, with diary notes in all languages.
 	/// </summary>
 	public List<DayEditDto> Days { get; set; }
 }

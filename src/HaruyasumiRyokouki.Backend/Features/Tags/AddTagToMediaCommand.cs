@@ -13,7 +13,7 @@ namespace HaruyasumiRyokouki.Backend.Features.Tags;
 public record AddTagToMediaCommand : IRequest<AddTagToMediaResponse>
 {
 	/// <summary>
-	/// Id of the tag to add.
+	/// Identifier of the tag to add.
 	/// </summary>
 	[FromRoute]
 	public required int Id { get; init; }
@@ -30,8 +30,11 @@ public record AddTagToMediaCommand : IRequest<AddTagToMediaResponse>
 	public record BodyParameters
 	{
 		/// <summary>
-		/// Media files to tag. Their other tags are kept.
+		/// Media files to tag.
 		/// </summary>
+		/// <remarks>
+		/// Their other tags are kept.
+		/// </remarks>
 		public required ICollection<int> MediaFileIds { get; init; }
 	}
 }

@@ -42,13 +42,19 @@ public record EditMediaCommand : IRequest<EditMediaResponse>, ILocalizableReques
 	public record BodyParameters
 	{
 		/// <summary>
-		/// Media files to edit; the same changes are applied to all of them.
+		/// Media files to edit.
 		/// </summary>
+		/// <remarks>
+		/// The same changes are applied to all of them.
+		/// </remarks>
 		public ICollection<int> Ids { get; set; } = [];
 
 		/// <summary>
-		/// Changes to apply. Absent fields are not modified.
+		/// Changes to apply.
 		/// </summary>
+		/// <remarks>
+		/// Fields absent from the request are not modified.
+		/// </remarks>
 		public EditMediaChanges Changes { get; set; }
 
 		/// <summary>
@@ -64,7 +70,7 @@ public record EditMediaCommand : IRequest<EditMediaResponse>, ILocalizableReques
 public class EditMediaResponse : BaseResponse
 {
 	/// <summary>
-	/// The edited media with all translations; tags in the requested language.
+	/// The edited media with texts in all languages and tags in the requested language.
 	/// </summary>
 	public required IEnumerable<MediaFileEditDto> Items { get; init; }
 }

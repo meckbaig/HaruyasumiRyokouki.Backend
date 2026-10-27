@@ -33,7 +33,8 @@ public class DaysController : ControllerBase
 	/// Replaces the notes and the ready flag of a day.
 	/// </summary>
 	/// <remarks>
-	/// The day is taken from the route; a language missing from <c>translations</c> is deleted. With <c>autoTranslate</c>
+	/// The day is taken from the route. A language missing from <see cref="Models.Dtos.Days.DayEditDto.Translations"/> is deleted.
+	/// With <see cref="EditDayCommand.BodyParameters.AutoTranslate"/>
 	/// the missing languages are translated and returned without being saved.
 	/// </remarks>
 	/// <response code="200">The day with all translations.</response>

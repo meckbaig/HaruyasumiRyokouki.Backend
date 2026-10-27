@@ -48,14 +48,15 @@ public class MediaController : ControllerBase
 	/// Applies the same changes to several media files.
 	/// </summary>
 	/// <remarks>
-	/// Fields absent from <c>changes</c> are not modified, <c>null</c> clears a field. <c>tagIds</c> replaces the tags,
-	/// <c>translations</c> are updated by language. With <c>autoTranslate</c> the missing languages are translated
+	/// Fields absent from <see cref="EditMediaCommand.BodyParameters.Changes"/> are not modified, <see langword="null"/> clears a field.
+	/// <see cref="Models.Dtos.Media.EditMediaChanges.TagIds"/> replaces the tags, <see cref="Models.Dtos.Media.EditMediaChanges.Translations"/>
+	/// are updated by language. With <see cref="EditMediaCommand.BodyParameters.AutoTranslate"/> the missing languages are translated
 	/// and returned without being saved.
 	/// </remarks>
 	/// <response code="200">Edited media with all translations.</response>
 	/// <response code="400">Validation error.</response>
 	/// <response code="401">No or invalid admin credentials.</response>
-	/// <response code="404">Some of the media files not found; nothing is changed.</response>
+	/// <response code="404">Some of the media files not found. Nothing is changed.</response>
 	[Authorize]
 	[HttpPatch]
 	public async Task<ActionResult<EditMediaResponse>> EditMedia(EditMediaCommand command, CancellationToken cancellationToken)
@@ -139,7 +140,7 @@ public class MediaController : ControllerBase
 	/// <summary>
 	/// Returns media that look similar to the given one, most similar first.
 	/// </summary>
-	/// <response code="200">Similar media with scores; empty when the media has no embedding.</response>
+	/// <response code="200">Similar media with scores. Empty when the media has no embedding.</response>
 	/// <response code="400">Validation error.</response>
 	/// <response code="401">No or invalid admin credentials.</response>
 	/// <response code="404">Media file not found.</response>

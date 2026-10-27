@@ -21,7 +21,7 @@ namespace HaruyasumiRyokouki.Backend.Features.Media;
 public record GetSimilarMediaQuery : IRequest<GetSimilarMediaResponse>, IDisplayAwareRequest, ILocalizableRequest
 {
 	/// <summary>
-	/// Media file to find similar media for.
+	/// Identifier of the media file to find similar media for.
 	/// </summary>
 	[FromRoute]
 	public required int Id { get; init; }
