@@ -12,7 +12,7 @@ internal interface IFfmpegService
 	/// Converts an image (or a frame) with the <c>MediaFormat:ImagePreset</c> preset.
 	/// </summary>
 	/// <param name="input">Local input file.</param>
-	/// <param name="output">Local output file; its extension should match the preset.</param>
+	/// <param name="output">Local output file. Its extension should match the preset.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	Task ConvertImageAsync(string input, string output, CancellationToken cancellationToken = default);
 

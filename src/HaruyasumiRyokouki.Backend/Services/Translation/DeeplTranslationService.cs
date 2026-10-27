@@ -12,7 +12,7 @@ public class DeeplTranslationService : IContentTranslationService
 	private readonly DeepLClient _client;
 
 	/// <summary>
-	/// Creates the service for a <c>Deepl</c> provider entry.
+	/// Creates the service for a <see cref="Common.Options.Abstractions.TranslationOptionsType.Deepl"/> provider entry.
 	/// </summary>
 	public DeeplTranslationService(DeeplTranslationServiceOptions options)
 	{

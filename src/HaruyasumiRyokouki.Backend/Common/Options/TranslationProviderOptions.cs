@@ -3,9 +3,9 @@ using HaruyasumiRyokouki.Backend.Common.Options.Abstractions;
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 /// <summary>
-/// Options of the <c>TranslationProvider</c> configuration section; see the Configuration section of README.
+/// Options of the <c>TranslationProvider</c> configuration section.
 /// </summary>
-/// <remarks>Bound by <see cref="Parsers.TranslationOptionsParser"/>: the entries of <c>Providers</c> are user-defined.</remarks>
+/// <remarks>Bound by <see cref="Parsers.TranslationOptionsParser"/>: the entries of <see cref="Providers"/> are user-defined.</remarks>
 public class TranslationProviderOptions
 {
 	/// <summary>
@@ -31,7 +31,7 @@ public sealed class TranslationUsageOptions
 {
 
 	/// <summary>
-	/// Tag completion; must be an AI provider.
+	/// Tag completion. Must be an AI provider.
 	/// </summary>
 	public required string Tags { get; init; }
 
@@ -47,7 +47,7 @@ public sealed class TranslationUsageOptions
 }
 
 /// <summary>
-/// Entry of type <c>OpenAi</c>: any OpenAI-compatible chat API.
+/// Entry of type <see cref="Common.Options.Abstractions.TranslationOptionsType.OpenAi"/>: any OpenAI-compatible chat API.
 /// </summary>
 public sealed class OpenAiTranslationServiceOptions : TranslationServiceOptions, IAiServiceOptions
 {
@@ -78,7 +78,7 @@ public sealed class OpenAiTranslationServiceOptions : TranslationServiceOptions,
 }
 
 /// <summary>
-/// Entry of type <c>Deepl</c>: the DeepL translation API.
+/// Entry of type <see cref="Common.Options.Abstractions.TranslationOptionsType.Deepl"/>: the DeepL translation API.
 /// </summary>
 public sealed class DeeplTranslationServiceOptions : TranslationServiceOptions
 {
@@ -89,7 +89,7 @@ public sealed class DeeplTranslationServiceOptions : TranslationServiceOptions
 }
 
 /// <summary>
-/// Entry of type <c>GeminiAi</c>: Google Gemini.
+/// Entry of type <see cref="Common.Options.Abstractions.TranslationOptionsType.GeminiAi"/>: Google Gemini.
 /// </summary>
 public sealed class GeminiTranslationServiceOptions : TranslationServiceOptions, IAiServiceOptions
 {

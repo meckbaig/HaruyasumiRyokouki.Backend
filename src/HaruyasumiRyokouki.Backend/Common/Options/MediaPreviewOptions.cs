@@ -1,7 +1,7 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 /// <summary>
-/// Options of the <c>MediaPreview</c> configuration section; see the Configuration section of README.
+/// Options of the <c>MediaPreview</c> configuration section.
 /// </summary>
 sealed class MediaPreviewOptions
 {
@@ -18,12 +18,12 @@ sealed class MediaPreviewOptions
 	public OriginStorageOptions OriginStorage { get; set; }
 
 	/// <summary>
-	/// imgproxy settings; required when <see cref="Provider"/> is <c>Imgproxy</c>.
+	/// imgproxy settings. Required when <see cref="Provider"/> is <see cref="MediaPreviewProvider.Imgproxy"/>.
 	/// </summary>
 	public ImgproxyOptions? Imgproxy { get; set; }
 
 	/// <summary>
-	/// Nextcloud preview settings; required when <see cref="Provider"/> is <c>Nextcloud</c>.
+	/// Nextcloud preview settings. Required when <see cref="Provider"/> is <see cref="MediaPreviewProvider.Nextcloud"/>.
 	/// </summary>
 	public NextcloudOptions? Nextcloud { get; set; }
 
@@ -52,12 +52,12 @@ sealed class MediaPreviewOptions
 		public string FilePath { get; set; }
 
 		/// <summary>
-		/// Hex-encoded signing key; may be empty only with <see cref="Insecure"/>.
+		/// Hex-encoded signing key. May be empty only with <see cref="Insecure"/>.
 		/// </summary>
 		public string? Key { get; set; }
 
 		/// <summary>
-		/// Hex-encoded signing salt; may be empty only with <see cref="Insecure"/>.
+		/// Hex-encoded signing salt. May be empty only with <see cref="Insecure"/>.
 		/// </summary>
 		public string? Salt { get; set; }
 
@@ -67,7 +67,7 @@ sealed class MediaPreviewOptions
 		public bool Insecure { get; set; }
 
 		/// <summary>
-		/// Base URL of a CDN in front of imgproxy; replaces <c>Endpoint</c> in media URLs when set.
+		/// Base URL of a CDN in front of imgproxy. When set, it replaces <see cref="Endpoint"/> in media URLs.
 		/// </summary>
 		public string? CdnEndpoint { get; set; }
 
@@ -93,7 +93,7 @@ sealed class MediaPreviewOptions
 		public string Endpoint { get; set; }
 
 		/// <summary>
-		/// Base URL of a CDN in front of the server; replaces <c>Endpoint</c> in media URLs when set.
+		/// Base URL of a CDN in front of the server. When set, it replaces <see cref="Endpoint"/> in media URLs.
 		/// </summary>
 		public string? CdnEndpoint { get; set; }
 
@@ -119,7 +119,7 @@ sealed class MediaPreviewOptions
 		public string Endpoint { get; set; }
 
 		/// <summary>
-		/// Base URL of a CDN in front of the server; replaces <c>Endpoint</c> in media URLs when set.
+		/// Base URL of a CDN in front of the server. When set, it replaces <see cref="Endpoint"/> in media URLs.
 		/// </summary>
 		public string? CdnEndpoint { get; set; }
 

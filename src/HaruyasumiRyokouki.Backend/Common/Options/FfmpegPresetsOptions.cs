@@ -1,9 +1,9 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 /// <summary>
-/// Options of the <c>FfmpegPresets</c> configuration section; see the Configuration section of README.
+/// Options of the <c>FfmpegPresets</c> configuration section.
 /// </summary>
-/// <remarks>Every subsection holds user-defined named presets; <see cref="MediaFormatOptions"/> selects one of each by name.</remarks>
+/// <remarks>Every subsection holds user-defined named presets. <see cref="MediaFormatOptions"/> selects one of each by name.</remarks>
 sealed class FfmpegPresetsOptions
 {
 	public const string ConfigurationSectionName = "FfmpegPresets";
@@ -14,7 +14,7 @@ sealed class FfmpegPresetsOptions
 	public Dictionary<string, string[]> Video { get; set; }
 
 	/// <summary>
-	/// Image presets; the name is also the output extension. Tokens <c>{input}</c>, <c>{output}</c>, <c>{videoThumbnailPrefix}</c>.
+	/// Image presets. The name is also the output extension. Tokens <c>{input}</c>, <c>{output}</c>, <c>{videoThumbnailPrefix}</c>.
 	/// </summary>
 	public Dictionary<string, string> Image { get; set; }
 

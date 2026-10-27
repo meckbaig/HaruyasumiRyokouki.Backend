@@ -1,7 +1,7 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 /// <summary>
-/// Options of the <c>MediaFormat</c> configuration section; see the Configuration section of README.
+/// Options of the <c>MediaFormat</c> configuration section.
 /// </summary>
 sealed class MediaFormatOptions
 {
@@ -18,7 +18,7 @@ sealed class MediaFormatOptions
 	public required string VideoThumbnailPreset { get; set; }
 
 	/// <summary>
-	/// Name of the <see cref="FfmpegPresetsOptions.Image"/> preset; also the target image format and extension.
+	/// Name of the <see cref="FfmpegPresetsOptions.Image"/> preset. It is also the target image format and extension.
 	/// </summary>
 	public required string ImagePreset { get; set; }
 
@@ -44,8 +44,11 @@ sealed class MediaFormatOptions
 	public long VideoConversionBitrateThreshold { get; set; } = 25 * 1024 * 1024;
 
 	/// <summary>
-	/// Time zone offsets of the trip by UTC ranges; converts file modification and YouTube publish times to local time.
+	/// Time zone offsets of the trip by UTC ranges.
 	/// </summary>
+	/// <remarks>
+	/// Used to convert file modification times and YouTube publish times to the local time of the trip.
+	/// </remarks>
 	public IReadOnlyCollection<TravelDateOffset> TravelDateOffsets { get; set; } = [];
 
 	/// <summary>
@@ -54,12 +57,12 @@ sealed class MediaFormatOptions
 	public sealed class TravelDateOffset
 	{
 		/// <summary>
-		/// Start of the range in UTC, inclusive; <see langword="null"/> for no start.
+		/// Start of the range in UTC, inclusive. <see langword="null"/> for no start.
 		/// </summary>
 		public DateTime? From { get; set; }
 
 		/// <summary>
-		/// End of the range in UTC, inclusive; <see langword="null"/> for no end.
+		/// End of the range in UTC, inclusive. <see langword="null"/> for no end.
 		/// </summary>
 		public DateTime? To { get; set; }
 

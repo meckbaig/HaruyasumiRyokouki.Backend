@@ -13,7 +13,7 @@ namespace HaruyasumiRyokouki.Backend.Services.Interfaces
 		/// Converts an image to the <c>MediaFormat:ImagePreset</c> format, replacing the original in the storage
 		/// (skipped when it already has that format), and creates its miniature.
 		/// </summary>
-		/// <returns>New file name, miniature, aspect ratio; no additional files.</returns>
+		/// <returns>New file name, miniature and aspect ratio, without additional files.</returns>
 		Task<Result<ConversionResponseDto>> ConvertImageAsync(string fileName, CancellationToken cancellationToken);
 
 		/// <summary>

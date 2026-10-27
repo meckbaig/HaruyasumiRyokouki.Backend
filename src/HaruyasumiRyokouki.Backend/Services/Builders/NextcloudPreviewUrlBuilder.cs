@@ -1,7 +1,7 @@
 namespace HaruyasumiRyokouki.Backend.Services.Builders;
 
 /// <summary>
-/// URLs of Nextcloud previews; the template needs <c>{fileName}</c>, <c>{xAxis}</c> and <c>{yAxis}</c>.
+/// URLs of Nextcloud previews. The template needs <c>{fileName}</c>, <c>{xAxis}</c> and <c>{yAxis}</c>.
 /// </summary>
 public class NextcloudPreviewUrlBuilder : AbstractUrlBuilder
 {

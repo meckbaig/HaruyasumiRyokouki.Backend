@@ -2,7 +2,7 @@
 namespace HaruyasumiRyokouki.Backend.Services.Builders;
 
 /// <summary>
-/// URLs of original files; the template needs <c>{fileName}</c>.
+/// URLs of original files. The template needs <c>{fileName}</c>.
 /// </summary>
 public class OriginStorageUrlBuilder : AbstractUrlBuilder
 {

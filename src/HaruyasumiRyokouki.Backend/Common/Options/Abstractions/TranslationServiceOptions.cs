@@ -6,7 +6,7 @@ namespace HaruyasumiRyokouki.Backend.Common.Options.Abstractions;
 public abstract class TranslationServiceOptions
 {
 	/// <summary>
-	/// Provider type; defines the other fields of the entry.
+	/// Provider type. Defines the other fields of the entry.
 	/// </summary>
 	public required TranslationOptionsType Type { get; init; }
 }

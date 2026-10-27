@@ -11,7 +11,7 @@ public enum TranslationOptionsType
 	OpenAi,
 
 	/// <summary>
-	/// DeepL translation API; cannot be used for tag completion.
+	/// DeepL translation API. Cannot be used for tag completion.
 	/// </summary>
 	Deepl,
 

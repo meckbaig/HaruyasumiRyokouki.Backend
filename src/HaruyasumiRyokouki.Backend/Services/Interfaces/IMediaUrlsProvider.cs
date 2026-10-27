@@ -11,7 +11,7 @@ namespace HaruyasumiRyokouki.Backend.Services.Interfaces;
 internal interface IMediaUrlsProvider
 {
 	/// <summary>
-	/// Builds a URL of an image file; see <see cref="IMediaPreviewService.GetImageUrl"/>.
+	/// Builds a URL of an image file, see <see cref="IMediaPreviewService.GetImageUrl"/>.
 	/// </summary>
 	string GetImageUrl(string fileName, ImageUrlType linkType, ClientDisplay? clientDisplay = null, float? aspectRatio = default);
 

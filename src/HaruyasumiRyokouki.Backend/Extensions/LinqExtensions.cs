@@ -90,7 +90,7 @@ public static class LinqExtensions
 		=> x => x.LanguageCode == languageCode;
 
 	/// <summary>
-	/// Display names of tags in the language; aliases are excluded.
+	/// Display names of tags in the language, without aliases.
 	/// </summary>
 	public static Expression<Func<TagTranslation, bool>> LocalizedTags(this string languageCode)
 		=> t => t.LanguageCode == languageCode && t.IsPrimary;
@@ -117,7 +117,7 @@ public static class LinqExtensions
 }
 
 /// <summary>
-/// Replaces one expression node with another; used to combine lambda expressions.
+/// Replaces one expression node with another. Used to combine lambda expressions.
 /// </summary>
 public sealed class ReplaceExpressionVisitor : ExpressionVisitor
 {

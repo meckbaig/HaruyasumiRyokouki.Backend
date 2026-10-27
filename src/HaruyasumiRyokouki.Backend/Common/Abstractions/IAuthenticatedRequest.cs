@@ -7,7 +7,7 @@ public interface IAuthenticatedRequest
 {
 	/// <summary>
 	/// <see langword="true"/> when the request came with valid admin credentials.
-	/// Set by <c>ClientAuthenticationBehavior</c> after validation; not bound from the request.
+	/// Set by <see cref="Behaviors.ClientAuthenticationBehavior{TRequest, TResponse}"/> after validation. Not bound from the request.
 	/// </summary>
 	bool IsAuthenticated { get; set; }
 }

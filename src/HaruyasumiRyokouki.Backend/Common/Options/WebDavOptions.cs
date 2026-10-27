@@ -1,7 +1,7 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 /// <summary>
-/// Options of the <c>WebDavStorageProvider</c> configuration section; see the Configuration section of README.
+/// Options of the <c>WebDavStorageProvider</c> configuration section.
 /// </summary>
 sealed class WebDavOptions
 {

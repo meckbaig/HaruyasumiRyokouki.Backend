@@ -136,7 +136,7 @@ public class HeaderAwareOperationFilter : IOperationFilter
 
 	/// <summary>
 	/// Reads a static property value from <paramref name="type"/> by name using reflection.
-	/// Returns <c>default</c> if the property does not exist or cannot be read.
+	/// Returns <see langword="default"/> if the property does not exist or cannot be read.
 	/// </summary>
 	/// <typeparam name="T">Expected property type.</typeparam>
 	/// <param name="type">Type from which to read the static property.</param>

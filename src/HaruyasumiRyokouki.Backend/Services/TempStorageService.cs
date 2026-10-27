@@ -12,7 +12,7 @@ public class TempStorageService : IAsyncDisposable
 	private const string TempWorkspace = "temp";
 
 	/// <summary>
-	/// Path of the folder; not created by the constructor.
+	/// Path of the folder. The constructor does not create it.
 	/// </summary>
 	public string TempFolder { get; init; }
 

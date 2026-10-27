@@ -1,7 +1,7 @@
 namespace HaruyasumiRyokouki.Backend.Common.Abstractions;
 
 /// <summary>
-/// A pipeline behavior that reads a request header. <c>HeaderAwareOperationFilter</c> adds the header
+/// A pipeline behavior that reads a request header. <see cref="Filters.HeaderAwareOperationFilter"/> adds the header
 /// to Swagger for every request the behavior applies to.
 /// </summary>
 public interface IHeaderAwareBehavior

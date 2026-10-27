@@ -1,7 +1,7 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 /// <summary>
-/// Options of the <c>ConnectionStrings</c> configuration section; see the Configuration section of README.
+/// Options of the <c>ConnectionStrings</c> configuration section.
 /// </summary>
 sealed class ConnectionStringsOptions
 {

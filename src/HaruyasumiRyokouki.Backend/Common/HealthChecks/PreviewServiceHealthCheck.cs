@@ -7,7 +7,7 @@ namespace HaruyasumiRyokouki.Backend.Common.HealthChecks;
 
 /// <summary>
 /// Checks that the configured preview service answers on its status URL:
-/// <c>/health</c> of imgproxy or <c>/status.php</c> of Nextcloud, relative to the provider <c>Endpoint</c>.
+/// <c>/health</c> of imgproxy or <c>/status.php</c> of Nextcloud, relative to <see cref="Options.MediaPreviewOptions.ImgproxyOptions.Endpoint"/> or <see cref="Options.MediaPreviewOptions.NextcloudOptions.Endpoint"/>.
 /// </summary>
 internal class PreviewServiceHealthCheck : IHealthCheck
 {

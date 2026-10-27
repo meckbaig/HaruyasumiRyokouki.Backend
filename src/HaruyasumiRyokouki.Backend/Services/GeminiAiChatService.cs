@@ -14,7 +14,7 @@ public class GeminiAiChatService : IAiChatService
 	private readonly GeminiTranslationServiceOptions _options;
 
 	/// <summary>
-	/// Creates the service for a <c>GeminiAi</c> provider entry.
+	/// Creates the service for a <see cref="Common.Options.Abstractions.TranslationOptionsType.GeminiAi"/> provider entry.
 	/// </summary>
 	public GeminiAiChatService(GeminiTranslationServiceOptions options)
 	{

@@ -9,7 +9,7 @@ namespace HaruyasumiRyokouki.Backend.Services.Translation.Factories;
 public interface IContentTranslationServiceFactory
 {
 	/// <summary>
-	/// Creates a chat service for an <c>OpenAi</c> or <c>GeminiAi</c> entry.
+	/// Creates a chat service for an <see cref="Common.Options.Abstractions.TranslationOptionsType.OpenAi"/> or <see cref="Common.Options.Abstractions.TranslationOptionsType.GeminiAi"/> entry.
 	/// </summary>
 	IAiChatService CreateAiService(IAiServiceOptions options);
 

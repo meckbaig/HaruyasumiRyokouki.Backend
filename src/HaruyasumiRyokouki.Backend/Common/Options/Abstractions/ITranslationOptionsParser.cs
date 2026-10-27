@@ -6,7 +6,7 @@ namespace HaruyasumiRyokouki.Backend.Common.Options.Abstractions;
 public interface ITranslationOptionsParser
 {
 	/// <summary>
-	/// Creates the options object of each provider entry by its <c>Type</c>.
+	/// Creates the options object of each provider entry by its <see cref="TranslationServiceOptions.Type"/>.
 	/// </summary>
 	TranslationProviderOptions Parse(IConfigurationSection section);
 }

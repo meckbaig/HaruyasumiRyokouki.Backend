@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace HaruyasumiRyokouki.Backend.Common.HealthChecks;
 
 /// <summary>
-/// Checks that the media folder of the <c>Local</c> file storage exists.
+/// Checks that the media folder of the <see cref="Options.MediaStorageOptions.FileStorageProvider.Local"/> file storage exists.
 /// </summary>
 internal class LocalStorageHealthCheck : IHealthCheck
 {

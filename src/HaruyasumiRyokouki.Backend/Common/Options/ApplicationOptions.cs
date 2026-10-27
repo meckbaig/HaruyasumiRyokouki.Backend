@@ -1,7 +1,7 @@
 namespace HaruyasumiRyokouki.Backend.Common.Options;
 
 /// <summary>
-/// Options of the <c>Application</c> configuration section; see the Configuration section of README.
+/// Options of the <c>Application</c> configuration section.
 /// </summary>
 sealed class ApplicationOptions
 {
@@ -40,7 +40,7 @@ sealed class ApplicationOptions
 
 	/// <summary>
 	/// Time window (in minutes), counted from the first failed attempt, during which failed attempts
-	/// are counted; it is also the lockout duration once <see cref="MaxFailedLoginAttempts"/> is reached.
+	/// are counted. It is also the lockout duration once <see cref="MaxFailedLoginAttempts"/> is reached.
 	/// </summary>
 	public int FailedLoginLockoutMinutes { get; set; } = 15;
 

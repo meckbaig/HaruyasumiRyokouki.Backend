@@ -23,7 +23,7 @@ public abstract class AbstractUrlBuilder
 	protected readonly string _mediaEndpoint;
 
 	/// <summary>
-	/// Endpoint for download URLs: the CDN only with <c>useCdnForDownloads</c>.
+	/// Endpoint for download URLs: the CDN only when it is enabled for downloads.
 	/// </summary>
 	protected readonly string _downloadEndpoint;
 

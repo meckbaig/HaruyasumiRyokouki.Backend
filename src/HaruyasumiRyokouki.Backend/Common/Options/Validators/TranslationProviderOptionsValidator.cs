@@ -5,7 +5,7 @@ using System.Text;
 namespace HaruyasumiRyokouki.Backend.Common.Options.Validators;
 
 /// <summary>
-/// Validates <see cref="TranslationProviderOptions"/> on startup: fields of each entry and the names in <c>Usage</c>.
+/// Validates <see cref="TranslationProviderOptions"/> on startup: fields of each entry and the names in <see cref="TranslationProviderOptions.Usage"/>.
 /// </summary>
 public class TranslationProviderOptionsValidator : IValidateOptions<TranslationProviderOptions>
 {

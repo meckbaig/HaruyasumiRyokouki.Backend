@@ -4,7 +4,7 @@ using WebDav;
 namespace HaruyasumiRyokouki.Backend.Common.HealthChecks;
 
 /// <summary>
-/// Checks that the media folder of the <c>WebDav</c> file storage is reachable with the configured credentials
+/// Checks that the media folder of the <see cref="Options.MediaStorageOptions.FileStorageProvider.WebDav"/> file storage is reachable with the configured credentials
 /// (<c>PROPFIND</c> of the folder itself, without listing the files).
 /// </summary>
 internal class WebDavStorageHealthCheck : IHealthCheck

@@ -4,7 +4,7 @@ namespace HaruyasumiRyokouki.Backend.Services.Interfaces;
 
 /// <summary>
 /// Storage of media files: a local folder or a WebDAV folder, selected by <c>MediaStorage:Provider</c>.
-/// File names are relative to the media folder; there are no subfolders.
+/// File names are relative to the media folder. There are no subfolders.
 /// </summary>
 internal interface IFileStorage
 {
