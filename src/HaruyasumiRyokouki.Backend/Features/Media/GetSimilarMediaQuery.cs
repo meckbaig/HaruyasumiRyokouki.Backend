@@ -64,11 +64,10 @@ internal class GetSimilarMediaQueryHandler : IRequestHandler<GetSimilarMediaQuer
 		GetSimilarMediaQuery request,
 		CancellationToken cancellationToken)
 	{
+		await _similarityService.EnsureLoadedAsync(_context, cancellationToken);
+
 		if (!await _context.MediaFiles.AnyAsync(m => m.Id == request.Id, cancellationToken))
 			throw new EntityNotFoundException($"Media file with Id {request.Id} not found.");
-
-		if (!_similarityService.IsLoaded)
-			await _similarityService.ReloadAsync(_context, cancellationToken);
 
 		var hits = _similarityService.MostSimilarTo(request.Id, request.Take);
 		if (hits.Count == 0)

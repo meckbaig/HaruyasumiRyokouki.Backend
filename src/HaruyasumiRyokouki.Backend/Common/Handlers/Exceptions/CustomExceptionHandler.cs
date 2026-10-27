@@ -24,6 +24,7 @@ internal class CustomExceptionHandler : IExceptionHandler
 			{ typeof(UnauthorizedException), HandleUnauthorizedException },
 			{ typeof(ConflictException), HandleConflictException },
 			{ typeof(ExternalServiceException), HandleExternalServiceException },
+			{ typeof(ServiceUnavailableException), HandleServiceUnavailableException },
 		};
 	}
 
@@ -147,6 +148,18 @@ internal class CustomExceptionHandler : IExceptionHandler
 			Type = "https://datatracker.ietf.org/doc/html/rfc9110#name-502-bad-gateway",
 			Status = context.Response.StatusCode,
 			Title = "External service error",
+			Detail = ex.Message
+		});
+	}
+
+	private static async Task HandleServiceUnavailableException(HttpContext context, Exception ex)
+	{
+		context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+		await context.Response.WriteAsJsonAsync(new ProblemDetails
+		{
+			Type = "https://datatracker.ietf.org/doc/html/rfc9110#name-503-service-unavailable",
+			Status = context.Response.StatusCode,
+			Title = "Service unavailable",
 			Detail = ex.Message
 		});
 	}

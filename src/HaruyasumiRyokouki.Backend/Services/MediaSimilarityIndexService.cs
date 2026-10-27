@@ -1,6 +1,9 @@
+using HaruyasumiRyokouki.Backend.Common.Exceptions;
+using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.DbContexts;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Numerics.Tensors;
 
 namespace HaruyasumiRyokouki.Backend.Services;
@@ -8,10 +11,12 @@ namespace HaruyasumiRyokouki.Backend.Services;
 internal class MediaSimilarityIndexService : IMediaSimilarityIndexService
 {
 	private readonly ILogger<MediaSimilarityIndexService> _logger;
+	private readonly SimilaritySearchOptions _options;
 
-	public MediaSimilarityIndexService(ILogger<MediaSimilarityIndexService> logger)
+	public MediaSimilarityIndexService(ILogger<MediaSimilarityIndexService> logger, IOptions<SimilaritySearchOptions> options)
 	{
 		_logger = logger;
+		_options = options.Value;
 	}
 
 	/// <summary>
@@ -38,6 +43,16 @@ internal class MediaSimilarityIndexService : IMediaSimilarityIndexService
 
 	public bool IsLoaded => _ids.Length > 0;
 	public int Count => _ids.Length;
+	public bool IsEnabled => _options.Enabled;
+
+	public async Task EnsureLoadedAsync(IAppDbContext context, CancellationToken cancellationToken = default)
+	{
+		if (!IsEnabled)
+			throw new ServiceUnavailableException("Similarity search is disabled.");
+
+		if (!IsLoaded)
+			await ReloadAsync(context, cancellationToken);
+	}
 
 	public async Task ReloadAsync(IAppDbContext context, CancellationToken cancellationToken = default)
 	{

@@ -19,6 +19,12 @@ internal class SimilarityWarmupBackgroundService : BackgroundService
 
 	protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 	{
+		if (!_similarityService.IsEnabled)
+		{
+			_logger.LogInformation("Similarity search is disabled, the index is not loaded.");
+			return;
+		}
+
 		try
 		{
 			using var scope = _scopeFactory.CreateScope();

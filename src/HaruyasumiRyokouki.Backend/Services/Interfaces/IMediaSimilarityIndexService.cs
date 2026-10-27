@@ -8,6 +8,17 @@ internal interface IMediaSimilarityIndexService
 	bool IsLoaded { get; }
 
 	/// <summary>
+	/// Whether the similarity search is enabled in <see cref="Common.Options.SimilaritySearchOptions"/>.
+	/// </summary>
+	bool IsEnabled { get; }
+
+	/// <summary>
+	/// Loads the vectors from DB if the index is empty.
+	/// </summary>
+	/// <exception cref="Common.Exceptions.ServiceUnavailableException">The similarity search is disabled.</exception>
+	Task EnsureLoadedAsync(IAppDbContext context, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// The average vector of a group of photos, normalized to length 1.
 	/// </summary>
 	float[] Centroid(IEnumerable<int> mediaFileIds);

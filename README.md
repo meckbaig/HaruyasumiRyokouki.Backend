@@ -219,6 +219,14 @@ AI and translation services used for auto-translation of days and media and for 
 |---|---|
 | `Proxy:Enabled`, `Proxy:Address` | Proxy passed to yt-dlp, for servers where YouTube is blocked. |
 
+### SimilaritySearch
+
+Search of similar media (`GET /v1/media/{id}/similar`) and media suggestions for a tag (`GET /v1/tags/{id}/suggest`) by image embeddings from the `media_embeddings` table. The backend does not compute embeddings: the table is filled by an external tool, so only media that were in that import can be found.
+
+| Key | Description |
+|---|---|
+| `Enabled` | `true` loads all vectors into memory on startup. `false` skips loading, and both endpoints return `503`. Default `true`. |
+
 ### Logging
 
 | Section | Description |

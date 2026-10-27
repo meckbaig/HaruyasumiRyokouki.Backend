@@ -64,6 +64,8 @@ internal class SuggestMediaForTagQueryHandler : IRequestHandler<SuggestMediaForT
 
 	public async Task<SuggestMediaForTagResponse> Handle(SuggestMediaForTagQuery request, CancellationToken cancellationToken)
 	{
+		await _similarityService.EnsureLoadedAsync(_context, cancellationToken);
+
 		if (!await _context.Tags.AnyAsync(t => t.Id == request.Id, cancellationToken))
 			throw new EntityNotFoundException($"Tag with Id {request.Id} not found.");
 
@@ -78,9 +80,6 @@ internal class SuggestMediaForTagQueryHandler : IRequestHandler<SuggestMediaForT
 		{
 			return new SuggestMediaForTagResponse { SeedCount = seedIds.Count, Items = [] };
 		}
-
-		if (!_similarityService.IsLoaded)
-			await _similarityService.ReloadAsync(_context, cancellationToken);
 
 		// Centroid as a query vector
 		float[] query = _similarityService.Centroid(seedIds);
