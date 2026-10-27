@@ -1,50 +1,25 @@
-# Similarity search
+# Similar media
 
-Finds media that look alike by comparing image embeddings. Two admin endpoints use it:
-"what is similar to this media" and "what else should get this tag".
+Tagging one photo is rarely tagging one photo: the same subject was usually shot several times in a row, and again from another side a week later. Similarity search helps the editor find such photos. It has two uses:
 
-## Files
+- **similar to this media** - photos that look like the one being edited;
+- **what else belongs to this tag** - photos that look like the ones that already have the tag.
 
-| File | Role |
-| --- | --- |
-| `Services/MediaSimilarityIndexService.cs` | In-memory index of all vectors, cosine ranking. |
-| `Services/BackgroundServices/SimilarityWarmupBackgroundService.cs` | Loads the index on startup. |
-| `Features/Media/GetSimilarMediaQuery.cs` | `GET /v1/media/{id}/similar?take=50`. |
-| `Features/Tags/SuggestMediaForTagQuery.cs` | `GET /v1/tags/{id}/suggest?take=300`. |
-| `Common/HealthChecks/SimilaritySearchHealthCheck.cs` | `similarity-search` entry of `/health`. |
-| `Models/Db/MediaEmbedding.cs` | `media_embeddings`: media id, 768-float vector, model name. |
+## How it works
 
-## Where the vectors come from
+Every photo of the initial import has an *embedding*: a vector of 768 numbers produced by an image model (SigLIP 2). Photos that look alike have vectors that point in similar directions, so the similarity of two photos is the cosine between their vectors - 1 for the same picture, lower for less similar ones.
 
-The backend does not compute embeddings. `media_embeddings` was filled once by an external tool
-for the media of the initial import; media added later have no vector and are never found or
-used as a query. A media without a vector gives an empty list.
+The backend does not compute embeddings. They were calculated once by a separate tool and written into the `media_embeddings` table. Media added later have no embedding and do not take part in the search until the tool is run for them.
 
-## The index
+On startup the server loads all vectors into memory as one array. A search compares the query vector with every vector in turn - for a few thousand photos it takes milliseconds, and no special index is needed.
 
-- On startup all vectors are read into one flat `float[]` (768 per media, contiguous for SIMD) plus an id → row map. 
-- The vectors are expected to be normalized, so the dot product is the cosine similarity. `Centroid` normalizes its result.
-- If the index is empty when an endpoint is called (warmup failed or the table was empty), it is loaded again on that request.
+- For "similar to this media" the query is the vector of that media.
+- For "what else belongs to this tag" the query is the average direction of all media that already have the tag. Media that have it are excluded from the result. With fewer than three tagged media the server does not guess: one or two photos do not describe a subject, so the result is empty.
 
-| Endpoint | Query vector | Excluded |
-| --- | --- | --- |
-| `/media/{id}/similar` | The vector of the media | The media itself |
-| `/tags/{id}/suggest` | Normalized average of the vectors of media that already have the tag | Media that already have the tag |
+There is no similarity threshold. How alike is alike enough depends on the subject - "this exact gate" and "a shrine" need different lines - so the server returns a list sorted by score, and the editor decides where it stops being useful.
 
-Both return all candidates ranked by score, cut to `take` - there is no threshold; the admin
-decides where the results stop being useful. `/tags/{id}/suggest` returns `seedCount` and **no
-items when fewer than 3 media have the tag** - too few to describe the subject.
+## Turning it off
 
-## Switching it off
+The vectors take memory, about 3 KB per photo. `Application:SimilaritySearchEnabled = false` skips loading them, and both similarity endpoints answer 503.
 
-`Application:SimilaritySearchEnabled = false` skips loading the vectors (they take memory: about 3 KB per
-media) and makes both endpoints return **503**. `/health` reports the check as `Healthy` with
-`Disabled.`; enabled with no vectors loaded is `Unhealthy`, which makes the overall status
-`Degraded` because the component is optional.
-
-## Invariants
-
-- **Results are ordered by score, and the handlers restore that order** after loading the media from the database, which returns them in any order.
-- **The index is not refreshed** when `media_embeddings` changes; restart the application after filling the table.
-- **A reload replaces three fields one by one.** A request running during a reload could see ids and vectors from different loads. Reloads happen only on startup and when the index is empty; see [issues.md](../issues.md).
-- `take` must be positive; there is no upper limit, the number of vectors bounds the result.
+The index is not reloaded when the table changes: after the tool writes new embeddings, the application has to be restarted.

@@ -1,56 +1,21 @@
 # Media URLs and image sizes
 
-The backend never serves media bytes. Every media DTO carries URLs: originals point to the file
-storage (or a CDN in front of it), resized images point to a preview service - Nextcloud previews
-or imgproxy. Sizes are chosen per request from the client screen.
+The backend never sends media files itself. Every media in a response carries URLs, and the client loads the files directly: originals and videos from the file storage, resized images from a preview service - Nextcloud previews or imgproxy. The database stores only file names, so moving the files or switching the preview service changes only the configuration.
 
-## Files
+## Which URLs a media file gets
 
-| File | Role |
-| --- | --- |
-| `Extensions/MappingExtensions.cs` | `AddUrls` - fills `imageUrls` or `videoUrls` of a DTO. |
-| `Services/MediaUrlsProvider.cs` | Chooses image or video URLs, local or YouTube. |
-| `Services/NextcloudMediaPreviewService.cs`, `Services/ImgproxyMediaPreviewService.cs` | `IMediaPreviewService` - one is registered by `MediaPreview:Provider`. |
-| `Services/Builders/` | `OriginStorageUrlBuilder` and `NextcloudPreviewUrlBuilder` - fill `{fileName}`, `{xAxis}`, `{yAxis}` in `PayloadStringBase`. |
-| `Services/MediaResolutionCalculationService.cs` | Requested image size in pixels. |
-| `Common/Behaviors/ClientDisplayBehavior.cs` | Parses the `X-Display` header. |
+An image has three URLs: a thumbnail for grids, a version for the full screen and the original for downloading. A video has a preview image, a URL to play it and the original for downloading. The play URL points to the lighter `_web` version when sync created one, otherwise to the original. A YouTube video is played by its YouTube embed URL and has no download URL.
 
-## URLs in a DTO
+When a CDN is configured in front of the storage or the preview service, media URLs use it. Download URLs use it only when that is enabled separately. The URLs are built with the CDN without any fallback, so a CDN that does not respond breaks the site, which is why `/health` checks every configured CDN.
 
-Images - `imageUrls`:
+## Choosing the image size
 
-| Field | Nextcloud | imgproxy |
-| --- | --- | --- |
-| `preview` | Nextcloud preview of the preview size | `rs:fit` of the preview size |
-| `fullScreen` | Nextcloud preview of the screen size | `rs:fit` of the screen size |
-| `download` | Original file (`OriginStorage`) | Original through imgproxy as an attachment |
+The client tells the server about its screen in the `X-Display` header, e.g. `dpr=1.25; min-side=864`: the device pixel ratio and the smaller side of the screen in CSS pixels. Without the header the server assumes a pixel ratio of 1 and a default screen size from the configuration.
 
-Videos - `videoUrls`:
+The size is calculated in three steps:
 
-| Field | Local video | YouTube |
-| --- | --- | --- |
-| `preview` | Resized `<name>_preview.<image preset>` | Resized `<id>_preview.<image preset>` |
-| `stream` | `<name>_web.<ext>` if it exists, otherwise the original (`OriginStorage`) | `ExternalUrl` (YouTube embed) |
-| `download` | Original (`OriginStorage`) | `null` |
+1. The needed size: the screen side times the pixel ratio for a full-screen image, a fixed thumbnail size times the pixel ratio for a thumbnail.
+2. Rounded **up** to the nearest of a few allowed sizes (`MediaSizes:SizeBuckets`). Thanks to that, the preview service makes and caches only a handful of variants of every image instead of one per device. A size above the largest allowed one gets the largest.
+3. Multiplied by the aspect ratio of the image (always the long side to the short one). The result is used as both the width and the height of a square box the image has to fit in. In a square box the long side of the image reaches the box size, and the short side gets exactly the size from step 2 - whether the photo is landscape or portrait.
 
-`CdnEndpoint` replaces `Endpoint` for media URLs when set; for downloads only with
-`UseCdnForDownloads`. File names are escaped (`Uri.EscapeDataString`).
-
-## Image size
-
-1. `X-Display: dpr=1.25; min-side=864` gives the device pixel ratio and the smaller side of the screen in CSS pixels. Both are optional; without the header `dpr = 1` and the screen is `MediaSizes:DefaultScreenResolution`.
-2. Target size: full screen = `dpr * min-side`, preview = `dpr * MediaSizes:PreviewTargetCss`.
-3. Rounded **up** to the nearest value of `MediaSizes:SizeBuckets`; above the largest bucket - the largest. Buckets keep the number of variants the preview service has to cache small.
-4. Multiplied by the aspect ratio of the media (`max(r, 1/r)`, `DefaultAspectRatio` when unknown) and used for **both** width and height of a "fit" box. The box is square, so the smaller side of the image gets the bucket size whatever its orientation.
-
-`X-Display` parsing: keys are case-insensitive, unknown keys and malformed parts are ignored, a
-value that does not parse is skipped, `dpr` uses a dot as the decimal separator. Zero or negative
-values are a 400.
-
-## Invariants
-
-- **Responses depend on `X-Display`.** A cache in front of the API must vary on it (and on `Accept-Language`).
-- **Only file names are stored.** Changing `MediaPreview` changes every URL at once, no migration needed; moving files to another storage needs only `OriginStorage` / `FilePath` changes.
-- **The stream URL depends on `AdditionalFiles`.** A `_web` file that exists in the storage but is not listed in the database is not used.
-- **Nextcloud has no "original through the preview service"**: `ImageUrlType.Original` is supported only by imgproxy and is not used in DTOs.
-- Bucket sizes are sorted when the options are read, so their order in the config does not matter.
+Because the URLs depend on `X-Display` and texts depend on `Accept-Language`, a cache in front of the API must take both headers into account.

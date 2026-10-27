@@ -303,36 +303,6 @@ Keys marked with `*` are dynamic: you choose their names (they are referred to b
 
 Overall status: `Unhealthy` (HTTP `503`) when a required check fails; `Degraded` (HTTP `200`) when only optional checks fail; otherwise `Healthy`.
 
-## Where things live
-
-All code is in `src/HaruyasumiRyokouki.Backend`, unit tests in `tests/HaruyasumiRyokouki.Backend.UnitTests`.
-
-| Directory | Contents |
-|---|---|
-| `Controllers/V1/` | Routes and `[Authorize]` only; every action sends a MediatR request. |
-| `Features/<Area>/` | One file per endpoint: request, response, validator, handler. |
-| `Services/` | DI services: storage, ffmpeg, preview URLs, translation, sync, background services. |
-| `Common/` | Behaviors, exceptions, options and their validators, health checks, static helpers. |
-| `Extensions/` | DI registration, middleware, mapping, EF query helpers. |
-| `Models/` | EF entities (`Db/`), API contracts (`Dtos/`), internal values (`InternalDtos/`). |
-| `Migrations/` | EF Core migrations. |
-
-### Finding a feature
-
-| Feature | Start here | Documentation |
-|---|---|---|
-| Layers, request pipeline, errors, configuration | `Program.cs` | [architecture.md](docs/architecture.md) |
-| Admin login, brute-force protection, Swagger login | `Common/Handlers/BasicAuthenticationHandler.cs` | [auth.md](docs/features/auth.md) |
-| Days, map, favorites, pending, what visitors see | `Features/Days/GetDayQuery.cs` | [reading-and-visibility.md](docs/features/reading-and-visibility.md) |
-| Editing media and days, auto-translation, deleting | `Features/Media/EditMediaCommand.cs` | [editing.md](docs/features/editing.md) |
-| Media import from the storage, conversion, dates | `Services/MediaSyncService.cs` | [media-sync.md](docs/features/media-sync.md) |
-| YouTube videos | `Features/Media/ImportYoutubeMediaCommand.cs` | [youtube-import.md](docs/features/youtube-import.md) |
-| Media URLs, preview services, image sizes, `X-Display` | `Services/MediaUrlsProvider.cs` | [media-urls.md](docs/features/media-urls.md) |
-| Languages, `Accept-Language`, translation providers | `Common/Helpers/TranslationPlanner.cs` | [localization-and-translation.md](docs/features/localization-and-translation.md) |
-| Tags, aliases, tag completion, search | `Features/Search/SearchQuery.cs` | [tags-and-search.md](docs/features/tags-and-search.md) |
-| Similar media, media suggestions for a tag | `Services/MediaSimilarityIndexService.cs` | [similarity-search.md](docs/features/similarity-search.md) |
-| Health, metrics, logs, in-memory state | `Common/HealthChecks/` | [operations.md](docs/features/operations.md) |
-
 ## Running tests
 
 ```
@@ -377,10 +347,20 @@ Set `Kestrel:Endpoints:Http:Url` to `http://+:8080` (or remove the `Kestrel` sec
 
 ## Documentation
 
-Technical detail lives in [docs/](docs/), one file per feature. Each feature page lists its files first and ends with **Invariants** - rules that look like bugs and are not, or that are easy to break.
+How the less obvious parts work:
 
-- [docs/architecture.md](docs/architecture.md) - read before changing anything.
-- [docs/issues.md](docs/issues.md) - known problems left for later.
-- [docs/conventions.md](docs/conventions.md) - code structure conventions.
-- Swagger (`/swagger`) - API reference generated from the code.
+- [Architecture](docs/architecture.md) - request pipeline, errors, configuration, state kept in memory.
+- [Media import and conversion](docs/features/media-sync.md) - sync with the file storage, conversion, YouTube videos, deleting files.
+- [Dates and time zones of the trip](docs/features/dates.md) - how the local time of media is determined.
+- [Visibility and the admin](docs/features/visibility.md) - what visitors see, how the admin is recognized.
+- [Media URLs and image sizes](docs/features/media-urls.md) - preview services, CDN, the `X-Display` header.
+- [Languages and machine translation](docs/features/translations.md) - `Accept-Language`, auto-translation, providers.
+- [Tags and search](docs/features/tags-and-search.md) - display names and aliases, AI drafts, search rules.
+- [Similar media](docs/features/similarity-search.md) - image embeddings and the in-memory index.
+
+Also:
+
+- [Code conventions](docs/conventions.md) - project structure and documentation style.
+- [Known issues](docs/issues.md) - problems left for later.
+- Swagger (`/swagger`) - reference of all endpoints with request and response schemas.
 - [HaruyasumiRyokouki.Frontend](https://github.com/meckbaig/HaruyasumiRyokouki.Frontend) - the client application.
