@@ -61,6 +61,7 @@ internal class EditDayValidator : AbstractValidator<EditDayCommand>
 		public DayEditDtoValidator()
 		{
 			RuleFor(x => x.Translations)
+				.Cascade(CascadeMode.Stop)
 				.NotNull()
 				.Must(t => t.DistinctBy(x => x.LanguageCode).Count() == t.Count)
 				.WithMessage("Translations must have at most one variation for each language.");

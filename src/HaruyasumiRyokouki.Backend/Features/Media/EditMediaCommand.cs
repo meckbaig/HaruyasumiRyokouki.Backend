@@ -80,6 +80,7 @@ internal class EditMediaValidator : AbstractValidator<EditMediaCommand>
 				.OverridePropertyName(nameof(EditMediaChanges.TagIds))
 				.When(x => x.TagIds.HasValue);
 			RuleFor(x => x.Translations.Value)
+				.Cascade(CascadeMode.Stop)
 				.NotNull()
 				.Must(t => t!.DistinctBy(x => x.LanguageCode).Count() == t!.Count)
 				.WithMessage("Translations must have at most one variation for each language.")

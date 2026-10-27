@@ -20,11 +20,20 @@ public record CreateTagDto : IEditDto
 			RuleFor(x => x.Slug)
 				.NotEmpty();
 			RuleFor(x => x.Translations)
+				.Cascade(CascadeMode.Stop)
+				.NotNull()
 				.Must(BeDistinct)
 				.WithMessage("Translations must have exactly one variation for each language.");
+			RuleForEach(x => x.Translations)
+				.SetValidator(new TagTranslationDto.Validator());
+			RuleFor(x => x.Aliases)
+				.NotNull();
+			RuleForEach(x => x.Aliases)
+				.SetValidator(new TagTranslationDto.Validator());
 			RuleFor(x => x)
 				.Must(NoAliasDuplicatesWithTranslations)
-				.WithMessage("Aliases must not duplicate Translations.");
+				.WithMessage("Aliases must not duplicate Translations.")
+				.When(x => x.Translations != null && x.Aliases != null);
 			RuleFor(x => x)
 				.Must(x => !FindDuplicateTexts(x).Any())
 				.WithMessage(x => $"Texts must be unique within a tag, duplicated: {string.Join(", ", FindDuplicateTexts(x))}.");

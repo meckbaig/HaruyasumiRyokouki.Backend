@@ -41,10 +41,20 @@ internal class ImportYoutubeMediaValidator : AbstractValidator<ImportYoutubeMedi
 {
 	public ImportYoutubeMediaValidator()
 	{
-		RuleFor(x => x.Body.Url)
-			.NotEmpty()
-			.Must(url => YoutubeUrlParser.TryExtractVideoId(url, out _))
-			.WithMessage("Invalid YouTube URL.");
+		RuleFor(x => x.Body)
+			.NotNull()
+			.SetValidator(new BodyParametersValidator());
+	}
+
+	internal class BodyParametersValidator : AbstractValidator<ImportYoutubeMediaCommand.BodyParameters>
+	{
+		public BodyParametersValidator()
+		{
+			RuleFor(x => x.Url)
+				.NotEmpty()
+				.Must(url => YoutubeUrlParser.TryExtractVideoId(url, out _))
+				.WithMessage("Invalid YouTube URL.");
+		}
 	}
 }
 

@@ -22,9 +22,24 @@ public record EditTagDto : IEditDto
 				.NotEmpty()
 				.When(x => x.Slug.HasValue);
 			RuleFor(x => x.Translations.Value)
+				.Cascade(CascadeMode.Stop)
+				.NotNull()
 				.Must(BeDistinct)
 				.WithMessage("Translations must have exactly one variation for each language.")
+				.OverridePropertyName(nameof(Translations))
 				.When(x => x.Translations.HasValue);
+			RuleForEach(x => x.Translations.Value)
+				.SetValidator(new TagTranslationDto.Validator())
+				.OverridePropertyName(nameof(Translations))
+				.When(x => x.Translations.HasValue);
+			RuleFor(x => x.Aliases.Value)
+				.NotNull()
+				.OverridePropertyName(nameof(Aliases))
+				.When(x => x.Aliases.HasValue);
+			RuleForEach(x => x.Aliases.Value)
+				.SetValidator(new TagTranslationDto.Validator())
+				.OverridePropertyName(nameof(Aliases))
+				.When(x => x.Aliases.HasValue);
 			RuleFor(x => x)
 				.Must(NoAliasDuplicatesWithTranslations)
 				.WithMessage("Aliases must not duplicate Translations.");
