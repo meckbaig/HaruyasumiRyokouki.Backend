@@ -250,6 +250,7 @@ AI and translation services used for auto-translation of days and media and for 
 | `database` | Yes | Connection to PostgreSQL. |
 | `storage` | Yes | `Local`: the media folder exists. `WebDav`: `PROPFIND` of the media folder succeeds with the configured credentials. |
 | `preview` | Yes | The preview service answers on its status URL: `<Endpoint>/health` for imgproxy, `<Endpoint>/status.php` for Nextcloud. |
+| `cdn` | Yes | Every configured `CdnEndpoint` (origin storage and the active preview provider) returns the first local image from the database: the original and the smallest preview. Healthy when no CDN is configured. |
 | `similarity-search` | No | Number of loaded vectors. `Disabled` when `Application:SimilaritySearchEnabled` is `false`; unhealthy when the search is enabled but no vectors are loaded. |
 | `ffmpeg`, `ffprobe` | No | The tool starts; its version is shown. Needed for media sync. |
 | `yt-dlp` | No | The tool starts; its version is shown. Needed only for YouTube import. |

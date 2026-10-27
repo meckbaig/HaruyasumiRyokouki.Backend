@@ -301,6 +301,7 @@ internal static class ServiceCollectionExtensions
 
 		builder
 			.AddCheck<PreviewServiceHealthCheck>("preview")
+			.AddCheck<CdnHealthCheck>("cdn")
 			.AddCheck<SimilaritySearchHealthCheck>("similarity-search", tags: optional)
 			.AddCheck("ffmpeg", new ExecutableHealthCheck("ffmpeg", "-version"), tags: optional)
 			.AddCheck("ffprobe", new ExecutableHealthCheck("ffprobe", "-version"), tags: optional)
