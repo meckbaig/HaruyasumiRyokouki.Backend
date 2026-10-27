@@ -18,12 +18,6 @@ on purpose or for later. An entry is deleted once it is fixed or decided against
 
 ## Issues
 
-### I1. Favorites ignore approval - `latent`, `small`
-
-`GET /v1/media/favorites` shows anonymous visitors favorites that are not private, without
-checking `IsApproved`. Every other public endpoint requires both. Today favorites are set by the
-admin in the editor, usually together with approval, so nothing unapproved leaks in practice.
-Fix: add `m.IsApproved` to the filter in `GetFavoriteMediaQuery`.
 
 ### I2. One failed save breaks the rest of a sync - `latent`, `small`
 
@@ -32,7 +26,7 @@ entities stay in the change tracker and every later `SaveChanges` of the same sy
 too. Seen only with parallel syncs, which the sync lock now prevents. Fix: detach the failed
 entities (or clear the tracker) in the `catch` of `CheckForNewFiles`. Decided to leave for now.
 
-### I3. Similarity index reload is not atomic - `latent`, `small`
+### I3. Similarity index reload is not atomic - `latent`, `small`, very low priority
 
 `MediaSimilarityIndexService.ReloadAsync` assigns ids, vectors and the row map one after another.
 A request running at that moment may combine data of two loads: wrong scores or an index out of
@@ -52,9 +46,3 @@ database, so sync does not list them as missing. Fix needs a persistent queue (a
 one from the route. Decided not to change: days are not moved. The field could be documented in
 Swagger as ignored or removed from the edit DTO.
 
-### I6. Converted image keeps the upload time as its modification time - `latent`, `small`
-
-When an image is converted, the original is replaced in the storage by a new file whose modification
-time is the upload time. The media row already has the correct `Created`, so nothing is wrong
-unless saving the row fails after the upload: the original is gone, the next sync imports the
-converted file as a new one, and for a name without a timestamp its date comes from the upload time.

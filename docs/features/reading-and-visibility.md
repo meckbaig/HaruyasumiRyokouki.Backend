@@ -46,7 +46,7 @@ the admin editors.
 ## Invariants
 
 - **There is no fallback language.** A media file without a translation in the requested language has `title`, `description` and `languageCode` set to `null`; it is not replaced by English.
-- **`GET /v1/media/favorites` does not check `IsApproved`.** Favorites are marked by the admin while editing, so in practice they are approved; see [issues.md](../issues.md).
+- **`GET /v1/media/favorites` does not check `IsApproved`** on purpose: a favorite is shown to visitors unless it is private.
 - **Media without coordinates are not on the map.** `GET /v1/media` exists for the map and filters them out.
 - **Media of a day are ordered by `Created`** - the local trip time, see [media-sync.md](media-sync.md).
 - **Image and video URLs depend on `X-Display`** and are built per request; the database stores only file names. See [media-urls.md](media-urls.md).

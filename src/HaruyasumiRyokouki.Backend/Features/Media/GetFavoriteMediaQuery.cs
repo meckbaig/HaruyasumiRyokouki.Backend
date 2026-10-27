@@ -67,6 +67,7 @@ internal class GetFavoriteMediaQueryHandler : IRequestHandler<GetFavoriteMediaQu
 			.IncludeFiltered(m => m.Translations, request.AcceptLanguage.LocalizedMedia())
 			.Include(m => m.Tags)
 				.ThenIncludeFiltered(t => t.Translations, request.AcceptLanguage.LocalizedTags())
+			// IsApproved is not checked on purpose: a favorite is shown to visitors unless it is private.
 			.Where(m => (request.IsAuthenticated || !m.Private) && m.Favorite)
 			.OrderBy(_ => EF.Functions.Random())
 			.Take(_mediaFormatOptions.FavoritesReturnCount)
