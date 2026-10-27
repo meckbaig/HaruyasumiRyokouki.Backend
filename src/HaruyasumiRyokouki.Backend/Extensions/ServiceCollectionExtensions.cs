@@ -3,6 +3,7 @@ using FluentValidation;
 using HaruyasumiRyokouki.Backend.Common.Behaviors;
 using HaruyasumiRyokouki.Backend.Common.Conventions;
 using HaruyasumiRyokouki.Backend.Common.Handlers;
+using HaruyasumiRyokouki.Backend.Common.HealthChecks;
 using HaruyasumiRyokouki.Backend.Common.OptionalType.Supporting.Asp;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Common.Options.Abstractions;
@@ -290,9 +291,23 @@ internal static class ServiceCollectionExtensions
 	internal static IServiceCollection AddAppHealthChecks(this IServiceCollection services, IConfiguration configuration)
 	{
 		var connectionOptions = configuration.GetOptions<ConnectionStringsOptions>(ConnectionStringsOptions.ConfigurationSectionName);
+		var storageOptions = configuration.GetOptions<MediaStorageOptions>(MediaStorageOptions.ConfigurationSectionName);
+		string[] optional = [HealthCheckTags.Optional];
 
-		services.AddHealthChecks()
+		var builder = services.AddHealthChecks()
 			.AddNpgSql(connectionOptions.Default, name: "database");
+
+		if (storageOptions.Provider == MediaStorageOptions.FileStorageProvider.WebDav)
+			builder.AddCheck<WebDavStorageHealthCheck>("storage");
+		else
+			builder.AddCheck<LocalStorageHealthCheck>("storage");
+
+		builder
+			.AddCheck<PreviewServiceHealthCheck>("preview")
+			.AddCheck<SimilaritySearchHealthCheck>("similarity-search", tags: optional)
+			.AddCheck("ffmpeg", new ExecutableHealthCheck("ffmpeg", "-version"), tags: optional)
+			.AddCheck("ffprobe", new ExecutableHealthCheck("ffprobe", "-version"), tags: optional)
+			.AddCheck("yt-dlp", new ExecutableHealthCheck("yt-dlp", "--version"), tags: optional);
 
 		return services;
 	}

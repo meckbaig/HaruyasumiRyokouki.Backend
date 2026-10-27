@@ -11,7 +11,7 @@ public class HealthCheckResponse
 	public required string Status { get; set; }
 
 	/// <summary>
-	/// Total duration of the health check execution in seconds.
+	/// Total duration of the health check execution in milliseconds.
 	/// </summary>
 	public double Duration { get; set; }
 

@@ -6,6 +6,7 @@ using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System.Net;
@@ -140,11 +141,15 @@ internal static class ApplicationBuilderExtensions
 		{
 			ResponseWriter = async (context, report) =>
 			{
+				var status = HealthCheckTags.GetOverallStatus(report);
+				context.Response.StatusCode = status == HealthStatus.Unhealthy
+					? StatusCodes.Status503ServiceUnavailable
+					: StatusCodes.Status200OK;
 				context.Response.ContentType = "application/json";
 
 				var response = new HealthCheckResponse
 				{
-					Status = report.Status.ToString(),
+					Status = status.ToString(),
 					Duration = report.TotalDuration.TotalMilliseconds,
 					Checks = report.Entries.Select(entry => new HealthCheckComponent
 					{

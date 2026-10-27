@@ -49,7 +49,7 @@ Built with .NET 8, ASP.NET Core, Entity Framework Core with PostgreSQL, MediatR 
    The API listens on `http://localhost:5101`:
 
    - `/swagger` - API documentation (behind `SwaggerAuth` credentials when `SwaggerAuth:RequireLogin` is `true`);
-   - `/health` - health check, including the database connection;
+   - `/health` - health check of the database and the other components, see [Health check](#health-check);
    - `/metrics` - Prometheus metrics.
 
 5. Fill the database with media: put files into the file storage and call `PUT /v1/media/sync` as admin. Imported media are not approved and are visible only to the admin until they are approved.
@@ -247,6 +247,21 @@ Search of similar media (`GET /v1/media/{id}/similar`) and media suggestions for
 - `X-Display` - client screen, used to choose image sizes: `dpr=1.25; min-side=864`. Optional.
 - `Authorization: Basic ...` - admin requests. Without it, private media and media that are not approved yet are hidden.
 - Errors are returned as RFC 9457 problem details: `400` - validation, `404` - not found, `409` - conflict (e.g. a sync is already running), `429` - too many failed logins, `502` - an external service failed (yt-dlp, preview download), `500` - other errors.
+
+## Health check
+
+`GET /health` (no authentication) checks the components and returns the overall status and one entry per check.
+
+| Check | Required | What is checked |
+|---|---|---|
+| `database` | Yes | Connection to PostgreSQL. |
+| `storage` | Yes | `Local`: the media folder exists. `WebDav`: `PROPFIND` of the media folder succeeds with the configured credentials. |
+| `preview` | Yes | The preview service answers on its status URL: `<Endpoint>/health` for imgproxy, `<Endpoint>/status.php` for Nextcloud. |
+| `similarity-search` | No | Number of loaded vectors. `Disabled` when `SimilaritySearch:Enabled` is `false`; unhealthy when the search is enabled but no vectors are loaded. |
+| `ffmpeg`, `ffprobe` | No | The tool starts; its version is shown. Needed for media sync. |
+| `yt-dlp` | No | The tool starts; its version is shown. Needed only for YouTube import. |
+
+Overall status: `Unhealthy` (HTTP `503`) when a required check fails; `Degraded` (HTTP `200`) when only optional checks fail; otherwise `Healthy`.
 
 ## Deploying
 
