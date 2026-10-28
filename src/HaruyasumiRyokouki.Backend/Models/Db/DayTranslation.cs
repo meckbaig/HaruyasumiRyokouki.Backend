@@ -31,5 +31,5 @@ public class DayTranslation
 	/// <summary>
 	/// The day of the note.
 	/// </summary>
-	public Day Day { get; set; }
+	public Day Day { get; set; } = null!;
 }

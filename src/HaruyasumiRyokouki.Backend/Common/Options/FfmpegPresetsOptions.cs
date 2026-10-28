@@ -11,21 +11,21 @@ sealed class FfmpegPresetsOptions
 	/// <summary>
 	/// Video presets: each is a list of ffmpeg runs (e.g. two passes). Tokens <c>{input}</c>, <c>{output}</c>.
 	/// </summary>
-	public Dictionary<string, string[]> Video { get; set; }
+	public required Dictionary<string, string[]> Video { get; set; }
 
 	/// <summary>
 	/// Image presets. The name is also the output extension. Tokens <c>{input}</c>, <c>{output}</c>, <c>{videoThumbnailPrefix}</c>.
 	/// </summary>
-	public Dictionary<string, string> Image { get; set; }
+	public required Dictionary<string, string> Image { get; set; }
 
 	/// <summary>
 	/// Arguments inserted into an image preset to pick the frame of a video preview.
 	/// </summary>
-	public Dictionary<string, string> VideoThumbnailPrefix { get; set; }
+	public required Dictionary<string, string> VideoThumbnailPrefix { get; set; }
 
 	/// <summary>
 	/// Placeholder image presets writing to stdout. Tokens <c>{input}</c>, <c>{miniatureSize}</c>.
 	/// </summary>
-	public Dictionary<string, string> Miniature { get; set; }
+	public required Dictionary<string, string> Miniature { get; set; }
 }
 

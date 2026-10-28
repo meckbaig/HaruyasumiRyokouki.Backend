@@ -10,7 +10,7 @@ internal class OptionalParameterFilter : IParameterFilter
 {
 	public void Apply(OpenApiParameter parameter, ParameterFilterContext context)
 	{
-		var type = context?.PropertyInfo?.PropertyType;
+		var type = context.PropertyInfo?.PropertyType;
 
 		if (type != null && IsOptional(type))
 		{

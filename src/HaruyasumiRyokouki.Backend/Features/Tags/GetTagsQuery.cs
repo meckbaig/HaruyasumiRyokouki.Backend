@@ -21,7 +21,7 @@ public class GetTagsResponse
 	/// <summary>
 	/// All tags with all translations and aliases, most used first.
 	/// </summary>
-	public List<TagDto> Items { get; set; }
+	public required List<TagDto> Items { get; set; }
 }
 
 internal class GetTagsQueryHandler : IRequestHandler<GetTagsQuery, GetTagsResponse>

@@ -13,12 +13,12 @@ public record TagTranslationDto
 	/// <remarks>
 	/// See <see cref="Db.Enums.LanguageCode"/>.
 	/// </remarks>
-	public string LanguageCode { get; set; }
+	public string LanguageCode { get; set; } = null!;
 
 	/// <summary>
 	/// The text. Unique within the tag.
 	/// </summary>
-	public string Text { get; set; }
+	public string Text { get; set; } = null!;
 
 	internal class Validator : AbstractValidator<TagTranslationDto>
 	{

@@ -37,12 +37,12 @@ public record MediaFileDto
 	/// <summary>
 	/// <see cref="Db.Enums.MediaType.Image"/> or <see cref="Db.Enums.MediaType.Video"/> as a string.
 	/// </summary>
-	public string Type { get; set; }
+	public required string Type { get; set; }
 
 	/// <summary>
 	/// <see cref="Db.Enums.MediaSource.Local"/> or <see cref="Db.Enums.MediaSource.YouTube"/> as a string.
 	/// </summary>
-	public string Source { get; set; }
+	public required string Source { get; set; }
 
 	/// <summary>
 	/// Latitude in degrees, or <see langword="null"/> when the place is not set.
@@ -60,7 +60,7 @@ public record MediaFileDto
 	/// <remarks>
 	/// Equals the requested language, or <see langword="null"/> when the media has no translation to it.
 	/// </remarks>
-	public string LanguageCode { get; set; } = null!;
+	public string? LanguageCode { get; set; }
 
 	/// <summary>
 	/// Title written by the author, in the requested language.
@@ -75,7 +75,7 @@ public record MediaFileDto
 	/// <summary>
 	/// Tiny blurred placeholder of the image, base64-encoded, shown while the real image loads.
 	/// </summary>
-	public string Miniature { get; set; }
+	public string? Miniature { get; set; }
 
 	/// <summary>
 	/// The media has been reviewed by the editor: its title, description, tags and location are final.

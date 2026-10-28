@@ -36,7 +36,7 @@ public class MediaTranslation
 	/// <summary>
 	/// The media file of the translation.
 	/// </summary>
-	public MediaFile MediaFile { get; set; }
+	public MediaFile MediaFile { get; set; } = null!;
 
 	/// <summary>
 	/// Creates a copy without identifiers.

@@ -18,12 +18,12 @@ public record CreateTagDto : IEditDto
 	/// <remarks>
 	/// Used in links to the tag search: <c>GET /v1/search?tag=cherry_blossom</c>.
 	/// </remarks>
-	public string Slug { get; set; }
+	public string Slug { get; set; } = null!;
 
 	/// <summary>
 	/// Display names of the tag, at most one per language.
 	/// </summary>
-	public ICollection<TagTranslationDto> Translations { get; set; }
+	public ICollection<TagTranslationDto> Translations { get; set; } = null!;
 
 	/// <summary>
 	/// Search aliases of the tag: synonyms and spelling variants in any supported language.
@@ -31,7 +31,7 @@ public record CreateTagDto : IEditDto
 	/// <remarks>
 	/// Aliases are never displayed. They let the tag be found by other words.
 	/// </remarks>
-	public ICollection<TagTranslationDto> Aliases { get; set; }
+	public ICollection<TagTranslationDto> Aliases { get; set; } = null!;
 
 	/// <summary>
 	/// Entity created from the DTO.

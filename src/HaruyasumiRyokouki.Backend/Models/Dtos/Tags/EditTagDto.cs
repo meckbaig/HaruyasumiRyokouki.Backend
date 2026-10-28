@@ -57,7 +57,7 @@ public record EditTagDto : IEditDto
 			RuleFor(x => x.Translations.Value)
 				.Cascade(CascadeMode.Stop)
 				.NotNull()
-				.Must(BeDistinct)
+				.Must(t => BeDistinct(t!))
 				.WithMessage("Translations must have exactly one variation for each language.")
 				.OverridePropertyName(nameof(Translations))
 				.When(x => x.Translations.HasValue);

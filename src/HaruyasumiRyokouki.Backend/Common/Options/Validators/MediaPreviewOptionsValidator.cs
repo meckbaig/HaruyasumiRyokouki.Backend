@@ -42,8 +42,13 @@ sealed class MediaPreviewOptionsValidator : IValidateOptions<MediaPreviewOptions
 			: ValidateOptionsResult.Success;
 	}
 
-	private bool ValidateOriginStorageOptions(OriginStorageOptions options, out string errors)
+	private bool ValidateOriginStorageOptions(OriginStorageOptions? options, out string errors)
 	{
+		if (options == null)
+		{
+			errors = $"'{MediaPreviewOptions.ConfigurationSectionName}:{nameof(MediaPreviewOptions.OriginStorage)}' must not be null.";
+			return false;
+		}
 		var failures = new StringBuilder();
 		if (string.IsNullOrWhiteSpace(options.Endpoint))
 		{
@@ -77,8 +82,13 @@ sealed class MediaPreviewOptionsValidator : IValidateOptions<MediaPreviewOptions
 		return string.IsNullOrEmpty(errors);
 	}
 
-	private bool ValidateNextcloudOptions(NextcloudOptions options, out string errors)
+	private bool ValidateNextcloudOptions(NextcloudOptions? options, out string errors)
 	{
+		if (options == null)
+		{
+			errors = $"'{MediaPreviewOptions.ConfigurationSectionName}:{nameof(MediaPreviewOptions.Nextcloud)}' must not be null.";
+			return false;
+		}
 		var failures = new StringBuilder();
 		if (string.IsNullOrWhiteSpace(options.Endpoint))
 		{
@@ -112,8 +122,13 @@ sealed class MediaPreviewOptionsValidator : IValidateOptions<MediaPreviewOptions
 		return string.IsNullOrEmpty(errors);
 	}
 
-	private bool ValidateImgproxyOptions(ImgproxyOptions options, out string errors)
+	private bool ValidateImgproxyOptions(ImgproxyOptions? options, out string errors)
 	{
+		if (options == null)
+		{
+			errors = $"'{MediaPreviewOptions.ConfigurationSectionName}:{nameof(MediaPreviewOptions.Imgproxy)}' must not be null.";
+			return false;
+		}
 		var failures = new StringBuilder();
 		if (string.IsNullOrWhiteSpace(options.Endpoint))
 		{

@@ -55,7 +55,7 @@ public record EditMediaCommand : IRequest<EditMediaResponse>, ILocalizableReques
 		/// <remarks>
 		/// Fields absent from the request are not modified.
 		/// </remarks>
-		public EditMediaChanges Changes { get; set; }
+		public EditMediaChanges Changes { get; set; } = null!;
 
 		/// <summary>
 		/// Translate titles and descriptions sent in <see cref="EditMediaChanges.Translations"/> into the missing languages and return them without saving.
@@ -164,7 +164,7 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 			mediaToEdit.ForEach(m => m.Favorite = request.Body.Changes.Favorite);
 		if (request.Body.Changes.TagIds.HasValue)
 		{
-			var tagChanges = request.Body.Changes.TagIds.Value;
+			var tagChanges = request.Body.Changes.TagIds.Value!;
 			foreach (var media in mediaToEdit)
 			{
 				var toAdd = tagChanges.Where(mt => !media.MediaTags.Any(m => m.TagId == mt));
@@ -206,13 +206,13 @@ internal class EditMediaHandler : IRequestHandler<EditMediaCommand, EditMediaRes
 	{
 		var titleTargets = TranslationPlanner.Plan
 		(
-			mediaTranslations.ToDictionary(x => x.LanguageCode, x => x.Title),
+			mediaTranslations.ToDictionary(x => x.LanguageCode, x => x.Title ?? string.Empty),
 			out string titleSourceText,
 			out string titleSourceLanguageCode
 		);
 		var descriptionTargets = TranslationPlanner.Plan
 		(
-			mediaTranslations.ToDictionary(x => x.LanguageCode, x => x.Description),
+			mediaTranslations.ToDictionary(x => x.LanguageCode, x => x.Description ?? string.Empty),
 			out string descriptionSourceText,
 			out string descriptionSourceLanguageCode
 		);

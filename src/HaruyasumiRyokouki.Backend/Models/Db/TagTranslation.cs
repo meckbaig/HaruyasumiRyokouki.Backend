@@ -21,12 +21,12 @@ public class TagTranslation
 	/// <remarks>
 	/// See <see cref="Db.Enums.LanguageCode"/>.
 	/// </remarks>
-	public string LanguageCode { get; set; }
+	public string LanguageCode { get; set; } = null!;
 
 	/// <summary>
 	/// The text. Unique within the tag.
 	/// </summary>
-	public string Text { get; set; }
+	public string Text { get; set; } = null!;
 
 	/// <summary>
 	/// <see langword="true"/> when the text is the display name of the tag in its language; otherwise <see langword="false"/> (a search alias).
@@ -36,5 +36,5 @@ public class TagTranslation
 	/// <summary>
 	/// The tag of the text.
 	/// </summary>
-	public Tag Tag { get; set; }
+	public Tag Tag { get; set; } = null!;
 }

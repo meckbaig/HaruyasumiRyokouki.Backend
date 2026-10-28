@@ -123,9 +123,9 @@ public class HeaderAwareOperationFilter : IOperationFilter
 
 				CachedHeaders[markerInterface] = new HeaderConfig
 				{
-					HeaderName = headerName,
-					Description = description,
-					Example = example,
+					HeaderName = headerName ?? string.Empty,
+					Description = description ?? string.Empty,
+					Example = example ?? string.Empty,
 					Required = required
 				};
 			}

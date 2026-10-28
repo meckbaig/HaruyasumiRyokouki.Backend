@@ -15,7 +15,7 @@ sealed class MediaPreviewOptions
 	/// <summary>
 	/// URLs of the original files, for downloads and video streams.
 	/// </summary>
-	public OriginStorageOptions OriginStorage { get; set; }
+	public required OriginStorageOptions OriginStorage { get; set; }
 
 	/// <summary>
 	/// imgproxy settings. Required when <see cref="Provider"/> is <see cref="MediaPreviewProvider.Imgproxy"/>.
@@ -44,12 +44,12 @@ sealed class MediaPreviewOptions
 		/// <summary>
 		/// Base URL of imgproxy.
 		/// </summary>
-		public string Endpoint { get; set; }
+		public required string Endpoint { get; set; }
 
 		/// <summary>
 		/// Source prefix imgproxy reads the original files from, e.g. <c>local:///</c>.
 		/// </summary>
-		public string FilePath { get; set; }
+		public required string FilePath { get; set; }
 
 		/// <summary>
 		/// Hex-encoded signing key. May be empty only with <see cref="Insecure"/>.
@@ -85,12 +85,12 @@ sealed class MediaPreviewOptions
 		/// <summary>
 		/// Path template after the endpoint, with <c>{fileName}</c>, <c>{xAxis}</c> and <c>{yAxis}</c> tokens.
 		/// </summary>
-		public string PayloadStringBase { get; set; }
+		public required string PayloadStringBase { get; set; }
 
 		/// <summary>
 		/// Base URL of the server.
 		/// </summary>
-		public string Endpoint { get; set; }
+		public required string Endpoint { get; set; }
 
 		/// <summary>
 		/// Base URL of a CDN in front of the server. When set, it replaces <see cref="Endpoint"/> in media URLs.
@@ -111,12 +111,12 @@ sealed class MediaPreviewOptions
 		/// <summary>
 		/// Path template after the endpoint, with the <c>{fileName}</c> token.
 		/// </summary>
-		public string PayloadStringBase { get; set; }
+		public required string PayloadStringBase { get; set; }
 
 		/// <summary>
 		/// Base URL of the server.
 		/// </summary>
-		public string Endpoint { get; set; }
+		public required string Endpoint { get; set; }
 
 		/// <summary>
 		/// Base URL of a CDN in front of the server. When set, it replaces <see cref="Endpoint"/> in media URLs.

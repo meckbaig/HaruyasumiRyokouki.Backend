@@ -33,7 +33,7 @@ internal class OptionalModelBinder : IModelBinder
 		try
 		{
 			var converter = TypeDescriptor.GetConverter(innerType);
-			var value = converter.ConvertFromInvariantString(valueProviderResult.FirstValue);
+			var value = converter.ConvertFromInvariantString(valueProviderResult.FirstValue!);
 			var optionalCtor = modelType.GetConstructor([innerType]);
 			var optionalInstance = optionalCtor?.Invoke([value]);
 			bindingContext.Result = ModelBindingResult.Success(optionalInstance);

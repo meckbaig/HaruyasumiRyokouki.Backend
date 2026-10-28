@@ -21,12 +21,19 @@ internal class NextcloudMediaPreviewService : IMediaPreviewService
 		_logger = logger;
 		_mediaFormatOptions = mediaFormatOptions.Value;
 		_resolutionCalculator = resolutionCalculator;
+		var nextcloud = options.Value.Nextcloud
+			?? throw new OptionsValidationException
+			(
+				nameof(MediaPreviewOptions),
+				typeof(MediaPreviewOptions),
+				["Nextcloud option is null."]
+			);
 		_builder = new NextcloudPreviewUrlBuilder
 		(
-			options.Value.Nextcloud.Endpoint,
-			options.Value.Nextcloud.CdnEndpoint,
-			options.Value.Nextcloud.PayloadStringBase,
-			options.Value.Nextcloud.UseCdnForDownloads
+			nextcloud.Endpoint,
+			nextcloud.CdnEndpoint,
+			nextcloud.PayloadStringBase,
+			nextcloud.UseCdnForDownloads
 		);
 		_originBuilder = new OriginStorageUrlBuilder
 		(

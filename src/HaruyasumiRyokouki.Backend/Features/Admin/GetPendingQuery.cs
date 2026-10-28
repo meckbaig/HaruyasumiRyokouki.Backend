@@ -38,12 +38,12 @@ public class GetPendingResponse
 	/// <summary>
 	/// Media not reviewed by the editor yet, oldest first, with texts in all languages.
 	/// </summary>
-	public List<MediaFileEditDto> Media { get; set; }
+	public required List<MediaFileEditDto> Media { get; set; }
 
 	/// <summary>
 	/// Days not reviewed by the editor yet, by date, with diary notes in all languages.
 	/// </summary>
-	public List<DayEditDto> Days { get; set; }
+	public required List<DayEditDto> Days { get; set; }
 }
 
 internal class GetPendingQueryHandler : IRequestHandler<GetPendingQuery, GetPendingResponse>

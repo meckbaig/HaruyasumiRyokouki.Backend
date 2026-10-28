@@ -26,6 +26,7 @@
 		<PackageReference Include="Meckbaig.Cqrs.Dto" Version="1.0.2" />
 		<PackageReference Include="Meckbaig.Result" Version="1.0.3" />
 		<PackageReference Include="MediatR" Version="12.5.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.4" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>

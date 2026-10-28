@@ -7,7 +7,7 @@ sealed class MediaSizesOptions
 {
 	public const string ConfigurationSectionName = "MediaSizes";
 
-	private IReadOnlyCollection<int> _sizeBuckets;
+	private IReadOnlyCollection<int> _sizeBuckets = [];
 
 	/// <summary>
 	/// Allowed image sizes in pixels, sorted on assignment.

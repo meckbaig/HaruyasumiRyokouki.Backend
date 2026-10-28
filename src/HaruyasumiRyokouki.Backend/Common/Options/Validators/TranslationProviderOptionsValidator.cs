@@ -93,7 +93,7 @@ public class TranslationProviderOptionsValidator : IValidateOptions<TranslationP
 		StringBuilder failures)
 	{
 		ValidateUsageProvider(propertyName,	providerName, options, failures);
-		if (options.Providers.TryGetValue(providerName, out var provider))
+		if (providerName != null && options.Providers.TryGetValue(providerName, out var provider))
 		{
 			if (provider is not IAiServiceOptions)
 				failures.AppendLine(

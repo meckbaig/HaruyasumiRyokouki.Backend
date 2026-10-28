@@ -76,7 +76,7 @@ public class SearchResponse
 	/// <summary>
 	/// Days with the matching media, newest first.
 	/// </summary>
-	public List<DayDto> Items { get; set; }
+	public required List<DayDto> Items { get; set; }
 }
 
 internal class SearchQueryValidator : AbstractValidator<SearchQuery>
@@ -119,7 +119,7 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 
 	private async Task<List<Day>> SearchByTagAsync(SearchQuery request, CancellationToken cancellationToken)
 	{
-		Expression<Func<MediaFile, bool>> mediaFilter = null;
+		Expression<Func<MediaFile, bool>>? mediaFilter = null;
 		if (request.TagId.HasValue)
 		{
 			mediaFilter = m => (request.IsAuthenticated || (m.IsApproved && !m.Private))
@@ -157,8 +157,8 @@ internal class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResponse>
 			(request.IsAuthenticated || (m.IsApproved && !m.Private)) &&
 			(
 				m.Translations.Any(mt =>
-					EF.Functions.ILike(mt.Title, likePattern, LikePattern.EscapeCharacter) ||
-					EF.Functions.ILike(mt.Description, likePattern, LikePattern.EscapeCharacter)) ||
+					EF.Functions.ILike(mt.Title!, likePattern, LikePattern.EscapeCharacter) ||
+					EF.Functions.ILike(mt.Description!, likePattern, LikePattern.EscapeCharacter)) ||
 				m.Tags.Any(t => t.Translations.Any(l =>
 						EF.Functions.ILike(l.Text, tagPattern, LikePattern.EscapeCharacter)))
 			);

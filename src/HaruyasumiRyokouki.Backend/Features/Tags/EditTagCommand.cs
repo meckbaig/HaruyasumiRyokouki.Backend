@@ -138,11 +138,11 @@ internal class EditTagHandler : IRequestHandler<EditTagCommand, EditTagResponse>
 			?? throw new EntityNotFoundException($"Tag with Id {request.Id} not found.");
 
 		if (request.Body.Tag.Slug.HasValue)
-			tagToEdit.Slug = request.Body.Tag.Slug.Value;
+			tagToEdit.Slug = request.Body.Tag.Slug.Value!;
 		if (request.Body.Tag.Translations.HasValue)
 		{
 			tagToEdit.Translations = tagToEdit.Translations.Except(tagToEdit.Translations.Primary()).ToList();
-			tagToEdit.Translations = tagToEdit.Translations.Concat(request.Body.Tag.Translations.Value.Select(tt => new TagTranslation
+			tagToEdit.Translations = tagToEdit.Translations.Concat(request.Body.Tag.Translations.Value!.Select(tt => new TagTranslation
 			{
 				IsPrimary = true,
 				Text = tt.Text,
@@ -152,7 +152,7 @@ internal class EditTagHandler : IRequestHandler<EditTagCommand, EditTagResponse>
 		if (request.Body.Tag.Aliases.HasValue)
 		{
 			tagToEdit.Translations = tagToEdit.Translations.Except(tagToEdit.Translations.Aliases()).ToList();
-			tagToEdit.Translations = tagToEdit.Translations.Concat(request.Body.Tag.Aliases.Value.Select(tt => new TagTranslation
+			tagToEdit.Translations = tagToEdit.Translations.Concat(request.Body.Tag.Aliases.Value!.Select(tt => new TagTranslation
 			{
 				IsPrimary = false,
 				Text = tt.Text,

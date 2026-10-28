@@ -21,7 +21,7 @@ public class TranslationProviderOptions
 	/// <summary>
 	/// Which entry is used for which task.
 	/// </summary>
-	public TranslationUsageOptions Usage { get; set; }
+	public required TranslationUsageOptions Usage { get; set; }
 }
 
 /// <summary>
@@ -69,7 +69,7 @@ public sealed class OpenAiTranslationServiceOptions : TranslationServiceOptions,
 	/// <summary>
 	/// Reasoning effort passed to the API.
 	/// </summary>
-	public string ReasoningLevel { get; set; }
+	public required string ReasoningLevel { get; set; }
 
 	/// <summary>
 	/// Base URL of the API, required, e.g. <c>https://api.deepseek.com</c>.
@@ -111,5 +111,5 @@ public sealed class GeminiTranslationServiceOptions : TranslationServiceOptions,
 	/// <summary>
 	/// Thinking level: <c>none</c>, <c>minimal</c>, <c>low</c>, <c>medium</c> or <c>high</c>.
 	/// </summary>
-	public string ReasoningLevel { get; set; }
+	public string? ReasoningLevel { get; set; }
 }

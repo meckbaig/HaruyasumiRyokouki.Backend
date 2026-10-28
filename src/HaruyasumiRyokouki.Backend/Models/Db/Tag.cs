@@ -16,7 +16,7 @@ public class Tag
 	/// <remarks>
 	/// Used in links to the tag search: <c>GET /v1/search?tag=cherry_blossom</c>.
 	/// </remarks>
-	public string Slug { get; set; }
+	public string Slug { get; set; } = null!;
 
 	/// <summary>
 	/// Display names and search aliases of the tag.

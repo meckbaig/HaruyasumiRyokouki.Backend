@@ -61,7 +61,7 @@ internal class WebDavFileStorageService : IFileStorage
 			.Where(r => !r.IsCollection && r.LastModifiedDate != null)
 			.Select(r => new StorageFile
 			{
-				FileName = Path.GetFileName(r.Uri),
+				FileName = Path.GetFileName(r.Uri)!,
 				// WebDav.Client converts the server time (GMT) to the local time zone.
 				Created = r.LastModifiedDate!.Value.ToUniversalTime()
 			})

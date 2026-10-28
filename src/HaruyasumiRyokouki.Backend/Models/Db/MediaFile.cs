@@ -124,5 +124,5 @@ public class MediaFile
 	/// <summary>
 	/// The day the media was taken.
 	/// </summary>
-	public Day Day { get; set; }
+	public Day Day { get; set; } = null!;
 }

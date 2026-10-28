@@ -8,7 +8,7 @@ public record StorageFile
 	/// <summary>
 	/// File name without folders.
 	/// </summary>
-	public string FileName { get; set; }
+	public required string FileName { get; set; }
 
 	/// <summary>
 	/// Last modification time of the file in UTC.

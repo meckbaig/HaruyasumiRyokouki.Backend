@@ -27,7 +27,7 @@ public class GetDaysResponse
 	/// <summary>
 	/// All days ordered by date.
 	/// </summary>
-	public List<DayShortDto> Items { get; set; }
+	public required List<DayShortDto> Items { get; set; }
 }
 
 internal class GetDaysQueryHandler : IRequestHandler<GetDaysQuery, GetDaysResponse>

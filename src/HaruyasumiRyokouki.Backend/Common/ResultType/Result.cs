@@ -46,7 +46,7 @@ public readonly struct Result<TValue> : IResult<TValue, StringError>
 	public static implicit operator Result<TValue>(TValue value) => new(value);
 
 	/// <summary>
-	/// Conversion operator from <typeparamref name="StringError"/> to a <see cref="Result{TValue, StringError}"/> with failure status.
+	/// Conversion operator from <see cref="StringError"/> to a <see cref="Result{TValue, StringError}"/> with failure status.
 	/// </summary>
 	/// <param name="error">Error value.</param>
 	public static implicit operator Result<TValue>(StringError error) => new(error);
@@ -171,8 +171,6 @@ public readonly struct Result<TValue> : IResult<TValue, StringError>
 		return false;
 	}
 
-	/// <summary>
-	/// <c>Success - value</c> or <c>Failure - error</c>, for logs.
-	/// </summary>
+	/// <inheritdoc/>
 	public override string ToString() => _isSuccess ? $"Success - {Value}" : $"Failure - {Error}";
 }

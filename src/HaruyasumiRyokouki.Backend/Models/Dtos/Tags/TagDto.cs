@@ -16,12 +16,12 @@ public record TagDto
 	/// <remarks>
 	/// Used in links to the tag search: <c>GET /v1/search?tag=cherry_blossom</c>.
 	/// </remarks>
-	public string Slug { get; set; }
+	public required string Slug { get; set; }
 
 	/// <summary>
 	/// Display names of the tag, at most one per language.
 	/// </summary>
-	public ICollection<TagTranslationDto> Translations { get; set; }
+	public required ICollection<TagTranslationDto> Translations { get; set; }
 
 	/// <summary>
 	/// Search aliases of the tag: synonyms and spelling variants in any supported language.
@@ -29,7 +29,7 @@ public record TagDto
 	/// <remarks>
 	/// Aliases are never displayed. They let the tag be found by other words.
 	/// </remarks>
-	public ICollection<TagTranslationDto> Aliases { get; set; }
+	public required ICollection<TagTranslationDto> Aliases { get; set; }
 
 	/// <summary>
 	/// Number of media with the tag.

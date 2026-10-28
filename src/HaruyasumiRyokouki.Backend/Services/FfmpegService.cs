@@ -59,7 +59,7 @@ internal class FfmpegService : IFfmpegService
 
 	public async Task ConvertVideoAsync(string input, string output, CancellationToken cancellationToken)
 	{
-		string workDir = Path.GetDirectoryName(input);
+		string? workDir = Path.GetDirectoryName(input);
 		string[] passes = _ffmpegPresetsOptions.Video.GetValueOrDefault(_mediaFormatOptions.VideoPreset)!;
 		foreach (var pass in passes)
 		{
@@ -86,13 +86,14 @@ internal class FfmpegService : IFfmpegService
 		loggedArguments.Append(commonArguments);
 		var jsonData = await RunFfprobeAsync(arguments.ToString(), cancellationToken, loggedArguments.ToString());
 
-		var result = JsonSerializer.Deserialize<FfprobeResponse>(jsonData, _serializerOptions);
+		var format = JsonSerializer.Deserialize<FfprobeResponse>(jsonData, _serializerOptions)?.Format
+			?? throw new InvalidOperationException("ffprobe returned no format information.");
 
 		return new VideoFileInfo
 		{
-			Bitrate = long.Parse(result.Format.BitRate ?? "0"),
-			Duration = double.Parse(result.Format.Duration ?? "0", CultureInfo.InvariantCulture),
-			Size = long.Parse(result.Format.Size ?? "0")
+			Bitrate = long.Parse(format.BitRate ?? "0"),
+			Duration = double.Parse(format.Duration ?? "0", CultureInfo.InvariantCulture),
+			Size = long.Parse(format.Size ?? "0")
 		};
 	}
 

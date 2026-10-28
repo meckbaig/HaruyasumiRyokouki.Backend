@@ -209,8 +209,8 @@ Output rules:
 
 	private record TagsSuggestionResponse
 	{
-		public ICollection<TagTranslationDto> Translations { get; set; }
-		public ICollection<TagTranslationDto> Aliases { get; set; }
+		public ICollection<TagTranslationDto>? Translations { get; set; }
+		public ICollection<TagTranslationDto>? Aliases { get; set; }
 	}
 }
 
