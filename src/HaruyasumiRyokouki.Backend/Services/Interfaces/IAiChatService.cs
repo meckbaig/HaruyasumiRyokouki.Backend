@@ -11,7 +11,20 @@ public interface IAiChatService
 	/// </summary>
 	/// <param name="message">User message.</param>
 	/// <param name="systemMessage">Instructions for the model, if any.</param>
-	/// <param name="returnJson">Ask the model for a JSON object. The answer is then a JSON string.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
-	Task<string> GetChatResponseAsync(string message, string? systemMessage = null, bool returnJson = false, CancellationToken cancellationToken = default);
+	Task<string> GetChatResponseAsync(string message, string? systemMessage = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Sends one message and returns the answer as a <typeparamref name="T"/> object.
+	/// </summary>
+	/// <remarks>
+	/// The JSON schema of <typeparamref name="T"/> is sent when the provider supports it
+	/// (see <see cref="Common.Options.Abstractions.OpenAiJsonResponseFormat"/>), so the prompt should still describe the structure.
+	/// Property names are camelCase.
+	/// </remarks>
+	/// <param name="message">User message.</param>
+	/// <param name="systemMessage">Instructions for the model, if any.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <exception cref="InvalidOperationException">The answer is empty or not a JSON of <typeparamref name="T"/>.</exception>
+	Task<T> GetJsonResponseAsync<T>(string message, string? systemMessage = null, CancellationToken cancellationToken = default);
 }

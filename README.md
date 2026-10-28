@@ -228,8 +228,9 @@ Keys marked with `*` are dynamic: you choose their names (they are referred to b
   "TranslationProvider": {
     "Providers": {
       // * Provider entries. The fields depend on Type:
-      //   OpenAi - any OpenAI-compatible chat API: ApiKey, Model, Temperature (0 to 1), ReasoningLevel, ApiUrl.
-      //   GeminiAi - Google Gemini: ApiKey, Model, Temperature, ReasoningLevel (none, minimal, low, medium, high).
+      //   OpenAi - any OpenAI-compatible chat API: ApiKey (optional, e.g. LM Studio needs none), Model, Temperature (0 to 1, optional), ReasoningLevel, ApiUrl,
+      //     JsonResponseFormat - how JSON is requested: JsonObject (default, OpenAI and DeepSeek), JsonSchema (LM Studio), Text (only the prompt).
+      //   GeminiAi - Google Gemini: ApiKey, Model, Temperature (optional), ReasoningLevel (none, minimal, low, medium, high).
       //   Deepl - DeepL translation API: ApiKey.
       "DeepseekFlash": {
         "Type": "OpenAi",

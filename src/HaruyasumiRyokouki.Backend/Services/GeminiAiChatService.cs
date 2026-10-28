@@ -1,5 +1,6 @@
 using Google.GenAI;
 using Google.GenAI.Types;
+using HaruyasumiRyokouki.Backend.Common.Helpers;
 using HaruyasumiRyokouki.Backend.Common.Options;
 using HaruyasumiRyokouki.Backend.Services.Interfaces;
 
@@ -24,16 +25,35 @@ public class GeminiAiChatService : IAiChatService
 	}
 
 	/// <inheritdoc/>
-	public async Task<string> GetChatResponseAsync
+	public Task<string> GetChatResponseAsync
 	(
 		string message,
 		string? systemMessage = null,
-		bool returnJson = false,
 		CancellationToken cancellationToken = default)
+	{
+		return GenerateContentAsync(message, CreateConfig(systemMessage), cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<T> GetJsonResponseAsync<T>
+	(
+		string message,
+		string? systemMessage = null,
+		CancellationToken cancellationToken = default)
+	{
+		var config = CreateConfig(systemMessage);
+		config.ResponseMimeType = "application/json";
+		config.ResponseJsonSchema = AiJsonResponse.GetSchema<T>();
+
+		var text = await GenerateContentAsync(message, config, cancellationToken);
+		return AiJsonResponse.Deserialize<T>(text);
+	}
+
+	private GenerateContentConfig CreateConfig(string? systemMessage)
 	{
 		var config = new GenerateContentConfig
 		{
-			Temperature = Math.Round(_options.Temperature, 2),
+			Temperature = _options.Temperature.HasValue ? Math.Round(_options.Temperature.Value, 2) : null,
 		};
 
 		if (!string.IsNullOrWhiteSpace(_options.ReasoningLevel) && _options.ReasoningLevel.ToLower() != "none")
@@ -58,11 +78,11 @@ public class GeminiAiChatService : IAiChatService
 			};
 		}
 
-		if (returnJson)
-		{
-			config.ResponseMimeType = "application/json";
-		}
+		return config;
+	}
 
+	private async Task<string> GenerateContentAsync(string message, GenerateContentConfig config, CancellationToken cancellationToken)
+	{
 		var response = await _client.Models.GenerateContentAsync
 		(
 			model: _options.Model,

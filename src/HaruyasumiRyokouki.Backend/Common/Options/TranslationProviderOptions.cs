@@ -52,9 +52,9 @@ public sealed class TranslationUsageOptions
 public sealed class OpenAiTranslationServiceOptions : TranslationServiceOptions, IAiServiceOptions
 {
 	/// <summary>
-	/// API key.
+	/// API key. Optional, local servers such as LM Studio do not need one.
 	/// </summary>
-	public required string ApiKey { get; set; }
+	public string? ApiKey { get; set; }
 
 	/// <summary>
 	/// Model name.
@@ -62,9 +62,9 @@ public sealed class OpenAiTranslationServiceOptions : TranslationServiceOptions,
 	public required string Model { get; set; }
 
 	/// <summary>
-	/// Sampling temperature, 0 to 1.
+	/// Sampling temperature, 0 to 1. Optional, when not set the API default is used.
 	/// </summary>
-	public float Temperature { get; set; }
+	public float? Temperature { get; set; }
 
 	/// <summary>
 	/// Reasoning effort passed to the API.
@@ -75,6 +75,12 @@ public sealed class OpenAiTranslationServiceOptions : TranslationServiceOptions,
 	/// Base URL of the API, required, e.g. <c>https://api.deepseek.com</c>.
 	/// </summary>
 	public required string? ApiUrl { get; set; }
+
+	/// <summary>
+	/// How a JSON answer is requested, <see cref="OpenAiJsonResponseFormat.JsonObject"/> by default.
+	/// LM Studio needs <see cref="OpenAiJsonResponseFormat.JsonSchema"/>.
+	/// </summary>
+	public OpenAiJsonResponseFormat JsonResponseFormat { get; set; } = OpenAiJsonResponseFormat.JsonObject;
 }
 
 /// <summary>
@@ -104,9 +110,9 @@ public sealed class GeminiTranslationServiceOptions : TranslationServiceOptions,
 	public required string Model { get; set; }
 
 	/// <summary>
-	/// Sampling temperature, 0 to 1.
+	/// Sampling temperature, 0 to 1. Optional, when not set the API default is used.
 	/// </summary>
-	public float Temperature { get; set; }
+	public float? Temperature { get; set; }
 
 	/// <summary>
 	/// Thinking level: <c>none</c>, <c>minimal</c>, <c>low</c>, <c>medium</c> or <c>high</c>.

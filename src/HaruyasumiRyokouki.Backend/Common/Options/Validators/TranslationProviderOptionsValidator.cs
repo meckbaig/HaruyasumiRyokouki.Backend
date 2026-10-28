@@ -185,13 +185,6 @@ public class TranslationProviderOptionsValidator : IValidateOptions<TranslationP
 				$"'{TranslationOptionsType.OpenAi}'.");
 		}
 
-		//if (string.IsNullOrWhiteSpace(options.ApiKey))
-		//{
-		//	failures.AppendLine(
-		//		$"'{path}:{nameof(options.ApiKey)}' " +
-		//		"cannot be null or empty.");
-		//}
-
 		if (string.IsNullOrWhiteSpace(options.Model))
 		{
 			failures.AppendLine(

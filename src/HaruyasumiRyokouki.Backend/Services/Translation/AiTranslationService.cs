@@ -65,6 +65,6 @@ public class AiTranslationService : IContentTranslationService
 	/// <inheritdoc/>
 	public async Task<string> TranslateTextAsync(string text, string outputLanguage, string? inputLanguage = null, CancellationToken cancellationToken = default)
 	{
-		return await _aiChatService.GetChatResponseAsync(text, GetSystemPrompt(outputLanguage, inputLanguage), returnJson: false, cancellationToken: cancellationToken);
+		return await _aiChatService.GetChatResponseAsync(text, GetSystemPrompt(outputLanguage, inputLanguage), cancellationToken);
 	}
 }

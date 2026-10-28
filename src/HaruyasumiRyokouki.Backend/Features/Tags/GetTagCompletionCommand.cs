@@ -81,10 +81,6 @@ internal class GetTagCompletionHandler : IRequestHandler<GetTagCompletionCommand
 	private readonly IAiChatService _aiChatService;
 	private readonly IAppDbContext _context;
 	private readonly ILogger<GetTagCompletionHandler> _logger;
-	private readonly static JsonSerializerOptions _options = new JsonSerializerOptions
-	{
-		PropertyNameCaseInsensitive = true
-	};
 
 	private static readonly string _structurePrompt = $$"""
 You are a tag localization and search-alias generator.
@@ -186,11 +182,8 @@ Output rules:
 		var payload = new { tag = request.Body.Tag };
 		string userPrompt = JsonSerializer.Serialize(payload);
 
-		var responseString = await _aiChatService.GetChatResponseAsync(userPrompt, structurePrompt, returnJson: true, cancellationToken);
-		_logger.LogDebug("Ai response: {ResponseString}", responseString);
-
-		var responseDto = JsonSerializer.Deserialize<TagsSuggestionResponse>(responseString, _options)
-			?? throw new Exception($"Failed to deserialize response from AI: {responseString}");
+		var responseDto = await _aiChatService.GetJsonResponseAsync<TagsSuggestionResponse>(userPrompt, structurePrompt, cancellationToken);
+		_logger.LogDebug("Ai response: {@Response}", responseDto);
 
 		// The model may omit lists or return them as null.
 		var translations = responseDto.Translations ?? [];
