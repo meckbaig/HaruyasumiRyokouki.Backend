@@ -4,7 +4,7 @@ Media get into the site in two ways: files from the file storage are imported by
 
 ## Sync with the file storage
 
-The editor uploads photos and videos into the storage folder (a local folder or a WebDAV folder, e.g. in Nextcloud) and starts sync. Sync looks for files that are not in the database yet and imports them one after another:
+The editor uploads photos and videos into the storage folder (a local folder or a WebDAV folder, e.g. in Nextcloud) and starts sync. For a whole trip both steps can be done by [HaruyasumiRyokouki.DataTool](https://github.com/meckbaig/HaruyasumiRyokouki.DataTool): it copies the files with their modification time, so their dates are determined the same way, and then starts sync. Sync looks for files that are not in the database yet and imports them one after another:
 
 1. The type is detected by the extension. Files of other types are skipped.
 2. The time the file was taken is determined (see [dates.md](dates.md)). A file whose time does not fall into the trip is skipped.

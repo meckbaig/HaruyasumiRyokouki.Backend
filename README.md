@@ -54,6 +54,8 @@ Built with .NET 8, ASP.NET Core, Entity Framework Core with PostgreSQL, MediatR 
 
 5. Fill the database with media: put files into the file storage and call `PUT /v1/media/sync` as admin. Imported media are not approved and are visible only to the admin until they are approved.
 
+   A whole trip with tags and similarity vectors is imported by [HaruyasumiRyokouki.DataTool](https://github.com/meckbaig/HaruyasumiRyokouki.DataTool), which uploads the files, runs sync through the API and fills the tags and `media_embeddings`. It needs the admin login, write access to the storage folder, a database connection that may read `media_files` and write `media_embeddings`, and `MediaFormat:TravelDateOffsets` covering the dates of the new files. Restart the application afterwards: the similarity index is loaded only on startup.
+
 The application validates all configuration sections on startup. An invalid value stops it with a message naming the setting and exit code `1`.
 
 ### First run checklist

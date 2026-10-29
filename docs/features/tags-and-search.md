@@ -22,6 +22,8 @@ Nothing is saved. The editor corrects the draft and creates the tag.
 
 There are two ways to tag media. Editing media sets the complete list of their tags, so tags that are not in the list are removed. Adding a tag to a selection of media only adds it and keeps the other tags - this is what the similarity screens use (see [similarity-search.md](similarity-search.md)).
 
+[HaruyasumiRyokouki.DataTool](https://github.com/meckbaig/HaruyasumiRyokouki.DataTool), which imports a whole trip, works through the same API: it creates only the tags the site does not have yet, with translations from the AI completion after a person has reviewed the list, and tags media the second way, so tags set by hand are never removed.
+
 ## Search
 
 Search finds days and media either by text or by a tag. When a text is given, the tag is ignored.

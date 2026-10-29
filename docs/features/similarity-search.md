@@ -7,9 +7,11 @@ Tagging one photo is rarely tagging one photo: the same subject was usually shot
 
 ## How it works
 
-Every photo of the initial import has an *embedding*: a vector of 768 numbers produced by an image model (SigLIP 2). Photos that look alike have vectors that point in similar directions, so the similarity of two photos is the cosine between their vectors - 1 for the same picture, lower for less similar ones.
+A photo or video can have an *embedding*: a vector of 768 numbers produced by an image model (SigLIP 2). Photos that look alike have vectors that point in similar directions, so the similarity of two photos is the cosine between their vectors - 1 for the same picture, lower for less similar ones.
 
-The backend does not compute embeddings. They were calculated once by a separate tool and written into the `media_embeddings` table. Media added later have no embedding and do not take part in the search until the tool is run for them.
+The backend does not compute embeddings. They are calculated by a separate tool, [HaruyasumiRyokouki.DataTool](https://github.com/meckbaig/HaruyasumiRyokouki.DataTool), and written straight into the `media_embeddings` table - the only table the tool writes. It always uses the same model (`google/siglip2-base-patch16-256`) and computes vectors exactly like the ones already stored, so old and new vectors can be compared with each other. A video gets the vector of its frame at the first second.
+
+Media added to the site without the tool have no embedding and do not take part in the search until the tool is run for them: its whole cycle when a new batch of files is imported with it, or only its `push-embeddings` step when the media are already on the site. Vectors that are already stored are kept unless the tool is explicitly asked to replace them, and at the end it lists the media that still have no vector.
 
 On startup the server loads all vectors into memory as one array. A search compares the query vector with every vector in turn - for a few thousand photos it takes milliseconds, and no special index is needed.
 
